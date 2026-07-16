@@ -54,14 +54,14 @@ server-side — the model never supplies or sees an entity/user id.
    - **Dedicated local container (recommended for a personal, cross-project memory store)** — don't reuse
      another project's dev database; that ties this plugin's durability to that project's lifecycle:
      ```bash
-     docker run -d --name claude-memory-pg -e POSTGRES_PASSWORD=postgres -p 55432:5432 pgvector/pgvector:pg16
+     docker run -d --name oak-memory-pg -e POSTGRES_PASSWORD=postgres -p 55432:5432 pgvector/pgvector:pg16
      ```
      → `MEMORY_DATABASE_URL=postgresql://postgres:postgres@localhost:55432/postgres`
    - Hosted Supabase project: Dashboard → Settings → Database → Connection string → **Transaction pooler**
      URI (use the Shared Pooler if your network is IPv4-only). Supabase ships pgvector by default.
 2. **Enable the `vector` extension once, before first connect:**
    ```bash
-   docker exec claude-memory-pg psql -U postgres -c "CREATE EXTENSION IF NOT EXISTS vector;"
+   docker exec oak-memory-pg psql -U postgres -c "CREATE EXTENSION IF NOT EXISTS vector;"
    ```
    This is required even though `Memory.initialize()` also runs `CREATE EXTENSION IF NOT EXISTS vector`
    itself as part of its automatic schema setup (`ensureTablesExist()`, which idempotently creates every
