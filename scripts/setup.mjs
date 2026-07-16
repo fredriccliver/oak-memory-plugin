@@ -20,12 +20,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const CONTAINER = 'oak-memory-pg';
-const VOLUME = 'oak-memory-pgdata';
-const IMAGE = 'pgvector/pgvector:pg16';
-const PORT = 55432;
+// Overridable so this script can be exercised end-to-end against a throwaway
+// container without touching a real memory store — and so a second, separate
+// memory instance is possible without editing the source.
+const CONTAINER = process.env.OAK_CONTAINER ?? 'oak-memory-pg';
+const VOLUME = process.env.OAK_VOLUME ?? 'oak-memory-pgdata';
+const IMAGE = process.env.OAK_IMAGE ?? 'pgvector/pgvector:pg16';
+const PORT = Number(process.env.OAK_PORT ?? 55432);
 const DB_URL = `postgresql://postgres:postgres@localhost:${PORT}/postgres`;
-const OLLAMA_MODEL = 'nomic-embed-text';
+const OLLAMA_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? 'nomic-embed-text';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const envFile = path.join(process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude'), 'oak-memory.env');
@@ -119,29 +122,50 @@ function ensureContainer() {
   }
 }
 
+/**
+ * Waits for the *real* server, not the temporary one.
+ *
+ * On a fresh volume the postgres image runs initdb, brings up a temporary server
+ * for its init scripts, shuts it down, then starts the real one. That temp server
+ * listens on the unix socket **only** — so `pg_isready` (socket by default) reports
+ * ready during init, and the next command then fails with "No such file or
+ * directory" as the socket goes away underneath it. Forcing TCP sidesteps the whole
+ * window: nothing answers on TCP until the real server is up, which is also the
+ * path the plugin itself connects over.
+ */
 async function waitForPostgres() {
   step('Postgres readiness');
-  for (let attempt = 0; attempt < 60; attempt++) {
-    if (tryRun('docker', ['exec', CONTAINER, 'pg_isready', '-U', 'postgres']).ok) {
+  for (let attempt = 0; attempt < 90; attempt++) {
+    if (tryRun('docker', ['exec', CONTAINER, 'psql', '-U', 'postgres', '-h', '127.0.0.1', '-tc', 'SELECT 1']).ok) {
       ok('Postgres accepting connections');
       return;
     }
+    if (attempt === 3) info('waiting for first-time database initialization…');
     await sleep(1000);
   }
-  fail(`Postgres in ${CONTAINER} did not become ready within 60s.`, `Check: docker logs ${CONTAINER}`);
+  fail(`Postgres in ${CONTAINER} did not become ready within 90s.`, `Check: docker logs ${CONTAINER}`);
 }
 
-function ensureVectorExtension() {
+async function ensureVectorExtension() {
   step('pgvector extension');
   // Must exist *before* the engine's first connect: initDatabase() registers the
   // pgvector type with `pg` before ensureTablesExist() runs its own
   // CREATE EXTENSION, so a genuinely fresh database otherwise fails that first
   // connection with "vector type not found in the database".
-  const res = tryRun('docker', [
-    'exec', CONTAINER, 'psql', '-U', 'postgres', '-c', 'CREATE EXTENSION IF NOT EXISTS vector;',
-  ]);
-  if (!res.ok) fail('Could not create the vector extension.', res.out);
-  ok('vector extension present');
+  let last = '';
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const res = tryRun('docker', [
+      'exec', CONTAINER, 'psql', '-U', 'postgres', '-h', '127.0.0.1',
+      '-c', 'CREATE EXTENSION IF NOT EXISTS vector;',
+    ]);
+    if (res.ok) {
+      ok('vector extension present');
+      return;
+    }
+    last = res.out;
+    await sleep(2000);
+  }
+  fail('Could not create the vector extension.', last);
 }
 
 // ---------------------------------------------------------------- Ollama
@@ -280,7 +304,7 @@ async function main() {
   ensureDocker();
   ensureContainer();
   await waitForPostgres();
-  ensureVectorExtension();
+  await ensureVectorExtension();
   await ensureOllama();
   ensureEnvFile();
   ensureBuild();

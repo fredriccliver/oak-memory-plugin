@@ -85,6 +85,14 @@ a **real database call** — because startup and `tools/list` both pass even whe
 It needs [Docker](https://www.docker.com/products/docker-desktop/) and [Ollama](https://ollama.com/download)
 installed; it tells you which one is missing and stops rather than half-configuring anything.
 
+`OAK_CONTAINER` / `OAK_VOLUME` / `OAK_PORT` / `OAK_IMAGE` override what it provisions — useful for a second,
+separate memory instance, or for exercising setup against a throwaway container without touching a real store:
+
+```bash
+OAK_CONTAINER=oak-test OAK_VOLUME=oak-test-vol OAK_PORT=55499 \
+  CLAUDE_CONFIG_DIR=/tmp/oak-test npm run setup
+```
+
 <details>
 <summary>Why Postgres, rather than an embedded database that needs no Docker?</summary>
 
