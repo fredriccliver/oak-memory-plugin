@@ -15,7 +15,7 @@ async function main() {
   const env = loadEnv();
 
   const server = new McpServer({
-    name: 'claude-memory-plugin',
+    name: 'oak-memory-plugin',
     version: '0.1.0',
   });
 
@@ -33,6 +33,6 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('[claude-memory-plugin] Fatal error during startup:', error);
+  console.error('[oak-memory-plugin] Fatal error during startup:', error);
   process.exit(1);
 });

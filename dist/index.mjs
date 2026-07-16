@@ -21130,7 +21130,7 @@ function required2(name) {
   const value = process.env[name];
   if (!value || value.trim().length === 0) {
     console.error(
-      `[claude-memory-plugin] Missing required env var: ${name}. Set it in your shell profile or in ${path.join(pluginRoot, ".env")}.`
+      `[oak-memory-plugin] Missing required env var: ${name}. Set it in your shell profile or in ${path.join(pluginRoot, ".env")}.`
     );
     process.exit(1);
   }
@@ -24961,7 +24961,7 @@ function registerAllTools(server, env) {
 async function main() {
   const env = loadEnv();
   const server = new McpServer({
-    name: "claude-memory-plugin",
+    name: "oak-memory-plugin",
     version: "0.1.0"
   });
   registerAllTools(server, env);
@@ -24975,6 +24975,6 @@ async function main() {
   process.on("SIGTERM", shutdown);
 }
 main().catch((error2) => {
-  console.error("[claude-memory-plugin] Fatal error during startup:", error2);
+  console.error("[oak-memory-plugin] Fatal error during startup:", error2);
   process.exit(1);
 });

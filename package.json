@@ -1,5 +1,5 @@
 {
-  "name": "claude-memory-plugin",
+  "name": "oak-memory-plugin",
   "version": "0.1.0",
   "description": "Claude Code plugin exposing @openaikits/memory (Postgres+pgvector vector/graph memory engine) as an MCP server for persistent, cross-project long-term memory.",
   "type": "module",

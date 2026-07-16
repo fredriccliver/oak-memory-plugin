@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "memory-engine": {
+    "oak-memory": {
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/dist/index.mjs"],
       "env": {

@@ -1,12 +1,12 @@
 {
-  "name": "memory-engine",
+  "name": "oak-memory",
   "description": "Persistent vector+graph long-term memory for Claude Code, backed by Postgres+pgvector. Lets Claude recall and store facts about you across all projects and sessions.",
   "version": "0.1.0",
   "author": {
     "name": "Fredric Cliver",
     "url": "https://github.com/fredriccliver"
   },
-  "repository": "https://github.com/fredriccliver/claude-memory-plugin",
+  "repository": "https://github.com/fredriccliver/oak-memory-plugin",
   "license": "Apache-2.0",
   "keywords": ["memory", "vector-search", "graph", "postgres", "pgvector", "long-term-memory", "mcp"],
   "commands": ["./commands/memory-recall.md", "./commands/memory-save.md"]

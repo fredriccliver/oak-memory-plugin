@@ -1,4 +1,4 @@
-# claude-memory-plugin
+# oak-memory-plugin
 
 A Claude Code plugin that gives Claude a **persistent, cross-project long-term memory** about you — backed by
 a real vector+graph database, not markdown files.

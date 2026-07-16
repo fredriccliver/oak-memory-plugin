@@ -57,7 +57,7 @@ function required(name: string): string {
   const value = process.env[name];
   if (!value || value.trim().length === 0) {
     console.error(
-      `[claude-memory-plugin] Missing required env var: ${name}. ` +
+      `[oak-memory-plugin] Missing required env var: ${name}. ` +
         `Set it in your shell profile or in ${path.join(pluginRoot, '.env')}.`,
     );
     process.exit(1);
