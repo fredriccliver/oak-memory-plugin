@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "memory-engine": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/index.mjs"],
+      "env": {
+        "MEMORY_DATABASE_URL": "${MEMORY_DATABASE_URL}",
+        "MEMORY_ENTITY_ID": "${MEMORY_ENTITY_ID}",
+        "OLLAMA_BASE_URL": "${OLLAMA_BASE_URL}",
+        "OLLAMA_EMBEDDING_MODEL": "${OLLAMA_EMBEDDING_MODEL}"
+      }
+    }
+  }
+}

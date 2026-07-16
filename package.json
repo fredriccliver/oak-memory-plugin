@@ -1,0 +1,26 @@
+{
+  "name": "claude-memory-plugin",
+  "version": "0.1.0",
+  "description": "Claude Code plugin exposing @openaikits/memory (Postgres+pgvector vector/graph memory engine) as an MCP server for persistent, cross-project long-term memory.",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "postinstall": "npm run build",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --alias:@openaikits/memory=./node_modules/@openaikits/memory/src/index.ts --external:pg --external:pg-native --external:pgvector --external:@langchain/core --external:@langchain/openai",
+    "dev": "npm run build && node dist/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@openaikits/memory": "https://codeload.github.com/fredriccliver/Memory/tar.gz/961829f092caacf0e1960734f7d3c5a6a1d72da9",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.10.9",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist-ts",
+    "rootDir": "src",
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@openaikits/memory": ["./node_modules/@openaikits/memory/src/index.ts"],
+      "@openaikits/memory/types": ["./node_modules/@openaikits/memory/src/types.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}
