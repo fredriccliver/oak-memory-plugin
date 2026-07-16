@@ -1,0 +1,16 @@
+{
+  "description": "Restates the user's memory policy alongside every prompt, so recalling and saving stay live decisions instead of instructions that decayed since session start. Silent unless the policy has something to ask for.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/dist/hook.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

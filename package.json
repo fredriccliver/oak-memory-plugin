@@ -8,7 +8,9 @@
   "scripts": {
     "postinstall": "npm run build",
     "setup": "node scripts/setup.mjs",
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --alias:@openaikits/memory=./node_modules/@openaikits/memory/src/index.ts --external:pg-native --banner:js=\"import{createRequire as __oakCreateRequire}from'node:module';const require=__oakCreateRequire(import.meta.url);\"",
+    "build": "npm run build:server && npm run build:hook",
+    "build:server": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --alias:@openaikits/memory=./node_modules/@openaikits/memory/src/index.ts --external:pg-native --banner:js=\"import{createRequire as __oakCreateRequire}from'node:module';const require=__oakCreateRequire(import.meta.url);\"",
+    "build:hook": "esbuild src/hook.ts --bundle --platform=node --format=esm --outfile=dist/hook.mjs",
     "dev": "npm run build && node dist/index.mjs",
     "typecheck": "tsc --noEmit",
     "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs"

@@ -10,14 +10,19 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { loadEnv } from './env.js';
 import { registerAllTools } from './tools/register.js';
 import { closeMemoryClient } from './memoryClient.js';
+import { buildServerInstructions } from './policy.js';
 
 async function main() {
   const env = loadEnv();
 
-  const server = new McpServer({
-    name: 'oak-memory-plugin',
-    version: '0.1.0',
-  });
+  // `instructions` is the only channel that reaches the model without it having
+  // to look at a tool first: the client injects it into the system prompt at
+  // session start. That is what turns this from a set of tools Claude might
+  // notice into a policy it follows.
+  const server = new McpServer(
+    { name: 'oak-memory-plugin', version: '0.1.0' },
+    { instructions: buildServerInstructions(env.policy) },
+  );
 
   registerAllTools(server, env);
 

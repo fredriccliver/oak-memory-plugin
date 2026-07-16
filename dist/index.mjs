@@ -7251,13 +7251,13 @@ var require_textParsers = __commonJS({
         return fn(value);
       };
     }
-    function parseBool(value) {
+    function parseBool2(value) {
       if (value === null) return value;
       return value === "TRUE" || value === "t" || value === "true" || value === "y" || value === "yes" || value === "on" || value === "1";
     }
     function parseBoolArray(value) {
       if (!value) return null;
-      return array2.parse(value, parseBool);
+      return array2.parse(value, parseBool2);
     }
     function parseBaseTenInt(string3) {
       return parseInt(string3, 10);
@@ -7392,7 +7392,7 @@ var require_textParsers = __commonJS({
       register(26, parseInteger);
       register(700, parseFloat);
       register(701, parseFloat);
-      register(16, parseBool);
+      register(16, parseBool2);
       register(1082, parseDate);
       register(1114, parseDate);
       register(1184, parseDate);
@@ -7689,7 +7689,7 @@ var require_binaryParsers = __commonJS({
     var parseText = function(value) {
       return value.toString("utf8");
     };
-    var parseBool = function(value) {
+    var parseBool2 = function(value) {
       if (value === null) return null;
       return parseBits(value, 8) > 0;
     };
@@ -7701,7 +7701,7 @@ var require_binaryParsers = __commonJS({
       register(1700, parseNumeric);
       register(700, parseFloat32);
       register(701, parseFloat64);
-      register(16, parseBool);
+      register(16, parseBool2);
       register(1114, parseDate.bind(null, false));
       register(1184, parseDate.bind(null, true));
       register(1e3, parseArray);
@@ -26495,6 +26495,71 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+// src/policy.ts
+var MEMORY_SCOPES = ["preferences", "important", "everything", "custom"];
+var RECALL_LEVELS = ["minimal", "balanced", "aggressive"];
+var DEFAULT_AUTOSAVE = true;
+var DEFAULT_RECALL = "balanced";
+var RECALL_RULES = {
+  minimal: 'Call `recallMemory` only when the user points at the past themselves \u2014 "remember when", "like I told you", "my usual setup" \u2014 or when they run `/memory-recall`. Otherwise do not go looking; answer from what is in front of you.',
+  balanced: "Call `recallMemory` when the question plausibly depends on this user's preferences, past decisions, or personal context \u2014 especially before advising, recommending, or making a choice on their behalf. Skip it for self-contained or mechanical requests where nothing about them would change the answer.",
+  aggressive: "Call `recallMemory` before every substantive answer, not just the ones that obviously depend on personal context \u2014 assume something relevant is stored until a search says otherwise. Prefer several narrow queries over one broad one. Never conclude you don't know something about this user without checking first: an empty result costs one call, a wrong assumption costs their trust."
+};
+function recallRule(policy) {
+  return RECALL_RULES[policy.recall];
+}
+var SCOPE_RULES = {
+  preferences: "Store ONLY the user's preferences: how they like to communicate, their workflow habits, and the tools, languages, and coding styles they favour or avoid. Do not store biographical facts, project details, or one-off decisions \u2014 however interesting they seem.",
+  important: "Store the user's preferences, plus the durable facts that change how you should work with them: decisions they have committed to, constraints they operate under, and background that stays true across sessions. Skip trivia and anything that expires within days.",
+  everything: "Store any durable personal fact about the user: preferences, experiences, opinions, background, and working context."
+};
+var UNCONFIGURED_RULES = {
+  unset: "Nothing may be stored. This user has never chosen what you are allowed to remember about them, so there is no scope in force \u2014 and an unanswered question is not permission. Do not guess a scope on their behalf.",
+  invalid: "Nothing may be stored. This user's configured scope is not a value this server recognises \u2014 likely a typo \u2014 so no scope is in force. Do not guess at what they meant.",
+  "custom-missing": "Nothing may be stored. This user wrote their own scope rule, but the file holding it is missing or empty, so no scope is in force. Writing a custom rule is how someone narrows what you may keep \u2014 treating the lost rule as permission to keep more would invert their intent."
+};
+function scopeRule(policy) {
+  if (policy.scope === null) return UNCONFIGURED_RULES[policy.reason ?? "unset"];
+  if (policy.scope === "custom") return policy.customText;
+  return SCOPE_RULES[policy.scope];
+}
+var UNCONFIGURED_WRITE_RULE = "Do NOT call `createMemory` \u2014 not on your own initiative, and not on request. The server will refuse it anyway. Storing something under no policy at all means storing it outside anything this user has agreed to, which is the one case an explicit request cannot wave through: they cannot consent to a scope they have not seen.\n\nSo raise it instead. If they ask you to remember something, or if you learn something you would otherwise have saved, tell them plainly that their memory policy is not set, say what was about to be stored, and point them at `/memory-config` to choose. Then honour whatever they pick \u2014 their answer takes effect once they restart Claude Code.\n\nThis blocks writing only. Memories already stored are read and searched as normal.";
+function autosaveRule(policy) {
+  if (policy.scope === null) return UNCONFIGURED_WRITE_RULE;
+  return policy.autosave ? "When you learn something that fits the scope above, call `createMemory` on your own initiative \u2014 do not wait to be asked. Call `recallMemory` first to check for an existing or conflicting version, and call `updateMemory` on that one instead of storing a duplicate." : 'Do NOT call `createMemory` on your own initiative, no matter how clearly a fact fits the scope above. Write only when the user explicitly asks you to \u2014 `/memory-save`, "remember this", or similar. This restricts writing only: recall stays proactive, and reading memory never needs permission.';
+}
+function provenance(policy) {
+  if (policy.scope === null) {
+    return `No part of the above is this user's decision \u2014 they have not made one yet. Nothing here is
+a default standing in for their answer, because on this question there is no sane default to
+stand in. Get their answer.`;
+  }
+  return `This policy was chosen by the user themselves. Follow it as written; if they ask you to store
+something outside it, do as they ask \u2014 an explicit request always outranks the policy.`;
+}
+function buildServerInstructions(policy) {
+  return `oak-memory gives you persistent long-term memory about this user, held in a local database
+that outlives every session and every project.
+
+## When to recall
+
+${recallRule(policy)}
+
+## What to remember
+
+${scopeRule(policy)}
+
+Never store general knowledge, summaries of your own answers, or facts about anyone but this user.
+
+## When to write
+
+${autosaveRule(policy)}
+
+${provenance(policy)}`;
+}
+
+// src/env.ts
 function loadEnvFile(filePath) {
   let content;
   try {
@@ -26512,7 +26577,7 @@ function loadEnvFile(filePath) {
     if (value.startsWith('"') && value.endsWith('"') || value.startsWith("'") && value.endsWith("'")) {
       value = value.slice(1, -1);
     }
-    if (process.env[key] === void 0) {
+    if (readEnvVar(key) === void 0) {
       process.env[key] = value;
     }
   }
@@ -26521,6 +26586,7 @@ var moduleDir = path.dirname(fileURLToPath(import.meta.url));
 var pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, "..");
 var claudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), ".claude");
 var userEnvFile = path.join(claudeConfigDir, "oak-memory.env");
+var defaultPolicyFile = path.join(claudeConfigDir, "oak-memory-policy.md");
 loadEnvFile(path.join(pluginRoot, ".env"));
 loadEnvFile(userEnvFile);
 function readEnvVar(name) {
@@ -26543,12 +26609,76 @@ function required2(name) {
   }
   return value;
 }
+function resolvePolicyFile() {
+  return readEnvVar("MEMORY_POLICY_FILE") ?? defaultPolicyFile;
+}
+function parseBool(value, fallback, warn) {
+  if (value === void 0) return fallback;
+  const normalized = value.toLowerCase();
+  if (["true", "1", "yes", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "off"].includes(normalized)) return false;
+  warn(`[oak-memory-plugin] MEMORY_POLICY_AUTOSAVE="${value}" is not a boolean \u2014 using ${fallback}.`);
+  return fallback;
+}
+function loadPolicy(warn = console.error) {
+  const rawRecall = readEnvVar("MEMORY_POLICY_RECALL") ?? DEFAULT_RECALL;
+  let recall2 = rawRecall;
+  if (!RECALL_LEVELS.includes(recall2)) {
+    warn(
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 using "${DEFAULT_RECALL}".
+  Valid values: ${RECALL_LEVELS.join(", ")}`
+    );
+    recall2 = DEFAULT_RECALL;
+  }
+  const unconfigured = (reason) => ({
+    scope: null,
+    autosave: false,
+    recall: recall2,
+    reason
+  });
+  const rawScope = readEnvVar("MEMORY_POLICY_SCOPE");
+  if (rawScope === void 0) {
+    warn(
+      `[oak-memory-plugin] No MEMORY_POLICY_SCOPE set \u2014 storing nothing until there is one.
+  Run \`/memory-config\` in Claude Code, or \`npm run setup -- --reconfigure\`,
+  or set it in ${userEnvFile}. Valid values: ${MEMORY_SCOPES.join(", ")}`
+    );
+    return unconfigured("unset");
+  }
+  const scope = rawScope;
+  if (!MEMORY_SCOPES.includes(scope)) {
+    warn(
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_SCOPE "${rawScope}" \u2014 storing nothing until it is fixed.
+  Valid values: ${MEMORY_SCOPES.join(", ")}`
+    );
+    return unconfigured("invalid");
+  }
+  const autosave = parseBool(readEnvVar("MEMORY_POLICY_AUTOSAVE"), DEFAULT_AUTOSAVE, warn);
+  if (scope !== "custom") return { scope, autosave, recall: recall2 };
+  const policyFile = resolvePolicyFile();
+  let customText = "";
+  try {
+    customText = fs.readFileSync(policyFile, "utf8").replace(/<!--[\s\S]*?-->/g, "").trim();
+  } catch {
+  }
+  if (!customText) {
+    warn(
+      `[oak-memory-plugin] MEMORY_POLICY_SCOPE=custom but ${policyFile} is missing or empty \u2014 storing nothing until it has a rule.
+  Write your rule there, or re-run \`npm run setup -- --reconfigure\`.`
+    );
+    return unconfigured("custom-missing");
+  }
+  return { scope, autosave, recall: recall2, customText };
+}
 function loadEnv() {
   return {
     memoryDatabaseUrl: required2("MEMORY_DATABASE_URL"),
     memoryEntityId: readEnvVar("MEMORY_ENTITY_ID") ?? "fredriccliver",
     ollamaBaseUrl: readEnvVar("OLLAMA_BASE_URL") ?? "http://localhost:11434/v1",
-    ollamaEmbeddingModel: readEnvVar("OLLAMA_EMBEDDING_MODEL") ?? "nomic-embed-text"
+    ollamaEmbeddingModel: readEnvVar("OLLAMA_EMBEDDING_MODEL") ?? "bge-m3",
+    policy: loadPolicy(),
+    envFile: userEnvFile,
+    policyFile: resolvePolicyFile()
   };
 }
 
@@ -30173,16 +30303,22 @@ var createMemoryInputSchema = {
     "Optional list of existing memory UUIDs (from a prior recallMemory call) to link to this new memory."
   )
 };
-var createMemoryDescription = `Store a new memory about the user.
+function createMemoryDescription(policy) {
+  if (policy.scope === null) {
+    return `Storing memories is currently disabled, and calling this tool will fail.
 
-**What Memory stores**: the user's personal information, experiences, preferences, tone, and facts.
-- Store: personal info, experiences, preferences, opinions, facts about this specific user
-- Do not store: general knowledge, summaries of answers, external information
+**Why**: ${scopeRule(policy)}
 
-**When to use**:
-- You learn the user's personal info, experience, or preference for the first time
-- The user explicitly shares a fact about themselves
-- You discover something about the user not already covered by recallMemory results
+${autosaveRule(policy)}`;
+  }
+  return `Store a new memory about the user.
+
+**What to store** (the policy this user chose themselves):
+${scopeRule(policy)}
+
+Never store general knowledge, summaries of your own answers, or external information.
+
+**When to call this**: ${autosaveRule(policy)}
 
 **Before calling this**: call recallMemory first if you haven't already checked whether this fact (or a
 conflicting version of it) already exists \u2014 if it does, use updateMemory instead of creating a duplicate.
@@ -30191,15 +30327,24 @@ conflicting version of it) already exists \u2014 if it does, use updateMemory in
 - Use relatedMemoryIds to link to relevant existing memories surfaced by recallMemory.
 - This is scoped to a single fixed user identity for this plugin installation \u2014 do not ask for or pass an
   entity/user id, it is configured server-side.`;
+}
 function registerCreateMemory(server, env) {
   server.registerTool(
     "createMemory",
     {
       title: "Create memory",
-      description: createMemoryDescription,
+      description: createMemoryDescription(env.policy),
       inputSchema: createMemoryInputSchema
     },
     async ({ content, relatedMemoryIds }) => {
+      if (env.policy.scope === null) {
+        return textResult(
+          `Refused: no memory policy is set, so there is no scope permitting this.
+
+Nothing was stored. Tell the user what you were about to store, and that choosing a policy with \`/memory-config\` will let it through \u2014 their choice applies after restarting Claude Code.`,
+          true
+        );
+      }
       const { toolHandler } = await getMemoryClient(env);
       const result = await toolHandler.handleCreateMemory({
         content,
@@ -30329,26 +30474,26 @@ var recallMemoryInputSchema = {
   query: external_exports.string().describe("Natural-language description of what to recall about the user."),
   limit: external_exports.number().int().min(1).max(50).optional().describe("Maximum number of memories to return (default 10, max 50).")
 };
-var recallMemoryDescription = `Search long-term memory for facts about the user relevant to a query.
+function recallMemoryDescription(policy) {
+  return `Search long-term memory for facts about the user relevant to a query.
 
-**Call this proactively** whenever the user references themselves, their past preferences, prior decisions,
-or asks something that might depend on something you were told before in an earlier session \u2014 do not assume
-you don't know something about this user without checking first.
+**When to use** (the recall level this user chose at install time \u2014 "${policy.recall}"):
+${recallRule(policy)}
 
-**When to use**:
-- Before answering a question that might depend on the user's personal context
-- Before calling createMemory, to check whether a similar or conflicting memory already exists
-- When the user says something like "remember when..." or "like I told you before..."
+Regardless of the level above, always call this before createMemory, to check whether a similar or
+conflicting memory already exists \u2014 that check is about not writing duplicates, not about how eagerly
+to search.
 
 **Output**: ranked list of memories with their UUID, content, similarity/strength scores, and linked memory
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory \u2014 never invent a UUID or
 use a display index.`;
+}
 function registerRecallMemory(server, env) {
   server.registerTool(
     "recallMemory",
     {
       title: "Recall memory",
-      description: recallMemoryDescription,
+      description: recallMemoryDescription(env.policy),
       inputSchema: recallMemoryInputSchema
     },
     async ({ query, limit }) => {
@@ -30444,10 +30589,84 @@ ${edgeLines.join("\n")}` : "Links: none \u2014 every memory is currently isolate
   );
 }
 
+// src/tools/getMemoryPolicy.ts
+var REASON_HEADLINES = {
+  unset: "The user has never chosen one \u2014 `MEMORY_POLICY_SCOPE` is not set anywhere.",
+  invalid: "`MEMORY_POLICY_SCOPE` is set to a value this server does not recognise \u2014 likely a typo.",
+  "custom-missing": "`MEMORY_POLICY_SCOPE=custom`, but the file holding the rule is missing or empty. Their rule needs rewriting \u2014 it has not been replaced with a broader one."
+};
+var getMemoryPolicyDescription = `Report the memory policy this server is actually running.
+
+Reads nothing from the database \u2014 it reports the policy the server resolved at startup, which is not
+always what the config files say: a scope that is unset, misspelled, or \`custom\` with its rule file
+missing leaves the server with no policy at all, storing nothing. Use this rather than reading the
+config files when the user asks what is being remembered, or before helping them change it.
+
+**Output**: the effective scope and autosave setting, the exact rules currently given to the model, the
+paths to edit, and whether a restart is pending.`;
+function registerGetMemoryPolicy(server, env) {
+  server.registerTool(
+    "getMemoryPolicy",
+    {
+      title: "Get memory policy",
+      description: getMemoryPolicyDescription,
+      inputSchema: {}
+    },
+    async () => {
+      const { policy } = env;
+      const unset = policy.scope === null;
+      const lines = [
+        unset ? "# No memory policy is set" : "# Effective memory policy",
+        "",
+        ...unset ? [
+          REASON_HEADLINES[policy.reason ?? "unset"],
+          "",
+          "**Nothing is being stored, and `createMemory` is refused.** Memories already stored are",
+          "still readable and searchable \u2014 this affects writing only. No default scope has been",
+          "substituted: the user has to choose one."
+        ] : [
+          `- **Scope**: ${policy.scope}`,
+          `- **Autosave**: ${policy.autosave ? "on \u2014 saves proactively" : "off \u2014 saves only when asked"}`,
+          `- **Recall**: ${policy.recall}`
+        ],
+        "",
+        unset ? "## What the model is told" : "## What is being remembered",
+        "",
+        scopeRule(policy),
+        "",
+        "## When it writes",
+        "",
+        autosaveRule(policy),
+        "",
+        "## When it searches",
+        "",
+        recallRule(policy),
+        "",
+        "## To change it",
+        "",
+        `Edit these in \`${env.envFile}\`:`,
+        `- \`MEMORY_POLICY_SCOPE\` \u2014 ${MEMORY_SCOPES.join(", ")}`,
+        `- \`MEMORY_POLICY_AUTOSAVE\` \u2014 true, false`,
+        `- \`MEMORY_POLICY_RECALL\` \u2014 ${RECALL_LEVELS.join(", ")}`,
+        `- A \`custom\` scope's rule text lives in \`${env.policyFile}\``,
+        "",
+        // The server loads policy once at startup and hands `instructions` to the
+        // client during the initialize handshake. Nothing re-reads either after
+        // that, so an edit made now is invisible until the process restarts.
+        "Changes take effect in the **next Claude Code session** \u2014 this server read its policy at",
+        "startup and the client received the instructions during the initial handshake. Neither is",
+        "re-read mid-session, so tell the user to restart before expecting new behaviour."
+      ];
+      return textResult(lines.join("\n"));
+    }
+  );
+}
+
 // src/tools/register.ts
 function registerAllTools(server, env) {
   registerRecallMemory(server, env);
   registerListMemories(server, env);
+  registerGetMemoryPolicy(server, env);
   registerCreateMemory(server, env);
   registerUpdateMemory(server, env);
   registerUpdateMemoryLink(server, env);
@@ -30457,10 +30676,10 @@ function registerAllTools(server, env) {
 // src/index.ts
 async function main() {
   const env = loadEnv();
-  const server = new McpServer({
-    name: "oak-memory-plugin",
-    version: "0.1.0"
-  });
+  const server = new McpServer(
+    { name: "oak-memory-plugin", version: "0.1.0" },
+    { instructions: buildServerInstructions(env.policy) }
+  );
   registerAllTools(server, env);
   const transport = new StdioServerTransport();
   await server.connect(transport);

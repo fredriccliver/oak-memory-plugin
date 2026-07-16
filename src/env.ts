@@ -22,6 +22,16 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  DEFAULT_AUTOSAVE,
+  DEFAULT_RECALL,
+  MEMORY_SCOPES,
+  RECALL_LEVELS,
+  type MemoryPolicy,
+  type MemoryScope,
+  type RecallLevel,
+  type UnconfiguredReason,
+} from './policy.js';
 
 function loadEnvFile(filePath: string): void {
   let content: string;
@@ -43,7 +53,7 @@ function loadEnvFile(filePath: string): void {
     ) {
       value = value.slice(1, -1);
     }
-    if (process.env[key] === undefined) {
+    if (readEnvVar(key) === undefined) {
       process.env[key] = value;
     }
   }
@@ -55,7 +65,14 @@ const claudeConfigDir =
   process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
 const userEnvFile = path.join(claudeConfigDir, 'oak-memory.env');
 
+// A custom policy is prose, and prose wraps. It lives in its own file rather
+// than an env var because the KEY=VALUE parser above is line-oriented and would
+// silently truncate a multi-line rule at the first newline.
+const defaultPolicyFile = path.join(claudeConfigDir, 'oak-memory-policy.md');
+
 // loadEnvFile never overwrites an already-set var, so earlier calls win.
+// "Already set" means readEnvVar-set: an unexpanded `${VAR}` from .mcp.json
+// counts as unset, so these files can supply the value it failed to expand.
 loadEnvFile(path.join(pluginRoot, '.env'));
 loadEnvFile(userEnvFile);
 
@@ -64,6 +81,10 @@ export interface Env {
   memoryEntityId: string;
   ollamaBaseUrl: string;
   ollamaEmbeddingModel: string;
+  policy: MemoryPolicy;
+  /** Resolved paths, reported by getMemoryPolicy so the user knows what to edit. */
+  envFile: string;
+  policyFile: string;
 }
 
 /**
@@ -95,11 +116,124 @@ function required(name: string): string {
   return value;
 }
 
+function resolvePolicyFile(): string {
+  return readEnvVar('MEMORY_POLICY_FILE') ?? defaultPolicyFile;
+}
+
+function parseBool(value: string | undefined, fallback: boolean, warn: Warn): boolean {
+  if (value === undefined) return fallback;
+  const normalized = value.toLowerCase();
+  if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+  warn(`[oak-memory-plugin] MEMORY_POLICY_AUTOSAVE="${value}" is not a boolean — using ${fallback}.`);
+  return fallback;
+}
+
+/**
+ * Where a misconfiguration gets reported. The server logs it once at startup,
+ * where someone debugging a dead plugin will look; the Stop hook runs every
+ * turn and stays silent, because the same warning repeated forever is noise
+ * nobody reads and the server has already said it.
+ */
+type Warn = (message: string) => void;
+
+/**
+ * Never fatal, unlike a missing database URL — exiting would strand the user
+ * with no tools and an explanation only in a log they will never open. The
+ * server stays up, keeps serving the memories they already have, and refuses
+ * to write until it knows what it is allowed to write.
+ *
+ * No path here falls back to a scope. Every way of arriving without one — never
+ * set, misspelled, or a custom rule whose file went missing — resolves to
+ * scope: null, which reads to the model as "store nothing, go ask them". The
+ * temptation is to keep the plugin useful by assuming a scope, but the only
+ * assumption broad enough to be useful is also the one that collects the most,
+ * so an unanswered question would quietly resolve into the answer the user was
+ * least likely to have given. Better visibly inert than silently maximal.
+ *
+ * Exported because the Stop hook has to reach the same verdict as the server:
+ * it fires on turns the server never sees, and a hook that read the policy its
+ * own way could prompt for a write the user configured off. One reader, one
+ * answer.
+ */
+export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
+  const rawRecall = readEnvVar('MEMORY_POLICY_RECALL') ?? DEFAULT_RECALL;
+  let recall = rawRecall as RecallLevel;
+  if (!RECALL_LEVELS.includes(recall)) {
+    warn(
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" — using "${DEFAULT_RECALL}".\n` +
+        `  Valid values: ${RECALL_LEVELS.join(', ')}`,
+    );
+    recall = DEFAULT_RECALL;
+  }
+  // Recall does get a default: reading back what the user already chose to store
+  // costs them nothing but latency, so guessing wrong here is cheap in a way
+  // guessing a scope is not.
+
+  // autosave is forced off alongside a null scope rather than defaulted, so
+  // anything that reads the flag without checking the scope still fails closed.
+  const unconfigured = (reason: UnconfiguredReason): MemoryPolicy => ({
+    scope: null,
+    autosave: false,
+    recall,
+    reason,
+  });
+
+  const rawScope = readEnvVar('MEMORY_POLICY_SCOPE');
+  if (rawScope === undefined) {
+    warn(
+      `[oak-memory-plugin] No MEMORY_POLICY_SCOPE set — storing nothing until there is one.\n` +
+        `  Run \`/memory-config\` in Claude Code, or \`npm run setup -- --reconfigure\`,\n` +
+        `  or set it in ${userEnvFile}. Valid values: ${MEMORY_SCOPES.join(', ')}`,
+    );
+    return unconfigured('unset');
+  }
+
+  const scope = rawScope as MemoryScope;
+  if (!MEMORY_SCOPES.includes(scope)) {
+    warn(
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_SCOPE "${rawScope}" — storing nothing until it is fixed.\n` +
+        `  Valid values: ${MEMORY_SCOPES.join(', ')}`,
+    );
+    return unconfigured('invalid');
+  }
+
+  const autosave = parseBool(readEnvVar('MEMORY_POLICY_AUTOSAVE'), DEFAULT_AUTOSAVE, warn);
+
+  if (scope !== 'custom') return { scope, autosave, recall };
+
+  const policyFile = resolvePolicyFile();
+  let customText = '';
+  try {
+    // The file's contents become the rule verbatim, so its own explanatory
+    // header has to go — otherwise setup's instructions to the user get handed
+    // to the model as if they were the user's policy.
+    customText = fs
+      .readFileSync(policyFile, 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .trim();
+  } catch {
+    /* reported below */
+  }
+  if (!customText) {
+    warn(
+      `[oak-memory-plugin] MEMORY_POLICY_SCOPE=custom but ${policyFile} is missing or empty — ` +
+        `storing nothing until it has a rule.\n` +
+        `  Write your rule there, or re-run \`npm run setup -- --reconfigure\`.`,
+    );
+    return unconfigured('custom-missing');
+  }
+  return { scope, autosave, recall, customText };
+}
+
 export function loadEnv(): Env {
   return {
     memoryDatabaseUrl: required('MEMORY_DATABASE_URL'),
     memoryEntityId: readEnvVar('MEMORY_ENTITY_ID') ?? 'fredriccliver',
     ollamaBaseUrl: readEnvVar('OLLAMA_BASE_URL') ?? 'http://localhost:11434/v1',
-    ollamaEmbeddingModel: readEnvVar('OLLAMA_EMBEDDING_MODEL') ?? 'nomic-embed-text',
+    ollamaEmbeddingModel: readEnvVar('OLLAMA_EMBEDDING_MODEL') ?? 'bge-m3',
+    policy: loadPolicy(),
+    envFile: userEnvFile,
+    policyFile: resolvePolicyFile(),
   };
 }

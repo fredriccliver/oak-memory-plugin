@@ -37,15 +37,19 @@ so what a link "means" is interpreted at query time rather than frozen when the 
 `updateMemoryLink` takes no description, and why `/memory-graph` renders links as bare connections: there is no
 edge semantics to display, by design.
 
-Embeddings run **fully locally** via [Ollama](https://ollama.com) (`nomic-embed-text` by default) — no
+Embeddings run **fully locally** via [Ollama](https://ollama.com) (`bge-m3` by default) — no
 OpenAI API key, no per-call cost, no data leaving the machine. See [Local embeddings](#local-embeddings) for
 how this is wired given the engine's schema hardcodes a different vector width than local models produce.
 
-Claude Code has no per-turn "inject context automatically" hook (unlike a typical chat-app integration of
-this engine, which uses `MemoryConnector.prepareContext()`/`onAfterResponse()`). Every memory operation here
-is **model-initiated tool calling** — Claude only recalls or saves when it decides to, guided by the detailed
-tool descriptions below. Two slash commands (`/memory-recall`, `/memory-save`) exist for explicit manual
-invocation when you don't want to rely on the model noticing on its own.
+Every memory operation is **model-initiated tool calling**: nothing intercepts your prompt to search on your
+behalf, and nothing writes without Claude deciding to. What a `UserPromptSubmit` hook adds is timing, not
+authority — it restates your policy alongside each prompt, so recalling and saving are decided next to the
+work instead of by a system-prompt instruction that has been decaying since session start. It is closer to
+`MemoryConnector.prepareContext()` than to `onAfterResponse()`: it primes the turn, then gets out of the way.
+See [Memory policy](#memory-policy).
+
+Two slash commands (`/memory-recall`, `/memory-save`) exist for explicit manual invocation when you don't want
+to rely on the model noticing on its own.
 
 ## Tools exposed
 
@@ -57,6 +61,7 @@ invocation when you don't want to rely on the model noticing on its own.
 | `updateMemory` | Update an existing memory (by UUID) when info has changed. |
 | `updateMemoryLink` | Add/remove a link between two memories so they're more likely to surface together later. |
 | `deleteMemory` | Delete a memory. Irreversible — used sparingly. |
+| `getMemoryPolicy` | Report the policy the server actually resolved at startup. Reads no memories. Reports the *effective* policy, which isn't always what the config says — see [Memory policy](#memory-policy). |
 
 All tools are scoped to a single fixed identity (`MEMORY_ENTITY_ID`, see below) configured server-side — the
 model never supplies or sees an entity/user id.
@@ -68,6 +73,77 @@ model never supplies or sees an entity/user id.
 | `/memory-recall <query>` | Explicitly recall memories relevant to a query. |
 | `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
 | `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |
+| `/memory-config [change]` | Show the effective policy, or change it in words ("only remember my preferences", "stop saving unless I ask"). |
+
+## Memory policy
+
+Nothing here searches or writes on your behalf. `recallMemory` and `createMemory` are ordinary tools the model
+chooses to call, exactly like reading a file. So what governs memory is what the model is *told*, and the
+policy is how you set that.
+
+Your choices are compiled into a rule and handed to the model over three channels: the MCP `instructions`
+field, which the client injects into the system prompt at session start; the tool descriptions themselves;
+and a `UserPromptSubmit` hook, which restates the rule alongside every prompt. The first two are belt and
+braces — a client that ignores `instructions` still renders tool descriptions, and a client that defers tool
+schemas until first use still shows `instructions`.
+
+The third is there because being told is not the same as acting on it. Both of the other channels are read
+once and then spend the session competing with whatever you actually asked for — and the turn that produces a
+fact worth keeping is precisely the turn the model is busy doing something else. Autosave failed that way in
+practice: not by refusing, but by never coming up. A rule that arrives and loses is indistinguishable from one
+that never arrived. So the fix is timing rather than authority: the hook fires when the harness says so, and
+puts the rule next to the work instead of an hour behind it.
+
+It reads the same policy the server does — one `loadPolicy()`, one verdict — and says only what your policy
+actually asks for. Turn `MEMORY_POLICY_AUTOSAVE` off and the saving half disappears; set `MEMORY_POLICY_RECALL`
+to `minimal` and the searching half does; do both and the hook goes silent entirely. It enforces your policy,
+it does not outrank it.
+
+> **Why not `Stop`?** It was built and tested first, and it worked — the turn boundary is strictly better
+> timing for saving, since it also catches facts that surface mid-turn from a file or a command, which this
+> hook only sees on your next prompt. It was dropped because blocking a stop forces the model to emit another
+> message, and there is no empty message: every answer picked up a trailing *"No memory-worthy content in this
+> turn."* Under `claude -p`, where only the last message is printed, that line **replaced the answer** —
+> `claude -p "reply with one word: ping"` printed the memory check instead of `ping`. Prompting for silence
+> doesn't fix it; silence has to be structural. This hook adds context and no message, so the same prompt
+> prints `ping`.
+
+Three independent axes, chosen at `npm run setup` and changeable any time:
+
+| Axis | Variable | Values | Default |
+|---|---|---|---|
+| **What to remember** | `MEMORY_POLICY_SCOPE` | `preferences`, `important`, `everything`, `custom` | `everything` |
+| **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only on `/memory-save`) | `true` |
+| **How hard to search** | `MEMORY_POLICY_RECALL` | `minimal`, `balanced`, `aggressive` | `balanced` |
+
+Reading and writing are separate axes because they have different costs. Writing is the side with the privacy
+question, so it gets its own switch; searching what you already chose to store costs nothing but a lookup.
+That's also why `/memory-save` and `/memory-recall` each override their own axis and not the other — running
+one *is* the decision the policy exists to make on your behalf.
+
+`custom` takes your rule from `~/.claude/oak-memory-policy.md` (override with `MEMORY_POLICY_FILE`).
+Everything outside HTML comments in that file is handed to the model verbatim, so write it as an instruction
+— "Store only my coding preferences and architecture decisions" — not as notes. Edit it any time; no rebuild.
+
+To change the policy:
+
+```bash
+npm run setup -- --reconfigure   # re-asks all three; a plain re-run never re-asks
+```
+
+or `/memory-config stop saving unless I ask` inside Claude Code.
+
+> **A policy change needs a restart.** The server reads its policy at startup, and the client receives
+> `instructions` during the initialize handshake. Neither is re-read mid-session.
+
+> **Narrowing the scope is not forgetting.** It governs what gets written from now on and never touches what's
+> already stored. To remove existing memories, use `/memory-graph` to see them and `deleteMemory` to drop them.
+
+A bad policy value is never fatal — unlike a missing `MEMORY_DATABASE_URL`, it warns on stderr and falls back
+to the default rather than locking you out of memories you already have. `custom` with a missing or empty
+policy file degrades to `everything` and says so, because silently having no rule reads to the model as "store
+nothing" rather than as an error. This means the config file can disagree with what's running, which is why
+`getMemoryPolicy` reports the resolved policy instead of just reading the file back.
 
 ## Setup
 
@@ -129,7 +205,7 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
    `"vector type not found in the database"`. Pre-creating the extension once works around the ordering.
 3. **[Ollama](https://ollama.com) running locally with an embedding model pulled:**
    ```bash
-   ollama pull nomic-embed-text
+   ollama pull bge-m3
    ```
    No API key, no external network calls, no per-call cost.
 
@@ -142,7 +218,11 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
 | `MEMORY_DATABASE_URL` | Yes | Postgres connection string (pgvector extension required). |
 | `MEMORY_ENTITY_ID` | No (default `fredriccliver`) | The fixed identity all memories are scoped to. See [Entity scoping](#entity-scoping). |
 | `OLLAMA_BASE_URL` | No (default `http://localhost:11434/v1`) | Ollama's OpenAI-compatible endpoint. |
-| `OLLAMA_EMBEDDING_MODEL` | No (default `nomic-embed-text`) | Embedding model to request from Ollama. |
+| `OLLAMA_EMBEDDING_MODEL` | No (default `bge-m3`) | Embedding model to request from Ollama. Must be multilingual if you store memories in a language other than English — see [Local embeddings](#local-embeddings). Changing it invalidates every stored embedding. |
+| `MEMORY_POLICY_SCOPE` | No (default `everything`) | What to remember. See [Memory policy](#memory-policy). |
+| `MEMORY_POLICY_AUTOSAVE` | No (default `true`) | Whether to save unprompted. |
+| `MEMORY_POLICY_RECALL` | No (default `balanced`) | How hard to search before answering. |
+| `MEMORY_POLICY_FILE` | No (default `~/.claude/oak-memory-policy.md`) | Where a `custom` scope's rule text lives. |
 
 `src/env.ts` resolves these in order, first hit wins:
 
@@ -165,11 +245,32 @@ OpenAI-compatible `/v1/embeddings` route (Ollama doesn't validate the `apiKey`, 
 works) — no custom HTTP client needed.
 
 The one wrinkle: the engine's Postgres schema hardcodes `embedding VECTOR(1536)` (OpenAI's dimension), while
-`nomic-embed-text` outputs 768-dimensional vectors. The adapter zero-pads every embedding from 768 → 1536
+`bge-m3` outputs 1024-dimensional vectors. The adapter zero-pads every embedding from 1024 → 1536
 before it's stored. This is **not** an approximation — padding both sides of a cosine-similarity comparison
 with the same number of trailing zeros changes neither the dot product nor either vector's norm, so
-similarity rankings are mathematically identical to using the raw 768-dim vectors directly. It's purely a
+similarity rankings are mathematically identical to using the raw 1024-dim vectors directly. It's purely a
 storage-format compatibility shim to satisfy the fixed-width column.
+
+### Why the model must be multilingual
+
+The default is `bge-m3` rather than the more common `nomic-embed-text` because retrieval quality collapses
+silently on non-English text otherwise. Measured cosine similarity between a paraphrase pair and an unrelated
+pair — the gap between them is what ranking actually depends on:
+
+| | same meaning | unrelated | gap |
+|---|---|---|---|
+| `nomic-embed-text`, English | 0.888 | 0.328 | **+0.56** |
+| `nomic-embed-text`, Korean | 0.771 | 0.740 | **+0.03** |
+| `bge-m3`, English | 0.956 | 0.431 | **+0.53** |
+| `bge-m3`, Korean | 0.782 | 0.349 | **+0.43** |
+
+A 0.03 gap is noise: `nomic-embed-text` cannot tell a Korean paraphrase from an unrelated Korean sentence, so
+recall returns essentially arbitrary memories while still reporting confident-looking scores. `bge-m3` also
+embeds across languages (a Korean query against equivalent English content scores 0.787), so memories stay
+findable regardless of which language they were written in.
+
+Changing `OLLAMA_EMBEDDING_MODEL` invalidates every stored embedding — vectors from different models are not
+comparable. Existing memories must be re-embedded (delete and re-create them) or they become unfindable.
 
 ## Entity scoping
 
@@ -217,8 +318,14 @@ Restart Claude Code. No shell exports, no `--plugin-dir` flag, no per-project se
 npm install          # postinstall runs `npm run build` automatically
 npm run setup        # idempotent: provision DB + model + config, then smoke-test
 npm run typecheck    # tsc --noEmit
-npm run build        # esbuild -> dist/index.mjs
+npm run build        # esbuild -> dist/index.mjs (MCP server) + dist/hook.mjs (UserPromptSubmit hook)
 ```
+
+Both bundles are committed, because `hooks/hooks.json` and `.mcp.json` point at `dist/` and an install is not
+guaranteed to run a build. The hook bundle pulls in only `src/policy.ts` and `src/env.ts` — no engine, no
+`pg`, node builtins only — so none of the bundling constraints below apply to it. It reads the policy through
+the same `loadPolicy()` the server uses, deliberately: a hook that resolved the policy its own way could prompt
+for a write the user had configured off.
 
 `dist/index.mjs` is a **self-contained** bundle: it runs with no `node_modules` beside it. This is a hard
 requirement, not a nicety — installing copies the plugin into `~/.claude/plugins/cache/...` **without**

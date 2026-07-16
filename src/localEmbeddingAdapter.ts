@@ -4,8 +4,8 @@
  * endpoint (Ollama doesn't validate the apiKey, any non-empty string works).
  *
  * The DB schema hardcodes `embedding VECTOR(1536)` (matching OpenAI's
- * dimension), but local embedding models (e.g. nomic-embed-text) output
- * fewer dimensions (768). Zero-padding to 1536 is lossless for cosine
+ * dimension), but local embedding models (e.g. bge-m3) output
+ * fewer dimensions (1024). Zero-padding to 1536 is lossless for cosine
  * similarity: padding both vectors being compared with the same number of
  * zeros changes neither their dot product nor their norms, so similarity
  * rankings are identical to the unpadded 768-dim vectors — this is purely a

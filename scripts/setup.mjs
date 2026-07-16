@@ -18,6 +18,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import readline from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
 // Overridable so this script can be exercised end-to-end against a throwaway
@@ -28,10 +29,16 @@ const VOLUME = process.env.OAK_VOLUME ?? 'oak-memory-pgdata';
 const IMAGE = process.env.OAK_IMAGE ?? 'pgvector/pgvector:pg16';
 const PORT = Number(process.env.OAK_PORT ?? 55432);
 const DB_URL = `postgresql://postgres:postgres@localhost:${PORT}/postgres`;
-const OLLAMA_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? 'nomic-embed-text';
+const OLLAMA_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? 'bge-m3';
+
+// Re-running is safe and re-asks nothing; `--reconfigure` is the way to revisit
+// an answer, so an accidental re-run can never quietly rewrite the policy.
+const RECONFIGURE = process.argv.includes('--reconfigure');
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const envFile = path.join(process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude'), 'oak-memory.env');
+const claudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
+const envFile = path.join(claudeConfigDir, 'oak-memory.env');
+const policyFile = path.join(claudeConfigDir, 'oak-memory-policy.md');
 
 const ok = msg => console.log(`  \x1b[32m✓\x1b[0m ${msg}`);
 const info = msg => console.log(`  \x1b[36m→\x1b[0m ${msg}`);
@@ -197,7 +204,170 @@ async function ensureOllama() {
   }
 }
 
+// ---------------------------------------------------------------- Policy
+
+// Kept in step with src/policy.ts by hand: this script runs before `npm run
+// build`, so it cannot import from the bundle it is about to produce.
+const DEFAULT_SCOPE = 'everything';
+const DEFAULT_RECALL = 'balanced';
+
+const SCOPES = [
+  ['preferences', 'tone, workflow habits, tooling and style choices'],
+  ['important', 'preferences, plus decisions, constraints, and durable context'],
+  ['everything', 'any durable personal fact about you'],
+  ['custom', 'write your own rule'],
+];
+
+const TRIGGERS = [
+  ['proactive', 'Claude decides, and saves as it learns'],
+  ['manual', 'nothing is stored unless you run /memory-save'],
+];
+
+const RECALLS = [
+  ['minimal', 'only when you point at the past yourself'],
+  ['balanced', 'when the question plausibly depends on your context'],
+  ['aggressive', 'before almost every answer — thorough, but costs a lookup each time'],
+];
+
+const POLICY_FILE_HEADER = `<!--
+  oak-memory custom policy.
+
+  Everything outside HTML comments in this file is handed to Claude verbatim as
+  the rule for what to remember about you — so write it as an instruction, not
+  as notes. Comments like this one are stripped. Edits apply to the next
+  Claude Code session; no rebuild needed.
+-->`;
+
+const describe = policy =>
+  `${policy.scope} · ${policy.autosave ? 'saves proactively' : 'saves only when asked'}` +
+  ` · ${policy.recall} recall`;
+
+async function choose(rl, title, options, defaultKey) {
+  console.log(`\n  \x1b[1m${title}\x1b[0m`);
+  options.forEach(([key, blurb], i) => {
+    const suffix = key === defaultKey ? ' \x1b[2m(default)\x1b[0m' : '';
+    console.log(`    ${i + 1}) \x1b[36m${key.padEnd(11)}\x1b[0m ${blurb}${suffix}`);
+  });
+  for (;;) {
+    const answer = (await rl.question(`  → 1-${options.length}, or enter for ${defaultKey}: `)).trim();
+    if (!answer) return defaultKey;
+    const index = Number(answer);
+    if (Number.isInteger(index) && index >= 1 && index <= options.length) return options[index - 1][0];
+    const named = options.find(([key]) => key === answer.toLowerCase());
+    if (named) return named[0];
+    warn(`"${answer}" is not one of those — pick 1-${options.length}.`);
+  }
+}
+
+/** Returns the policy to write, or null to leave an existing one untouched. */
+async function resolvePolicy() {
+  step('Memory policy');
+
+  const existing = readEnvFile();
+  const currentScope = existing.match(/^\s*MEMORY_POLICY_SCOPE\s*=\s*(.+)$/m)?.[1].trim();
+  if (currentScope && !RECONFIGURE) {
+    const currentAutosave = existing.match(/^\s*MEMORY_POLICY_AUTOSAVE\s*=\s*(.+)$/m)?.[1].trim();
+    const currentRecall = existing.match(/^\s*MEMORY_POLICY_RECALL\s*=\s*(.+)$/m)?.[1].trim();
+    ok(
+      'already configured — ' +
+        describe({
+          scope: currentScope,
+          autosave: currentAutosave !== 'false',
+          recall: currentRecall ?? DEFAULT_RECALL,
+        }),
+    );
+    info('to change it: npm run setup -- --reconfigure');
+    return null;
+  }
+
+  const defaults = { scope: DEFAULT_SCOPE, autosave: true, recall: DEFAULT_RECALL };
+
+  // Piped stdin (CI, `curl | node`) has no one to answer, and blocking on a
+  // question nobody sees would hang the install. Take the defaults and say so.
+  if (!process.stdin.isTTY) {
+    info(`no terminal attached — using the default: ${describe(defaults)}`);
+    info('to choose: run `npm run setup -- --reconfigure` from a terminal');
+    return defaults;
+  }
+
+  console.log('\n  Three questions decide how Claude uses memory. All changeable later');
+  console.log('  \x1b[2mwith `npm run setup -- --reconfigure`, or /memory-config inside Claude Code.\x1b[0m');
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const scope = await choose(rl, 'What should Claude remember?', SCOPES, DEFAULT_SCOPE);
+    const trigger = await choose(rl, 'When should it save?', TRIGGERS, 'proactive');
+    const recall = await choose(rl, 'How hard should it search before answering?', RECALLS, DEFAULT_RECALL);
+
+    let customText;
+    if (scope === 'custom') {
+      console.log('\n  \x1b[1mYour rule\x1b[0m — one line here; expand it in the file afterwards.');
+      console.log('  \x1b[2me.g. Only my coding preferences and architecture decisions. Skip small talk.\x1b[0m');
+      do {
+        customText = (await rl.question('  → ')).trim();
+        if (!customText) warn('a custom policy needs a rule — type one, or Ctrl-C to start over.');
+      } while (!customText);
+    }
+
+    return { scope, autosave: trigger === 'proactive', recall, customText };
+  } catch (error) {
+    // readline rejects a pending question when stdin closes — Ctrl+D, or a
+    // caller that attached a terminal but no keyboard. Neither is a crash, and
+    // neither tells us what the user wanted, so land on the same defaults the
+    // no-terminal path uses rather than aborting an otherwise fine install.
+    if (error?.code !== 'ABORT_ERR') throw error;
+    console.log();
+    warn(`no answer given — using the default: ${describe(defaults)}`);
+    info('to choose: npm run setup -- --reconfigure');
+    return defaults;
+  } finally {
+    rl.close();
+  }
+}
+
+function applyPolicy(policy) {
+  if (!policy) return;
+
+  if (policy.scope === 'custom') {
+    fs.mkdirSync(path.dirname(policyFile), { recursive: true });
+    fs.writeFileSync(policyFile, `${POLICY_FILE_HEADER}\n\n${policy.customText}\n`);
+    ok(`wrote your rule to ${policyFile}`);
+  }
+
+  upsertEnvVars({
+    MEMORY_POLICY_SCOPE: policy.scope,
+    MEMORY_POLICY_AUTOSAVE: String(policy.autosave),
+    MEMORY_POLICY_RECALL: policy.recall,
+  });
+  ok(`policy: ${describe(policy)}`);
+}
+
 // ---------------------------------------------------------------- Config
+
+function readEnvFile() {
+  try {
+    return fs.readFileSync(envFile, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+/** Rewrites keys in place so --reconfigure replaces rather than appends. */
+function upsertEnvVars(pairs) {
+  let content = readEnvFile();
+  for (const [key, value] of Object.entries(pairs)) {
+    // `\s*` never crosses a `#`, so commented-out defaults stay commented out
+    // and a real assignment gets appended below them.
+    const assignment = new RegExp(`^\\s*${key}\\s*=.*$`, 'm');
+    if (assignment.test(content)) {
+      content = content.replace(assignment, `${key}=${value}`);
+    } else {
+      content += `${content && !content.endsWith('\n') ? '\n' : ''}${key}=${value}\n`;
+    }
+  }
+  fs.mkdirSync(path.dirname(envFile), { recursive: true });
+  fs.writeFileSync(envFile, content);
+}
 
 function ensureEnvFile() {
   step('Configuration');
@@ -301,12 +471,17 @@ function smokeTest() {
 async function main() {
   console.log('\n\x1b[1moak-memory setup\x1b[0m — checks what exists, only does what is missing.');
 
+  // Asked before the slow steps so you can answer once and walk away, rather
+  // than being ambushed by a question after two minutes of pulling images.
+  const policy = await resolvePolicy();
+
   ensureDocker();
   ensureContainer();
   await waitForPostgres();
   await ensureVectorExtension();
   await ensureOllama();
   ensureEnvFile();
+  applyPolicy(policy);
   ensureBuild();
   const passed = await smokeTest();
 
