@@ -69,7 +69,35 @@ model never supplies or sees an entity/user id.
 | `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
 | `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |
 
-## Prerequisites
+## Setup
+
+```bash
+npm install
+npm run setup
+```
+
+`npm run setup` is idempotent — it checks each piece and only does what's missing, so re-running it is safe and
+is also the fastest way to diagnose a broken install. It starts the Postgres container (named volume,
+`--restart unless-stopped`, so memories survive both `docker rm` and a reboot), creates the `vector` extension,
+pulls the embedding model, writes `~/.claude/oak-memory.env`, builds, and finishes with a smoke test that makes
+a **real database call** — because startup and `tools/list` both pass even when the database is unreachable.
+
+It needs [Docker](https://www.docker.com/products/docker-desktop/) and [Ollama](https://ollama.com/download)
+installed; it tells you which one is missing and stops rather than half-configuring anything.
+
+<details>
+<summary>Why Postgres, rather than an embedded database that needs no Docker?</summary>
+
+Because each Claude Code session spawns its **own** MCP server process. An embedded engine like
+[PGlite](https://pglite.dev) is [single-connection](https://github.com/electric-sql/pglite/issues/324) —
+several processes against one data directory corrupt the WAL. Real Postgres handles that concurrency natively.
+Zero-install would mean either risking your memory graph or running a database daemon anyway, just without
+supervision or restart-on-boot. So the goal here is making Postgres effortless to set up, not removing it.
+
+</details>
+
+<details>
+<summary>Manual setup / other databases (hosted Supabase, etc.)</summary>
 
 1. **A Postgres database where the `pgvector` extension is installable**, reachable from wherever Claude Code
    runs. Options:
@@ -96,6 +124,8 @@ model never supplies or sees an entity/user id.
    ollama pull nomic-embed-text
    ```
    No API key, no external network calls, no per-call cost.
+
+</details>
 
 ## Environment variables
 
@@ -147,22 +177,11 @@ This is also why `/memory-graph` is a genuinely useful view rather than a debug 
 
 ## Install
 
+Run [`npm run setup`](#setup) first — it provisions the database and writes the config.
+
 This repo is its own marketplace (`.claude-plugin/marketplace.json`), so it installs as a normal plugin —
-which is what makes the memory available in **every** project, along with the slash commands.
-
-```bash
-npm install          # postinstall runs the build
-```
-
-Then configure the database once, outside the plugin so it survives updates:
-
-```bash
-cat > ~/.claude/oak-memory.env <<'EOF'
-MEMORY_DATABASE_URL=postgresql://postgres:postgres@localhost:55432/postgres
-EOF
-```
-
-Register it in `~/.claude/settings.json`:
+which is what makes the memory available in **every** project, along with the slash commands. Register it in
+`~/.claude/settings.json`:
 
 ```jsonc
 {
@@ -188,8 +207,9 @@ Restart Claude Code. No shell exports, no `--plugin-dir` flag, no per-project se
 
 ```bash
 npm install          # postinstall runs `npm run build` automatically
+npm run setup        # idempotent: provision DB + model + config, then smoke-test
 npm run typecheck    # tsc --noEmit
-npm run build         # esbuild -> dist/index.mjs
+npm run build        # esbuild -> dist/index.mjs
 ```
 
 `dist/index.mjs` is a **self-contained** bundle: it runs with no `node_modules` beside it. This is a hard
@@ -299,7 +319,11 @@ instead of risking a literal placeholder being injected.
 
 ### Permanent install (once you're happy with local testing)
 
+See [Install](#install) — declaring the marketplace in `~/.claude/settings.json` is the durable, reviewable
+form. The CLI equivalent:
+
 ```bash
+claude plugin validate ~/Projects/oak-memory-plugin   # manifest check, loads nothing
 claude plugin marketplace add ~/Projects/oak-memory-plugin
 claude plugin install oak-memory
 ```
