@@ -14,6 +14,10 @@ import {
   normalizeMemoryTuning,
   type MemoryStorage,
 } from '@openaikits/memory';
+// Aliased on import: the package root exports a *class* also named `Memory`
+// (imported above), which would shadow this interface in the type namespace.
+// Same collision `tools/format.ts` documents, resolved by renaming instead.
+import type { Memory as MemoryNode, MemoryEdge } from '@openaikits/memory/types';
 import type { Env } from './env.js';
 import { LocalOllamaEmbeddingAdapter } from './localEmbeddingAdapter.js';
 
@@ -61,6 +65,24 @@ export async function recall(
   const tuning = normalizeMemoryTuning();
   const boundedLimit = Math.min(Math.max(1, limit), MAX_RECALL_LIMIT);
   return runRankedRetrieval(storage, env.memoryEntityId, query, tuning, boundedLimit);
+}
+
+/**
+ * Every memory for the configured entity, plus every edge between them.
+ *
+ * Unlike `recall`, this is not a ranked/embedding search — it's a full dump for
+ * visualization, so it deliberately skips the embedding round-trip to Ollama.
+ * `getEdgesByEntity` is the authoritative edge source: a node's `outgoingEdges`
+ * only carries the forward direction, so reading edges separately is what lets
+ * the graph show reciprocal links as one undirected connection.
+ */
+export async function listAll(env: Env): Promise<{ memories: MemoryNode[]; edges: MemoryEdge[] }> {
+  const { storage } = await getMemoryClient(env);
+  const [memories, edges] = await Promise.all([
+    storage.getMemoriesByEntity(env.memoryEntityId),
+    storage.getEdgesByEntity(env.memoryEntityId),
+  ]);
+  return { memories, edges };
 }
 
 export async function closeMemoryClient(): Promise<void> {

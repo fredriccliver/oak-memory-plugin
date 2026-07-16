@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "postinstall": "npm run build",
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --alias:@openaikits/memory=./node_modules/@openaikits/memory/src/index.ts --external:pg --external:pg-native --external:pgvector --external:@langchain/core --external:@langchain/openai",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --alias:@openaikits/memory=./node_modules/@openaikits/memory/src/index.ts --external:pg-native --banner:js=\"import{createRequire as __oakCreateRequire}from'node:module';const require=__oakCreateRequire(import.meta.url);\"",
     "dev": "npm run build && node dist/index.mjs",
     "typecheck": "tsc --noEmit",
     "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs"

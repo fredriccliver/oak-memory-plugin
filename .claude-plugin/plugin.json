@@ -9,5 +9,9 @@
   "repository": "https://github.com/fredriccliver/oak-memory-plugin",
   "license": "Apache-2.0",
   "keywords": ["memory", "vector-search", "graph", "postgres", "pgvector", "long-term-memory", "mcp"],
-  "commands": ["./commands/memory-recall.md", "./commands/memory-save.md"]
+  "commands": [
+    "./commands/memory-recall.md",
+    "./commands/memory-save.md",
+    "./commands/memory-graph.md"
+  ]
 }

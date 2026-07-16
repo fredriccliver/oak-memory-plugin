@@ -1,0 +1,16 @@
+{
+  "name": "oak-memory",
+  "description": "Persistent vector+graph long-term memory for Claude Code, backed by Postgres+pgvector.",
+  "owner": {
+    "name": "Fredric Cliver",
+    "url": "https://github.com/fredriccliver"
+  },
+  "plugins": [
+    {
+      "name": "oak-memory",
+      "source": "./",
+      "description": "Persistent vector+graph long-term memory for Claude Code, backed by Postgres+pgvector.",
+      "version": "0.1.0"
+    }
+  ]
+}

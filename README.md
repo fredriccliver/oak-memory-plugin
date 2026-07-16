@@ -5,9 +5,16 @@ a real vector+graph database, not markdown files.
 
 Claude Code's built-in memory is a folder of markdown notes. That's fine for lightweight preferences, but it
 doesn't do semantic search, doesn't rank by relevance, and doesn't model relationships between facts. This
-plugin wraps [`@openaikits/memory`](https://github.com/fredriccliver/Memory) — a Postgres+pgvector-backed
-vector/graph memory engine — as an MCP server, so Claude can recall and store facts about you the same way
-across every project and every session.
+plugin is a Claude Code **integration** of [OAK.memory](https://openaikits.com) — an autonomous memory
+infrastructure for AI ([`@openaikits/memory`](https://github.com/fredriccliver/Memory),
+[technical paper](https://lnkd.in/gqgzejUV)) — exposed as an MCP server, so Claude can recall and store facts
+about you the same way across every project and every session.
+
+OAK.memory's premise is that memory belongs in the stack as **infrastructure**, the way inference and model
+providers already are — general-purpose and domain-independent, not re-invented per application. Its core idea
+is the **entity-specific associative network**: associations differ per individual, so personalization comes
+from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
+infrastructure; the engine itself knows nothing about Claude Code.
 
 ## Why this exists
 
@@ -24,6 +31,12 @@ Claude Code  <-- MCP tool calls -->  this plugin's stdio server  -->  @openaikit
                                                                   Ollama (local embeddings)
 ```
 
+Retrieval is **hybrid vector-graph**: semantic similarity finds entry points, graph traversal pulls in what's
+associated with them. Edges are *pure structural connections* — they carry no semantic embedding of their own,
+so what a link "means" is interpreted at query time rather than frozen when the link is created. That's why
+`updateMemoryLink` takes no description, and why `/memory-graph` renders links as bare connections: there is no
+edge semantics to display, by design.
+
 Embeddings run **fully locally** via [Ollama](https://ollama.com) (`nomic-embed-text` by default) — no
 OpenAI API key, no per-call cost, no data leaving the machine. See [Local embeddings](#local-embeddings) for
 how this is wired given the engine's schema hardcodes a different vector width than local models produce.
@@ -38,14 +51,23 @@ invocation when you don't want to rely on the model noticing on its own.
 
 | Tool | Purpose |
 |---|---|
-| `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The only read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
+| `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
+| `listMemories` | Dump *every* memory and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
 | `createMemory` | Store a new fact/preference/experience about you. |
 | `updateMemory` | Update an existing memory (by UUID) when info has changed. |
 | `updateMemoryLink` | Add/remove a link between two memories so they're more likely to surface together later. |
 | `deleteMemory` | Delete a memory. Irreversible — used sparingly. |
 
-All four write tools are scoped to a single fixed identity (`MEMORY_ENTITY_ID`, see below) configured
-server-side — the model never supplies or sees an entity/user id.
+All tools are scoped to a single fixed identity (`MEMORY_ENTITY_ID`, see below) configured server-side — the
+model never supplies or sees an entity/user id.
+
+## Slash commands
+
+| Command | Purpose |
+|---|---|
+| `/memory-recall <query>` | Explicitly recall memories relevant to a query. |
+| `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
+| `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |
 
 ## Prerequisites
 
@@ -84,9 +106,19 @@ server-side — the model never supplies or sees an entity/user id.
 | `OLLAMA_BASE_URL` | No (default `http://localhost:11434/v1`) | Ollama's OpenAI-compatible endpoint. |
 | `OLLAMA_EMBEDDING_MODEL` | No (default `nomic-embed-text`) | Embedding model to request from Ollama. |
 
-Supply these either via your shell profile (exported before launching `claude`), or by creating a `.env`
-file at the root of this plugin once installed — `src/env.ts` checks `process.env` first, then falls back to
-that file.
+`src/env.ts` resolves these in order, first hit wins:
+
+1. `process.env` — exported in your shell before launching `claude`.
+2. `<plugin root>/.env` — convenient when running from a checkout.
+3. `~/.claude/oak-memory.env` — **the one to use for an installed plugin.**
+
+Prefer (3). Installing copies the plugin into `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, so
+a `.env` in the source repo is both gitignored (may not be copied) and version-scoped (wiped by the next
+update). `~/.claude/oak-memory.env` sits outside that tree and survives both — configure once, never again.
+
+> Claude Code's `${VAR}` substitution in `.mcp.json` does **not** resolve to an empty string when `VAR` is
+> unset — it passes the literal `"${VAR}"` through. `readEnvVar()` treats that shape as unset, so an unset
+> var falls through to the files above instead of becoming a garbage connection string.
 
 ## Local embeddings
 
@@ -103,21 +135,54 @@ storage-format compatibility shim to satisfy the fixed-width column.
 
 ## Entity scoping
 
-`@openaikits/memory` is multi-tenant (`entityId` can be a user, persona, workspace, or agent). This plugin
-deliberately collapses that to **one fixed global identity** via `MEMORY_ENTITY_ID`, because the goal is "the
-same memory follows me everywhere," not per-project memory graphs. If you ever want separate memory spaces
-(e.g. work vs. personal), point different Claude Code environments at different `MEMORY_ENTITY_ID` values —
-they share the same database, just different logical graphs.
+`entityId` is the axis OAK.memory's **entity-specific associative network** turns on — each entity gets its own
+graph, and an entity can be a user, persona, workspace, or agent. This plugin deliberately collapses that to
+**one fixed global identity** via `MEMORY_ENTITY_ID`, because the goal is "the same memory follows me
+everywhere," not per-project memory graphs. If you ever want separate memory spaces (e.g. work vs. personal),
+point different Claude Code environments at different `MEMORY_ENTITY_ID` values — they share the same database,
+just different logical graphs.
 
-## Install (local path, before any marketplace listing)
+This is also why `/memory-graph` is a genuinely useful view rather than a debug tool: the associative network
+*is* the personalization, so being able to see and prune it is how you steer what Claude recalls.
 
-Build first, then point Claude Code at this directory as a local plugin (check `/plugin` or
-`claude plugin --help` for the exact subcommand on your installed version):
+## Install
+
+This repo is its own marketplace (`.claude-plugin/marketplace.json`), so it installs as a normal plugin —
+which is what makes the memory available in **every** project, along with the slash commands.
 
 ```bash
-npm install
-npm run build
+npm install          # postinstall runs the build
 ```
+
+Then configure the database once, outside the plugin so it survives updates:
+
+```bash
+cat > ~/.claude/oak-memory.env <<'EOF'
+MEMORY_DATABASE_URL=postgresql://postgres:postgres@localhost:55432/postgres
+EOF
+```
+
+Register it in `~/.claude/settings.json`:
+
+```jsonc
+{
+  "extraKnownMarketplaces": {
+    "oak-memory": {
+      "source": { "source": "directory", "path": "/absolute/path/to/oak-memory-plugin" }
+    }
+  },
+  "enabledPlugins": { "oak-memory@oak-memory": true }
+}
+```
+
+Restart Claude Code. No shell exports, no `--plugin-dir` flag, no per-project setup.
+
+> **Working inside this repo?** The root `.mcp.json` is the *plugin's* MCP config, where
+> `${CLAUDE_PLUGIN_ROOT}` is substituted. Claude Code also picks that file up as a *project* `.mcp.json` when
+> you open this directory — and there the variable is **not** substituted, so the server dies at startup with
+> `Cannot find module '.../${CLAUDE_PLUGIN_ROOT}/dist/index.mjs'` (surfacing as `-32000`). `.claude/settings.local.json`
+> therefore lists `oak-memory` under `disabledMcpjsonServers`: the installed plugin provides the server, so the
+> project-level copy must stay off.
 
 ## Development
 
@@ -127,10 +192,22 @@ npm run typecheck    # tsc --noEmit
 npm run build         # esbuild -> dist/index.mjs
 ```
 
-`node_modules` must stay present alongside `dist/index.mjs` at runtime — `pg`, `pgvector`, `@langchain/core`,
-and `@langchain/openai` are deliberately left **external** (not bundled) rather than committing a fully
-self-contained single file. `dist/index.mjs` is still committed for convenience/diffability, but isn't
-runnable standalone without `node_modules`.
+`dist/index.mjs` is a **self-contained** bundle: it runs with no `node_modules` beside it. This is a hard
+requirement, not a nicety — installing copies the plugin into `~/.claude/plugins/cache/...` **without**
+`node_modules`, so anything left external resolves to nothing at runtime.
+
+Two things make that work, and breaking either reintroduces a nasty failure mode:
+
+- **Only `pg-native` is external.** It's an optional native addon `pg` probes for and works fine without;
+  everything else (`pg`, `pgvector`, `@langchain/*`) is bundled. Marking `pg` external produced
+  `Cannot find package 'pg'` — but *only after relocation*, and *only on the first DB call*: the server still
+  started and `tools/list` still passed, so a smoke test that stops at "the tools are registered" misses it.
+- **A `createRequire` banner is injected.** `pg` is CJS and does `require('events')` internally; in ESM output
+  that throws `Dynamic require of "events" is not supported`. The banner defines a real `require` in module
+  scope. (Same class of bundler/ESM problem `src/env.ts` documents for `dotenv`.)
+
+Any smoke test for this must therefore run the bundle **from a directory with no `node_modules`** and make a
+**real database call**. Anything less passes while broken.
 
 **Gotchas** (both worth knowing if you touch the build):
 - `@openaikits/memory` is a GitHub-tarball dependency (pinned to commit
@@ -143,11 +220,12 @@ runnable standalone without `node_modules`.
   relative imports (e.g. `export * from './types'`), which Node's strict ESM resolver rejects at runtime
   (`ERR_MODULE_NOT_FOUND`) — bundling straight from source sidesteps that entirely, since esbuild resolves
   and inlines those relative imports itself rather than asking Node to.
-- `pg`, `pgvector`, `@langchain/core`, `@langchain/openai` are explicitly `--external`. Bundling them (the
-  first approach tried) broke at runtime with `"Dynamic require of \"fs\"/\"events\" is not supported"` —
-  esbuild's CJS→ESM interop shim can't handle these packages' conditional/dynamic `require()` calls of Node
-  builtins. Letting Node load them normally from `node_modules` (as they're designed to run) avoids the whole
-  class of interop bugs. `@modelcontextprotocol/sdk` and `zod` bundle fine and stay inlined.
+- `pg`, `pgvector`, `@langchain/*` **are** bundled; only `pg-native` is external. Marking them `--external`
+  was the earlier approach — it dodged `"Dynamic require of \"events\" is not supported"`, but at the cost of
+  a runtime `node_modules` dependency that silently breaks once the plugin is installed (copied to the cache
+  without one). The `--banner:js` `createRequire` shim fixes the dynamic-require problem at its root instead,
+  which is what lets everything bundle. Don't re-add these externals to "fix" a require error — that trades a
+  loud build-time problem for a quiet install-time one.
 - `dotenv` isn't used at all (see `src/env.ts`) for the same class of reason — its CJS internals hit the same
   bundling issue. A dozen-line hand-rolled `.env` parser was simpler than working around it.
 
@@ -155,9 +233,14 @@ runnable standalone without `node_modules`.
 
 Do this standalone, before wiring the plugin into Claude Code:
 
+0. **Relocation check — the one that actually matters.** Copy `dist/index.mjs` alone into an empty directory
+   (no `node_modules`, no `.env`), set `CLAUDE_PLUGIN_ROOT` to it, and call a tool that **hits the database**
+   (`listMemories` is the cheapest — it skips the Ollama embedding round-trip). This reproduces installed-plugin
+   conditions exactly. Startup and `tools/list` succeeding prove nothing here: both passed while `pg` was
+   unresolvable, and the failure only appeared on the first DB call.
 1. `node dist/index.mjs` with real env vars set — it should block on stdio without crashing (confirms env
    validation and the DB connection both succeeded).
-2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 5 registered
+2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 6 registered
    tools, inspect their schemas, and invoke them manually while watching raw JSON-RPC responses.
 3. Functional sequence via the inspector:
    - `createMemory({content: "Lives in Seoul and works as a software engineer"})` → expect success + a UUID.
@@ -182,7 +265,7 @@ MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
   claude --plugin-dir ~/Projects/oak-memory-plugin
 ```
 Then in the session, ask something like *"what MCP tools do you have with 'Memory' in the name?"* to confirm
-all 5 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
+all 6 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
 
 For a scripted one-shot test (`-p`), MCP tool calls need explicit permission since there's no TTY to approve
 them interactively — pass `--allowedTools` with the exact tool names:
