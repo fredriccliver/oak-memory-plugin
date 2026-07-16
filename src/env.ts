@@ -53,9 +53,25 @@ export interface Env {
   ollamaEmbeddingModel: string;
 }
 
-function required(name: string): string {
+/**
+ * Claude Code's `.mcp.json` `${VAR}` substitution does not fall back to an
+ * empty string when VAR is unset in the ambient environment — it passes the
+ * literal, unexpanded `"${VAR}"` string through as the value instead. A plain
+ * `?.trim() || default` fallback doesn't catch that (a non-empty garbage
+ * string is still truthy), so treat anything matching this shape as unset too.
+ */
+function readEnvVar(name: string): string | undefined {
   const value = process.env[name];
-  if (!value || value.trim().length === 0) {
+  if (value === undefined) return undefined;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return undefined;
+  if (/^\$\{.*\}$/.test(trimmed)) return undefined;
+  return trimmed;
+}
+
+function required(name: string): string {
+  const value = readEnvVar(name);
+  if (!value) {
     console.error(
       `[oak-memory-plugin] Missing required env var: ${name}. ` +
         `Set it in your shell profile or in ${path.join(pluginRoot, '.env')}.`,
@@ -68,8 +84,8 @@ function required(name: string): string {
 export function loadEnv(): Env {
   return {
     memoryDatabaseUrl: required('MEMORY_DATABASE_URL'),
-    memoryEntityId: process.env.MEMORY_ENTITY_ID?.trim() || 'fredriccliver',
-    ollamaBaseUrl: process.env.OLLAMA_BASE_URL?.trim() || 'http://localhost:11434/v1',
-    ollamaEmbeddingModel: process.env.OLLAMA_EMBEDDING_MODEL?.trim() || 'nomic-embed-text',
+    memoryEntityId: readEnvVar('MEMORY_ENTITY_ID') ?? 'fredriccliver',
+    ollamaBaseUrl: readEnvVar('OLLAMA_BASE_URL') ?? 'http://localhost:11434/v1',
+    ollamaEmbeddingModel: readEnvVar('OLLAMA_EMBEDDING_MODEL') ?? 'nomic-embed-text',
   };
 }

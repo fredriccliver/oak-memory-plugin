@@ -21126,9 +21126,17 @@ function loadEnvFile(filePath) {
 var moduleDir = path.dirname(fileURLToPath(import.meta.url));
 var pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, "..");
 loadEnvFile(path.join(pluginRoot, ".env"));
-function required2(name) {
+function readEnvVar(name) {
   const value = process.env[name];
-  if (!value || value.trim().length === 0) {
+  if (value === void 0) return void 0;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return void 0;
+  if (/^\$\{.*\}$/.test(trimmed)) return void 0;
+  return trimmed;
+}
+function required2(name) {
+  const value = readEnvVar(name);
+  if (!value) {
     console.error(
       `[oak-memory-plugin] Missing required env var: ${name}. Set it in your shell profile or in ${path.join(pluginRoot, ".env")}.`
     );
@@ -21139,9 +21147,9 @@ function required2(name) {
 function loadEnv() {
   return {
     memoryDatabaseUrl: required2("MEMORY_DATABASE_URL"),
-    memoryEntityId: process.env.MEMORY_ENTITY_ID?.trim() || "fredriccliver",
-    ollamaBaseUrl: process.env.OLLAMA_BASE_URL?.trim() || "http://localhost:11434/v1",
-    ollamaEmbeddingModel: process.env.OLLAMA_EMBEDDING_MODEL?.trim() || "nomic-embed-text"
+    memoryEntityId: readEnvVar("MEMORY_ENTITY_ID") ?? "fredriccliver",
+    ollamaBaseUrl: readEnvVar("OLLAMA_BASE_URL") ?? "http://localhost:11434/v1",
+    ollamaEmbeddingModel: readEnvVar("OLLAMA_EMBEDDING_MODEL") ?? "nomic-embed-text"
   };
 }
 

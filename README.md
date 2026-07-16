@@ -165,9 +165,62 @@ Do this standalone, before wiring the plugin into Claude Code:
    - `updateMemory({memoryId, content: "Moved to Busan"})` → `recallMemory` again with the same query →
      confirm the updated content comes back.
    - `deleteMemory({memoryId})` → `recallMemory` again → confirm it's gone.
-4. Only after 1–3 pass: install into Claude Code from the local path and do one real end-to-end session
-   test — tell Claude a fact, start a genuinely new session, ask a question that requires recall, confirm it
-   retrieves the fact (either proactively, or via `/memory-recall`).
+4. Only after 1–3 pass: test it loaded into a real Claude Code session (see below) before any permanent
+   install.
+
+### Testing inside a real Claude Code session
+
+`claude plugin validate <path>` checks the manifest without loading anything:
+```bash
+claude plugin validate ~/Projects/oak-memory-plugin
+```
+
+`--plugin-dir <path>` loads a plugin for one session only — no marketplace, no permanent install, exactly
+what you want for iterating:
+```bash
+MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
+  claude --plugin-dir ~/Projects/oak-memory-plugin
+```
+Then in the session, ask something like *"what MCP tools do you have with 'Memory' in the name?"* to confirm
+all 5 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
+
+For a scripted one-shot test (`-p`), MCP tool calls need explicit permission since there's no TTY to approve
+them interactively — pass `--allowedTools` with the exact tool names:
+```bash
+MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
+  claude --plugin-dir ~/Projects/oak-memory-plugin \
+  --allowedTools "mcp__plugin_oak-memory_oak-memory__createMemory" "mcp__plugin_oak-memory_oak-memory__recallMemory" \
+  -p "Use createMemory to remember: 'Favorite programming language is Rust.' Then use recallMemory with query 'favorite programming language' and report what it finds."
+```
+
+The real test — since `-p` runs are one-shot processes with zero shared context — is running that, then
+running a **second, separate** `-p` invocation with only `recallMemory` allowed and confirming it finds the
+fact with no prior conversation:
+```bash
+MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
+  claude --plugin-dir ~/Projects/oak-memory-plugin \
+  --allowedTools "mcp__plugin_oak-memory_oak-memory__recallMemory" \
+  -p "This is a brand new session with no prior context. Use recallMemory with query 'what programming language do I like' and tell me what it finds."
+```
+This is the actual "survives across sessions" property the plugin exists to deliver — verified working
+2026-07-17.
+
+**Gotcha found via this test**: Claude Code's `.mcp.json` `${VAR}` substitution does not fall back to an
+empty string when the variable is unset in the ambient environment — it passes the **literal, unexpanded
+`"${VAR}"` string** through as the env value instead. A plain `value?.trim() || default` fallback doesn't
+catch that (a non-empty garbage string is still truthy), so `src/env.ts`'s `readEnvVar()` explicitly treats
+anything matching `/^\$\{.*\}$/` as unset. `.mcp.json` itself only declares `MEMORY_DATABASE_URL` (no safe
+default, so it must be explicitly passed) — `MEMORY_ENTITY_ID`/`OLLAMA_BASE_URL`/`OLLAMA_EMBEDDING_MODEL`
+are deliberately left out of it so they fall through to the ambient shell environment or the `.env` file
+instead of risking a literal placeholder being injected.
+
+### Permanent install (once you're happy with local testing)
+
+```bash
+claude plugin marketplace add ~/Projects/oak-memory-plugin
+claude plugin install oak-memory
+```
+(Exact subcommand behavior may vary by Claude Code version — `claude plugin --help` is authoritative.)
 
 ## License
 
