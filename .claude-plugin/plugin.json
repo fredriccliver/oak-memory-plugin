@@ -13,6 +13,7 @@
     "./commands/memory-recall.md",
     "./commands/memory-save.md",
     "./commands/memory-graph.md",
+    "./commands/memory-graph-web.md",
     "./commands/memory-config.md"
   ]
 }

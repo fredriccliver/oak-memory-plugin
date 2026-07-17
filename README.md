@@ -57,6 +57,7 @@ to rely on the model noticing on its own.
 |---|---|
 | `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
 | `listMemories` | Dump *every* memory and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
+| `openMemoryGraph` | Render the same graph as an interactive, force-directed HTML page and open it in the default browser. Backs `/memory-graph-web`. |
 | `createMemory` | Store a new fact/preference/experience about you. |
 | `updateMemory` | Update an existing memory (by UUID) when info has changed. |
 | `updateMemoryLink` | Add/remove a link between two memories so they're more likely to surface together later. |
@@ -73,6 +74,7 @@ model never supplies or sees an entity/user id.
 | `/memory-recall <query>` | Explicitly recall memories relevant to a query. |
 | `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
 | `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |
+| `/memory-graph-web` | Open the same graph as a real webpage instead: a draggable, zoomable, force-directed view in your default browser rather than the terminal or a chat-rendered diagram. |
 | `/memory-config [change]` | Show the effective policy, or change it in words ("only remember my preferences", "stop saving unless I ask"). |
 
 ## Memory policy

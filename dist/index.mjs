@@ -3234,8 +3234,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path2) {
-      let input = path2;
+    function removeDotSegments(path3) {
+      let input = path3;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3487,8 +3487,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path2, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path2 && path2 !== "/" ? path2 : void 0;
+        const [path3, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path3 && path3 !== "/" ? path3 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -6881,12 +6881,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs2, exportName) {
+    function addFormats(ajv, list, fs3, exportName) {
       var _a;
       var _b;
       (_a = (_b = ajv.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs2[f]);
+        ajv.addFormat(f, fs3[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -8487,15 +8487,15 @@ var require_pg_connection_string = __commonJS({
       if (config2.sslnegotiation === "direct" && config2.ssl === void 0) {
         config2.ssl = true;
       }
-      const fs2 = config2.sslcert || config2.sslkey || config2.sslrootcert ? __require("fs") : null;
+      const fs3 = config2.sslcert || config2.sslkey || config2.sslrootcert ? __require("fs") : null;
       if (config2.sslcert) {
-        config2.ssl.cert = fs2.readFileSync(config2.sslcert).toString();
+        config2.ssl.cert = fs3.readFileSync(config2.sslcert).toString();
       }
       if (config2.sslkey) {
-        config2.ssl.key = fs2.readFileSync(config2.sslkey).toString();
+        config2.ssl.key = fs3.readFileSync(config2.sslkey).toString();
       }
       if (config2.sslrootcert) {
-        config2.ssl.ca = fs2.readFileSync(config2.sslrootcert).toString();
+        config2.ssl.ca = fs3.readFileSync(config2.sslrootcert).toString();
       }
       if (options.useLibpqCompat && config2.uselibpqcompat) {
         throw new Error("Both useLibpqCompat and uselibpqcompat are set. Please use only one of them.");
@@ -10314,7 +10314,7 @@ var require_split2 = __commonJS({
 var require_helper = __commonJS({
   "node_modules/pgpass/lib/helper.js"(exports, module) {
     "use strict";
-    var path2 = __require("path");
+    var path3 = __require("path");
     var Stream = __require("stream").Stream;
     var split = require_split2();
     var util2 = __require("util");
@@ -10353,7 +10353,7 @@ var require_helper = __commonJS({
     };
     module.exports.getFileName = function(rawEnv) {
       var env = rawEnv || process.env;
-      var file = env.PGPASSFILE || (isWin ? path2.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path2.join(env.HOME || "./", ".pgpass"));
+      var file = env.PGPASSFILE || (isWin ? path3.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path3.join(env.HOME || "./", ".pgpass"));
       return file;
     };
     module.exports.usePgPass = function(stats, fname) {
@@ -10485,16 +10485,16 @@ var require_helper = __commonJS({
 var require_lib = __commonJS({
   "node_modules/pgpass/lib/index.js"(exports, module) {
     "use strict";
-    var path2 = __require("path");
-    var fs2 = __require("fs");
+    var path3 = __require("path");
+    var fs3 = __require("fs");
     var helper = require_helper();
     module.exports = function(connInfo, cb) {
       var file = helper.getFileName();
-      fs2.stat(file, function(err, stat) {
+      fs3.stat(file, function(err, stat) {
         if (err || !helper.usePgPass(stat, file)) {
           return cb(void 0);
         }
-        var st = fs2.createReadStream(file);
+        var st = fs3.createReadStream(file);
         helper.getPassword(connInfo, st, cb);
       });
     };
@@ -12755,8 +12755,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path2, errorMaps, issueData } = params;
-  const fullPath = [...path2, ...issueData.path || []];
+  const { data, path: path3, errorMaps, issueData } = params;
+  const fullPath = [...path3, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -12872,11 +12872,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path2, key) {
+  constructor(parent, value, path3, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path2;
+    this._path = path3;
     this._key = key;
   }
   get path() {
@@ -16514,10 +16514,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path2) {
-  if (!path2)
+function getElementAtPath(obj, path3) {
+  if (!path3)
     return obj;
-  return path2.reduce((acc, key) => acc?.[key], obj);
+  return path3.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -16837,11 +16837,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path2, issues) {
+function prefixIssues(path3, issues) {
   return issues.map((iss) => {
     var _a;
     (_a = iss).path ?? (_a.path = []);
-    iss.path.unshift(path2);
+    iss.path.unshift(path3);
     return iss;
   });
 }
@@ -30293,6 +30293,13 @@ function formatMemory(memory2) {
 function textResult(text, isError = false) {
   return { content: [{ type: "text", text }], isError };
 }
+function ageLabel(date3) {
+  if (!date3) return "unknown";
+  const days = Math.floor((Date.now() - new Date(date3).getTime()) / 864e5);
+  if (days === 0) return "today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
+}
 
 // src/tools/createMemory.ts
 var createMemoryInputSchema = {
@@ -30523,13 +30530,6 @@ stored, or to inspect how memories are connected.
 **Output**: every memory with its UUID, content, strength, retrieval count and age, followed by the edge list
 and a summary of how connected the graph is. UUIDs are real and can be passed straight to updateMemory /
 updateMemoryLink / deleteMemory.`;
-function ageLabel(date3) {
-  if (!date3) return "unknown";
-  const days = Math.floor((Date.now() - new Date(date3).getTime()) / 864e5);
-  if (days === 0) return "today";
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
-}
 function registerListMemories(server, env) {
   server.registerTool(
     "listMemories",
@@ -30585,6 +30585,599 @@ ${edgeLines.join("\n")}` : "Links: none \u2014 every memory is currently isolate
         `Unlinked memories: ${orphans.length === 0 ? "none" : `${orphans.length} (${orphans.map((o) => shortId(o.id)).join(", ")})`}`
       ];
       return textResult(sections.join("\n"));
+    }
+  );
+}
+
+// src/tools/openMemoryGraph.ts
+import { spawn } from "node:child_process";
+import fs2 from "node:fs";
+import os2 from "node:os";
+import path2 from "node:path";
+
+// src/tools/graphHtml.ts
+function embedJson(value) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+function buildGraphHtml(data) {
+  const nodeCount = data.nodes.length;
+  const edgeCount = data.edges.length;
+  const title = `Memory Graph \u2014 ${data.entityId}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${title}</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --text-1:      #0b0b0b;
+    --text-2:      #52514e;
+    --text-muted:  #898781;
+    --border:      rgba(11,11,11,0.10);
+    --grid:        #e1e0d9;
+    --node-lo:     #cde2fb;
+    --node-hi:     #0d366b;
+    --node-orphan: #898781;
+    --edge:        #c3c2b7;
+    --edge-mutual: #52514e;
+    --accent:      #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --text-1:      #ffffff;
+      --text-2:      #c3c2b7;
+      --text-muted:  #898781;
+      --border:      rgba(255,255,255,0.10);
+      --grid:        #2c2c2a;
+      --node-lo:     #1c5cab;
+      --node-hi:     #9ec5f4;
+      --node-orphan: #52514e;
+      --edge:        #383835;
+      --edge-mutual: #c3c2b7;
+      --accent:      #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --text-1:      #ffffff;
+    --text-2:      #c3c2b7;
+    --text-muted:  #898781;
+    --border:      rgba(255,255,255,0.10);
+    --grid:        #2c2c2a;
+    --node-lo:     #1c5cab;
+    --node-hi:     #9ec5f4;
+    --node-orphan: #52514e;
+    --edge:        #383835;
+    --edge-mutual: #c3c2b7;
+    --accent:      #3987e5;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--page); color: var(--text-1);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  #canvas { position: fixed; inset: 0; display: block; cursor: grab; }
+  #canvas.dragging { cursor: grabbing; }
+
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 20px;
+    background: linear-gradient(to bottom, var(--page) 60%, transparent);
+    pointer-events: none;
+  }
+  header * { pointer-events: auto; }
+  h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .meta { font-size: 12px; color: var(--text-muted); }
+
+  #search {
+    margin-left: auto;
+    width: 220px;
+    padding: 7px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-1);
+    font-size: 13px;
+    outline: none;
+  }
+  #search::placeholder { color: var(--text-muted); }
+  #search:focus { border-color: var(--accent); }
+
+  #legend {
+    position: fixed; right: 20px; bottom: 20px; z-index: 10;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 11.5px;
+    color: var(--text-2);
+    min-width: 168px;
+  }
+  #legend .row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  #legend .row:first-of-type { margin-top: 8px; }
+  #legend .title { font-weight: 600; color: var(--text-1); font-size: 12px; }
+  #legend .ramp { width: 64px; height: 8px; border-radius: 4px; background: linear-gradient(to right, var(--node-lo), var(--node-hi)); }
+  #legend .swatch { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+  #legend .line { width: 20px; height: 0; border-top: 2px solid var(--edge-mutual); flex: none; }
+  #legend .line.dir { border-top-style: solid; border-top-color: var(--edge); }
+  #legend .line.orphan { border: 1.5px dashed var(--node-orphan); border-radius: 50%; width: 12px; height: 12px; }
+
+  #tooltip {
+    position: fixed; z-index: 20; pointer-events: none;
+    max-width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.1s ease, transform 0.1s ease;
+  }
+  #tooltip.visible { opacity: 1; transform: translateY(0); }
+  #tooltip .stats { margin-top: 6px; color: var(--text-muted); font-size: 11px; }
+
+  #empty {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  #zoom-hint {
+    position: fixed; left: 20px; bottom: 20px; z-index: 10;
+    font-size: 11px; color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>${title}</h1>
+    <div class="meta">${nodeCount} memor${nodeCount === 1 ? "y" : "ies"} \xB7 ${edgeCount} link${edgeCount === 1 ? "" : "s"} \xB7 generated ${data.generatedAt}</div>
+  </div>
+  <input id="search" type="text" placeholder="Filter memories\u2026" autocomplete="off" />
+</header>
+
+<canvas id="canvas"></canvas>
+<div id="tooltip"></div>
+<div id="zoom-hint">scroll to zoom \xB7 drag to pan \xB7 drag a node to pin it</div>
+
+<div id="legend">
+  <div class="title">Legend</div>
+  <div class="row"><div class="ramp"></div><span>strength (low \u2192 high)</span></div>
+  <div class="row"><div class="line"></div><span>mutual link</span></div>
+  <div class="row"><div class="line dir"></div><span>one-directional link</span></div>
+  <div class="row"><div class="line orphan"></div><span>unlinked memory</span></div>
+</div>
+
+<script>
+const DATA = ${embedJson({ nodes: data.nodes, edges: data.edges })};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const searchInput = document.getElementById('search');
+
+if (DATA.nodes.length === 0) {
+  const empty = document.createElement('div');
+  empty.id = 'empty';
+  empty.textContent = 'No memories stored yet.';
+  document.body.appendChild(empty);
+} else {
+  runGraph();
+}
+
+function runGraph() {
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
+  function resize() {
+    dpr = Math.max(1, window.devicePixelRatio || 1);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const nodeById = new Map();
+  const degrees = DATA.nodes.map(n => n.degree);
+  const maxDegree = Math.max(1, ...degrees);
+  const strengths = DATA.nodes.map(n => n.strength ?? 0.5);
+  const minStrength = Math.min(...strengths);
+  const maxStrength = Math.max(...strengths);
+
+  const nodes = DATA.nodes.map((n, i) => {
+    const angle = (i / DATA.nodes.length) * Math.PI * 2;
+    const radius = 120 + Math.random() * 60;
+    const node = {
+      ...n,
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius,
+      vx: 0,
+      vy: 0,
+      fx: null,
+      fy: null,
+      r: 6 + (n.degree / maxDegree) * 16,
+    };
+    nodeById.set(n.id, node);
+    return node;
+  });
+
+  const links = DATA.edges
+    .map(e => ({ ...e, a: nodeById.get(e.source), b: nodeById.get(e.target) }))
+    .filter(l => l.a && l.b);
+
+  // --- force simulation: simple spring/repulsion model, alpha-cooled like d3-force ---
+  let alpha = 1;
+  const ALPHA_DECAY = 0.985;
+  const ALPHA_MIN = 0.001;
+  const REPULSE_K = 2600;
+  const SPRING_K = 0.02;
+  const SPRING_LEN = 90;
+  const CENTER_K = 0.0015;
+  const DAMPING = 0.82;
+
+  function tick() {
+    if (alpha < ALPHA_MIN) return;
+    for (let i = 0; i < nodes.length; i++) {
+      const n1 = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const n2 = nodes[j];
+        let dx = n1.x - n2.x;
+        let dy = n1.y - n2.y;
+        let distSq = dx * dx + dy * dy;
+        if (distSq < 1) distSq = 1;
+        const dist = Math.sqrt(distSq);
+        const force = (REPULSE_K * alpha) / distSq;
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+        n1.vx += fx; n1.vy += fy;
+        n2.vx -= fx; n2.vy -= fy;
+      }
+    }
+    for (const l of links) {
+      const dx = l.b.x - l.a.x;
+      const dy = l.b.y - l.a.y;
+      const dist = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+      const force = (dist - SPRING_LEN) * SPRING_K * alpha;
+      const fx = (dx / dist) * force;
+      const fy = (dy / dist) * force;
+      l.a.vx += fx; l.a.vy += fy;
+      l.b.vx -= fx; l.b.vy -= fy;
+    }
+    for (const n of nodes) {
+      n.vx += -n.x * CENTER_K * alpha;
+      n.vy += -n.y * CENTER_K * alpha;
+      n.vx *= DAMPING;
+      n.vy *= DAMPING;
+      if (n.fx != null) { n.x = n.fx; n.y = n.fy; n.vx = 0; n.vy = 0; }
+      else { n.x += n.vx; n.y += n.vy; }
+    }
+    alpha *= ALPHA_DECAY;
+  }
+
+  // --- camera: pan/zoom ---
+  let camX = 0, camY = 0, camK = 1;
+  let dragging = null; // 'pan' | node
+  let dragStart = null;
+  let panStart = null;
+
+  function worldToScreen(x, y) {
+    return { x: width / 2 + (x - camX) * camK, y: height / 2 + (y - camY) * camK };
+  }
+  function screenToWorld(sx, sy) {
+    return { x: (sx - width / 2) / camK + camX, y: (sy - height / 2) / camK + camY };
+  }
+
+  function reheat() { alpha = Math.max(alpha, 0.3); }
+
+  function colorForStrength(s) {
+    const t = maxStrength > minStrength ? (s - minStrength) / (maxStrength - minStrength) : 0.5;
+    return t;
+  }
+
+  function lerpColor(hexA, hexB, t) {
+    const a = [1, 3, 5].map(i => parseInt(hexA.slice(i, i + 2), 16));
+    const b = [1, 3, 5].map(i => parseInt(hexB.slice(i, i + 2), 16));
+    const c = a.map((v, i) => Math.round(v + (b[i] - v) * t));
+    return 'rgb(' + c.join(',') + ')';
+  }
+
+  const style = getComputedStyle(document.documentElement);
+  const nodeLo = style.getPropertyValue('--node-lo').trim() || '#cde2fb';
+  const nodeHi = style.getPropertyValue('--node-hi').trim() || '#0d366b';
+  const nodeOrphan = style.getPropertyValue('--node-orphan').trim() || '#898781';
+  const edgeColor = style.getPropertyValue('--edge').trim() || '#c3c2b7';
+  const edgeMutual = style.getPropertyValue('--edge-mutual').trim() || '#52514e';
+  const textColor = style.getPropertyValue('--text-1').trim() || '#0b0b0b';
+
+  let query = '';
+
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    for (const l of links) {
+      const p1 = worldToScreen(l.a.x, l.a.y);
+      const p2 = worldToScreen(l.b.x, l.b.y);
+      const dimmed = query && !(matchesQuery(l.a) || matchesQuery(l.b));
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = l.mutual ? edgeMutual : edgeColor;
+      ctx.globalAlpha = dimmed ? 0.08 : (l.mutual ? 0.55 : 0.35);
+      ctx.lineWidth = (l.mutual ? 1.6 : 1) * Math.min(1.4, camK);
+      ctx.stroke();
+
+      if (!l.mutual) {
+        const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        const edgeR = 8 * camK;
+        const ax = p2.x - Math.cos(angle) * (l.b.r * camK + 4);
+        const ay = p2.y - Math.sin(angle) * (l.b.r * camK + 4);
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(ax - Math.cos(angle - 0.4) * 6, ay - Math.sin(angle - 0.4) * 6);
+        ctx.lineTo(ax - Math.cos(angle + 0.4) * 6, ay - Math.sin(angle + 0.4) * 6);
+        ctx.closePath();
+        ctx.fillStyle = edgeColor;
+        ctx.globalAlpha = dimmed ? 0.08 : 0.5;
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    for (const n of nodes) {
+      const p = worldToScreen(n.x, n.y);
+      const r = n.r * camK;
+      const dimmed = query && !matchesQuery(n);
+      ctx.globalAlpha = dimmed ? 0.15 : 1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      if (n.isOrphan) {
+        ctx.fillStyle = nodeOrphan;
+        ctx.globalAlpha = (dimmed ? 0.15 : 1) * 0.5;
+        ctx.fill();
+        ctx.globalAlpha = dimmed ? 0.15 : 1;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = nodeOrphan;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        ctx.fillStyle = lerpColor(nodeLo, nodeHi, colorForStrength(n.strength ?? 0.5));
+        ctx.fill();
+        if (n === hovered) {
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = textColor;
+          ctx.stroke();
+        }
+      }
+
+      if (camK > 0.9 && !dimmed) {
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = textColor;
+        ctx.font = (11) + 'px system-ui, sans-serif';
+        ctx.textBaseline = 'middle';
+        const label = n.label.length > 28 ? n.label.slice(0, 28) + '\u2026' : n.label;
+        ctx.fillText(label, p.x + r + 6, p.y);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function matchesQuery(n) {
+    if (!query) return true;
+    return n.content.toLowerCase().includes(query) || n.label.toLowerCase().includes(query);
+  }
+
+  function loop() {
+    tick();
+    draw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // --- interaction ---
+  let hovered = null;
+
+  function nodeAtScreen(sx, sy) {
+    const w = screenToWorld(sx, sy);
+    let closest = null;
+    let closestDist = Infinity;
+    for (const n of nodes) {
+      const dx = n.x - w.x;
+      const dy = n.y - w.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= n.r + 3 / camK && dist < closestDist) {
+        closest = n;
+        closestDist = dist;
+      }
+    }
+    return closest;
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const hit = nodeAtScreen(e.clientX, e.clientY);
+    if (hit) {
+      dragging = hit;
+      hit.fx = hit.x; hit.fy = hit.y;
+      reheat();
+    } else {
+      dragging = 'pan';
+      panStart = { x: e.clientX, y: e.clientY, camX, camY };
+      canvas.classList.add('dragging');
+    }
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (dragging === 'pan') {
+      camX = panStart.camX - (e.clientX - panStart.x) / camK;
+      camY = panStart.camY - (e.clientY - panStart.y) / camK;
+    } else if (dragging) {
+      const w = screenToWorld(e.clientX, e.clientY);
+      dragging.fx = w.x; dragging.fy = w.y;
+      reheat();
+    } else {
+      const hit = nodeAtScreen(e.clientX, e.clientY);
+      if (hit !== hovered) {
+        hovered = hit;
+        if (hit) {
+          const strengthText = hit.strength !== undefined ? hit.strength.toFixed(2) : 'n/a';
+          tooltip.innerHTML = escapeHtml(hit.content) +
+            '<div class="stats">strength ' + strengthText +
+            ' \xB7 retrieved ' + hit.retrievalCount + 'x \xB7 ' + hit.degree + ' link' + (hit.degree === 1 ? '' : 's') +
+            ' \xB7 created ' + escapeHtml(hit.createdAgo) + '</div>';
+          tooltip.classList.add('visible');
+        } else {
+          tooltip.classList.remove('visible');
+        }
+      }
+      if (hit) {
+        tooltip.style.left = Math.min(e.clientX + 16, width - 340) + 'px';
+        tooltip.style.top = Math.min(e.clientY + 16, height - 100) + 'px';
+      }
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (dragging && dragging !== 'pan') {
+      dragging.fx = null; dragging.fy = null;
+    }
+    dragging = null;
+    canvas.classList.remove('dragging');
+  });
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const before = screenToWorld(e.clientX, e.clientY);
+    const factor = Math.exp(-e.deltaY * 0.001);
+    camK = Math.min(4, Math.max(0.15, camK * factor));
+    const after = screenToWorld(e.clientX, e.clientY);
+    camX += before.x - after.x;
+    camY += before.y - after.y;
+  }, { passive: false });
+
+  searchInput.addEventListener('input', () => {
+    query = searchInput.value.trim().toLowerCase();
+  });
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+}
+</script>
+</body>
+</html>
+`;
+}
+
+// src/tools/openMemoryGraph.ts
+var openMemoryGraphDescription = `Open an interactive visual graph of every stored memory and its links in the browser.
+
+Unlike \`listMemories\` (a text dump for the model to read) or a mermaid diagram published via the Artifact
+tool, this renders every memory as a node in a real, draggable, zoomable force-directed graph and opens it as
+a local HTML page in the user's default browser \u2014 a proper visual view, not one described in chat.
+
+**When to use**: the user wants to *look at* their memory graph rather than have it described \u2014 "show me my
+memories visually", "open the memory graph as a webpage", "I want to see this in the browser, not the
+terminal", or when \`/memory-graph-web\` runs.
+
+**Output**: confirmation that the page was launched, the memory/link counts, and the file path as a fallback
+in case the browser did not open automatically (e.g. a headless environment).`;
+function openInBrowser(filePath) {
+  const url = `file://${filePath}`;
+  const platform = process.platform;
+  const [command, args] = platform === "darwin" ? ["open", [url]] : platform === "win32" ? ["cmd", ["/c", "start", '""', url]] : ["xdg-open", [url]];
+  try {
+    const child = spawn(command, args, { detached: true, stdio: "ignore" });
+    child.on("error", (error2) => {
+      console.error(`[oak-memory-plugin] Could not launch a browser for the memory graph: ${error2.message}`);
+    });
+    child.unref();
+  } catch (error2) {
+    console.error(`[oak-memory-plugin] Could not launch a browser for the memory graph: ${error2.message}`);
+  }
+}
+function registerOpenMemoryGraph(server, env) {
+  server.registerTool(
+    "openMemoryGraph",
+    {
+      title: "Open memory graph in browser",
+      description: openMemoryGraphDescription,
+      inputSchema: {}
+    },
+    async () => {
+      const { memories, edges } = await listAll(env);
+      if (memories.length === 0) {
+        return textResult("No memories stored yet \u2014 nothing to show.");
+      }
+      const pairKey = (a, b) => a < b ? `${a}|${b}` : `${b}|${a}`;
+      const uniquePairs = /* @__PURE__ */ new Map();
+      for (const edge of edges) {
+        const key = pairKey(edge.fromId, edge.toId);
+        const existing = uniquePairs.get(key);
+        if (existing) {
+          existing.mutual = true;
+        } else {
+          uniquePairs.set(key, { from: edge.fromId, to: edge.toId, type: edge.type, mutual: false });
+        }
+      }
+      const degreeById = /* @__PURE__ */ new Map();
+      for (const pair of uniquePairs.values()) {
+        degreeById.set(pair.from, (degreeById.get(pair.from) ?? 0) + 1);
+        degreeById.set(pair.to, (degreeById.get(pair.to) ?? 0) + 1);
+      }
+      const nodes = memories.map((memory2) => ({
+        id: memory2.id,
+        label: memory2.content.length > 60 ? `${memory2.content.slice(0, 60)}\u2026` : memory2.content,
+        content: memory2.content,
+        strength: memory2.strength,
+        retrievalCount: memory2.retrievalCount ?? 0,
+        degree: degreeById.get(memory2.id) ?? 0,
+        isOrphan: !degreeById.has(memory2.id),
+        createdAgo: ageLabel(memory2.createdAt)
+      }));
+      const graphEdges = [...uniquePairs.values()].map((pair) => ({
+        source: pair.from,
+        target: pair.to,
+        mutual: pair.mutual,
+        type: pair.type
+      }));
+      const html = buildGraphHtml({
+        nodes,
+        edges: graphEdges,
+        entityId: env.memoryEntityId,
+        generatedAt: (/* @__PURE__ */ new Date()).toLocaleString()
+      });
+      const filePath = path2.join(os2.tmpdir(), "oak-memory-graph.html");
+      fs2.writeFileSync(filePath, html, "utf8");
+      openInBrowser(filePath);
+      const summary = `${memories.length} memor${memories.length === 1 ? "y" : "ies"}, ${uniquePairs.size} link${uniquePairs.size === 1 ? "" : "s"}.`;
+      return textResult(
+        `Opened the memory graph in your browser. ${summary}
+If nothing appeared (e.g. no display available), open this file manually: ${filePath}`
+      );
     }
   );
 }
@@ -30666,6 +31259,7 @@ function registerGetMemoryPolicy(server, env) {
 function registerAllTools(server, env) {
   registerRecallMemory(server, env);
   registerListMemories(server, env);
+  registerOpenMemoryGraph(server, env);
   registerGetMemoryPolicy(server, env);
   registerCreateMemory(server, env);
   registerUpdateMemory(server, env);

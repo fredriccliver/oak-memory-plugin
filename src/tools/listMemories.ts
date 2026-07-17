@@ -1,6 +1,6 @@
 import type { Env } from '../env.js';
 import { listAll } from '../memoryClient.js';
-import { textResult } from './format.js';
+import { ageLabel, textResult } from './format.js';
 
 export const listMemoriesDescription = `List every stored memory and every link between them — the whole graph.
 
@@ -16,15 +16,6 @@ stored, or to inspect how memories are connected.
 **Output**: every memory with its UUID, content, strength, retrieval count and age, followed by the edge list
 and a summary of how connected the graph is. UUIDs are real and can be passed straight to updateMemory /
 updateMemoryLink / deleteMemory.`;
-
-/** Node strength decays lazily, so a stored value is only meaningful with its age alongside. */
-function ageLabel(date: Date | undefined): string {
-  if (!date) return 'unknown';
-  const days = Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
-  if (days === 0) return 'today';
-  if (days === 1) return '1 day ago';
-  return `${days} days ago`;
-}
 
 export function registerListMemories(server: any, env: Env) {
   server.registerTool(
