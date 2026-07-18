@@ -1,7 +1,7 @@
 {
   "name": "oak-memory",
   "description": "Persistent vector+graph long-term memory for Claude Code, backed by Postgres+pgvector. Lets Claude recall and store facts about you across all projects and sessions.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Fredric Cliver",
     "url": "https://github.com/fredriccliver"
@@ -14,6 +14,7 @@
     "./commands/memory-save.md",
     "./commands/memory-graph.md",
     "./commands/memory-graph-web.md",
+    "./commands/memory-organise.md",
     "./commands/memory-config.md"
   ]
 }
