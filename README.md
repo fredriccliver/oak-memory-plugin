@@ -477,5 +477,8 @@ claude plugin install oak-memory
 
 ## License
 
-Apache-2.0 (matching the upstream [`@openaikits/memory`](https://github.com/fredriccliver/Memory) engine —
-see `LICENSE` and `NOTICE`).
+[PolyForm Shield License 1.0.0](https://polyformproject.org/licenses/shield/1.0.0) — see `LICENSE` and `NOTICE`.
+
+Free to use for any purpose **except** building a product that competes with OAK.memory /
+[`@openaikits/memory`](https://github.com/fredriccliver/Memory). Personal use, internal tooling, and
+non-competing products are all fine; a competing memory product or service is not.
