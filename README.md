@@ -16,6 +16,32 @@ is the **entity-specific associative network**: associations differ per individu
 from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
 infrastructure; the engine itself knows nothing about Claude Code.
 
+## Requirements
+
+This plugin is **not zero-install**, and installing it does **not** provision anything on its own — there is
+no auto-setup on install. It runs a real database and a local embedding model, which you stand up **once**
+with `npm run setup` before the plugin works:
+
+- **[Docker](https://www.docker.com/products/docker-desktop/)** — runs the Postgres + pgvector container that
+  holds your memories.
+- **[Ollama](https://ollama.com/download)** — generates embeddings locally (`bge-m3`, ~270 MB, pulled for
+  you). No API key; nothing leaves your machine.
+- **Node.js 18+** and a **local checkout of this repo** — `npm run setup` lives here and is where the one-time
+  provisioning runs. A marketplace install only copies the plugin into `~/.claude/plugins/cache/…`; it does not
+  clone anything you can run setup from.
+
+```bash
+git clone https://github.com/fredriccliver/oak-memory-plugin
+cd oak-memory-plugin
+npm install
+npm run setup     # idempotent: starts Postgres, pulls the model, writes ~/.claude/oak-memory.env, asks your memory policy
+```
+
+Until `npm run setup` has written `MEMORY_DATABASE_URL` (into `~/.claude/oak-memory.env`), the server exits at
+startup — the database URL is the one setting with no safe default. Once setup passes, register the plugin
+(see [Install](#install)) and the memory is live in every project. Full details and manual/hosted-DB
+alternatives are in [Setup](#setup).
+
 ## Why this exists
 
 This is deliberately **not** a replacement for project-scoped `CLAUDE.md` files or Claude Code's file-based
@@ -58,9 +84,11 @@ to rely on the model noticing on its own.
 | `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
 | `listMemories` | Dump *every* memory and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
 | `openMemoryGraph` | Render the same graph as an interactive, force-directed HTML page and open it in the default browser. Backs `/memory-graph-web`. |
+| `suggestMemoryLinks` | Read-only structural analysis: all-pairs embedding similarity surfacing orphans, link candidates (near-duplicates flagged), each edge's stored strength vs. actual similarity, and oversized split candidates. Evidence for a curation pass; writes nothing. Backs `/memory-organise`. |
 | `createMemory` | Store a new fact/preference/experience about you. |
 | `updateMemory` | Update an existing memory (by UUID) when info has changed. |
 | `updateMemoryLink` | Add/remove a link between two memories so they're more likely to surface together later. |
+| `adjustMemoryLinkStrength` | Set an existing link's strength (0–1, both directions) — the tuning knob `updateMemoryLink` doesn't expose (it fixes new links at 0.7). Stronger links co-surface harder in recall. |
 | `deleteMemory` | Delete a memory. Irreversible — used sparingly. |
 | `getMemoryPolicy` | Report the policy the server actually resolved at startup. Reads no memories. Reports the *effective* policy, which isn't always what the config says — see [Memory policy](#memory-policy). |
 
@@ -75,6 +103,7 @@ model never supplies or sees an entity/user id.
 | `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
 | `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |
 | `/memory-graph-web` | Open the same graph as a real webpage instead: a draggable, zoomable, force-directed view in your default browser rather than the terminal or a chat-rendered diagram. |
+| `/memory-organise [scope]` | Curate the graph by reasoning: cluster and link orphans, tune edge strengths, and — with your confirmation — merge duplicates or split overloaded memories. Additive edits apply directly; lossy ones ask first. |
 | `/memory-config [change]` | Show the effective policy, or change it in words ("only remember my preferences", "stop saving unless I ask"). |
 
 ## Memory policy
@@ -377,7 +406,7 @@ Do this standalone, before wiring the plugin into Claude Code:
    unresolvable, and the failure only appeared on the first DB call.
 1. `node dist/index.mjs` with real env vars set — it should block on stdio without crashing (confirms env
    validation and the DB connection both succeeded).
-2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 6 registered
+2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 10 registered
    tools, inspect their schemas, and invoke them manually while watching raw JSON-RPC responses.
 3. Functional sequence via the inspector:
    - `createMemory({content: "Lives in Seoul and works as a software engineer"})` → expect success + a UUID.
@@ -402,7 +431,7 @@ MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
   claude --plugin-dir ~/Projects/oak-memory-plugin
 ```
 Then in the session, ask something like *"what MCP tools do you have with 'Memory' in the name?"* to confirm
-all 6 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
+all 10 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
 
 For a scripted one-shot test (`-p`), MCP tool calls need explicit permission since there's no TTY to approve
 them interactively — pass `--allowedTools` with the exact tool names:
