@@ -30446,6 +30446,77 @@ ${formatMemory(result.data)}`);
   );
 }
 
+// src/tools/adjustMemoryLinkStrength.ts
+var adjustMemoryLinkStrengthInputSchema = {
+  fromMemoryId: external_exports.string().describe("One end of the link (UUID)."),
+  toMemoryId: external_exports.string().describe("The other end of the link (UUID)."),
+  strength: external_exports.number().min(0).max(1).describe(
+    "Target connection strength 0\u20131. Higher = more tightly coupled (recall pulls them together harder). Rough guide: ~0.85 near-synonymous/tightly-coupled, ~0.7 clearly related (the default for new links), ~0.4 loosely associative."
+  ),
+  type: external_exports.string().optional().describe("Edge type to adjust (default 'related').")
+};
+var adjustMemoryLinkStrengthDescription = `Set the strength of an existing link between two memories.
+
+**Purpose**: edge strength is how hard recall pulls two memories together \u2014 a tuning knob updateMemoryLink
+doesn't expose (it only adds/removes at a fixed default). Use this in a curation pass to make tightly-coupled
+memories co-surface reliably and loosen links that are merely tangential, so graph traversal reflects how
+related things actually are.
+
+**When to use**:
+- A link exists but its strength doesn't match how related the two memories are (see suggestMemoryLinks,
+  which prints each edge's stored strength next to the pair's actual similarity).
+- You just added a link with updateMemoryLink and want it stronger or weaker than the 0.7 default.
+
+**Notes**:
+- The link must already exist \u2014 add it first with updateMemoryLink. This only re-weights.
+- Adjusts every stored edge between the two memories (both directions) to the target.
+- Sets an absolute target, not a delta.`;
+function registerAdjustMemoryLinkStrength(server, env) {
+  server.registerTool(
+    "adjustMemoryLinkStrength",
+    {
+      title: "Adjust memory link strength",
+      description: adjustMemoryLinkStrengthDescription,
+      inputSchema: adjustMemoryLinkStrengthInputSchema
+    },
+    async ({
+      fromMemoryId,
+      toMemoryId,
+      strength,
+      type
+    }) => {
+      if (fromMemoryId === toMemoryId) {
+        return textResult("Cannot adjust a link from a memory to itself.", true);
+      }
+      const edgeType = type ?? "related";
+      const { storage } = await getMemoryClient(env);
+      const edges = await storage.getEdgesByEntity(env.memoryEntityId);
+      const matches = edges.filter(
+        (e) => e.type === edgeType && (e.fromId === fromMemoryId && e.toId === toMemoryId || e.fromId === toMemoryId && e.toId === fromMemoryId)
+      );
+      if (matches.length === 0) {
+        return textResult(
+          `No '${edgeType}' link exists between ${fromMemoryId.slice(0, 8)} and ${toMemoryId.slice(0, 8)}. Add it first with updateMemoryLink (action: "add"), then re-weight.`,
+          true
+        );
+      }
+      const before = [];
+      for (const edge of matches) {
+        const current = typeof edge.strength === "number" ? edge.strength : 0.5;
+        before.push(current);
+        const delta = strength - current;
+        if (delta !== 0) {
+          await storage.bumpEdgeStrengths([edge.id], delta);
+        }
+      }
+      const changed = before.map((b) => b.toFixed(2)).join(", ");
+      return textResult(
+        `Set link strength to ${strength.toFixed(2)} for ${matches.length} edge(s) between ${fromMemoryId.slice(0, 8)} and ${toMemoryId.slice(0, 8)} (was: ${changed}).`
+      );
+    }
+  );
+}
+
 // src/tools/deleteMemory.ts
 var deleteMemoryInputSchema = {
   memoryId: external_exports.string().describe("UUID of the memory to delete (from a recallMemory result).")
@@ -30583,6 +30654,146 @@ function registerListMemories(server, env) {
 ${edgeLines.join("\n")}` : "Links: none \u2014 every memory is currently isolated.",
         "",
         `Unlinked memories: ${orphans.length === 0 ? "none" : `${orphans.length} (${orphans.map((o) => shortId(o.id)).join(", ")})`}`
+      ];
+      return textResult(sections.join("\n"));
+    }
+  );
+}
+
+// src/tools/suggestMemoryLinks.ts
+var suggestMemoryLinksInputSchema = {
+  minSimilarity: external_exports.number().min(0).max(1).optional().describe("Floor for reporting an unlinked pair as a link candidate (cosine, default 0.55)."),
+  limit: external_exports.number().int().min(1).max(200).optional().describe("Max link candidates to list, strongest first (default 25).")
+};
+var suggestMemoryLinksDescription = `Read-only structural analysis of the memory graph \u2014 the evidence layer for a curation/organise pass.
+
+**This computes nothing to the database; it only reports.** It reads every stored memory's embedding and
+compares all pairs by cosine similarity, then surfaces where the graph is under- or mis-connected. Pair it
+with listMemories (which gives full content) and then act with updateMemoryLink / adjustMemoryLinkStrength /
+createMemory / updateMemory / deleteMemory. The judgment \u2014 which pairs to link, which near-duplicates to
+merge, which overloaded nodes to split \u2014 is yours; this tool only hands you the signals to reason over.
+
+**What it reports**:
+- ORPHANS \u2014 memories with no links, each with its single nearest neighbour (where it likely belongs).
+- LINK CANDIDATES \u2014 unlinked pairs above the similarity floor, strongest first; very high ones are flagged as
+  possible near-duplicates (merge, or split-and-dedupe).
+- EXISTING LINKS \u2014 each current edge's stored strength alongside the pair's actual similarity, so you can
+  spot links that are weaker or stronger than the content warrants, or spurious (linked but dissimilar).
+- LARGE NODES \u2014 long, multi-topic memories that may be worth splitting into focused nodes.
+
+**When to use**: at the start of a /memory-organise pass, or whenever the user wants the graph tidied,
+de-duplicated, or better connected.`;
+function cosine2(a, b) {
+  const n = Math.min(a.length, b.length);
+  let dot = 0;
+  let na = 0;
+  let nb = 0;
+  for (let i = 0; i < n; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  if (na === 0 || nb === 0) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+var NEAR_DUPLICATE = 0.88;
+var SPURIOUS_LINK = 0.35;
+var LARGE_NODE_CHARS = 600;
+function registerSuggestMemoryLinks(server, env) {
+  server.registerTool(
+    "suggestMemoryLinks",
+    {
+      title: "Suggest memory links",
+      description: suggestMemoryLinksDescription,
+      inputSchema: suggestMemoryLinksInputSchema
+    },
+    async ({ minSimilarity, limit }) => {
+      const floor = minSimilarity ?? 0.55;
+      const cap = limit ?? 25;
+      const { memories, edges } = await listAll(env);
+      if (memories.length === 0) {
+        return textResult("No memories stored yet \u2014 nothing to analyse.");
+      }
+      const short = (id) => id.slice(0, 8);
+      const snippet = (text, n = 44) => text.length > n ? `${text.slice(0, n)}\u2026` : text;
+      const byId = new Map(memories.map((m) => [m.id, m]));
+      const pairKey = (a, b) => a < b ? `${a}|${b}` : `${b}|${a}`;
+      const linkedPairs = /* @__PURE__ */ new Map();
+      for (const e of edges) {
+        const key = pairKey(e.fromId, e.toId);
+        const existing = linkedPairs.get(key);
+        const strength = typeof e.strength === "number" ? e.strength : 0.5;
+        if (existing) existing.strength = Math.max(existing.strength, strength);
+        else linkedPairs.set(key, { a: e.fromId, b: e.toId, strength });
+      }
+      const withEmbedding = memories.filter(
+        (m) => Array.isArray(m.embedding) && m.embedding.length > 0
+      );
+      const missingEmbedding = memories.length - withEmbedding.length;
+      const sim = /* @__PURE__ */ new Map();
+      for (let i = 0; i < withEmbedding.length; i++) {
+        for (let j = i + 1; j < withEmbedding.length; j++) {
+          const a = withEmbedding[i];
+          const b = withEmbedding[j];
+          sim.set(pairKey(a.id, b.id), cosine2(a.embedding, b.embedding));
+        }
+      }
+      const degree = /* @__PURE__ */ new Map();
+      for (const m of memories) degree.set(m.id, 0);
+      for (const { a, b } of linkedPairs.values()) {
+        degree.set(a, (degree.get(a) ?? 0) + 1);
+        degree.set(b, (degree.get(b) ?? 0) + 1);
+      }
+      const orphanLines = memories.filter((m) => (degree.get(m.id) ?? 0) === 0).map((m) => {
+        let bestId;
+        let bestSim = -1;
+        for (const other of withEmbedding) {
+          if (other.id === m.id) continue;
+          const s = sim.get(pairKey(m.id, other.id)) ?? -1;
+          if (s > bestSim) {
+            bestSim = s;
+            bestId = other.id;
+          }
+        }
+        const near = bestId !== void 0 ? `nearest [${short(bestId)}] ${bestSim.toFixed(2)} "${snippet(byId.get(bestId).content, 32)}"` : "no embedded neighbour";
+        return `- [${m.id}] "${snippet(m.content)}"
+    ${near}`;
+      });
+      const candidates = [];
+      for (const [key, s] of sim) {
+        if (s < floor) continue;
+        if (linkedPairs.has(key)) continue;
+        const [a, b] = key.split("|");
+        candidates.push({ key, a, b, s });
+      }
+      candidates.sort((x, y) => y.s - x.s);
+      const candidateLines = candidates.slice(0, cap).map((c) => {
+        const flag = c.s >= NEAR_DUPLICATE ? "  \u2190 near-duplicate: MERGE or split-dedupe" : "";
+        return `- ${c.s.toFixed(2)}  [${short(c.a)}] "${snippet(byId.get(c.a).content, 30)}"  ~  [${short(c.b)}] "${snippet(byId.get(c.b).content, 30)}"${flag}`;
+      });
+      const existingLines = [...linkedPairs.values()].map((p) => ({ ...p, s: sim.get(pairKey(p.a, p.b)) ?? NaN })).sort((x, y) => (Number.isNaN(x.s) ? 1 : x.s) - (Number.isNaN(y.s) ? 1 : y.s)).map((p) => {
+        const simText = Number.isNaN(p.s) ? " n/a" : p.s.toFixed(2);
+        const flag = !Number.isNaN(p.s) && p.s < SPURIOUS_LINK ? "  \u2190 low similarity, review" : "";
+        return `- str ${p.strength.toFixed(2)}  sim ${simText}  [${short(p.a)}] "${snippet(byId.get(p.a).content, 26)}" <-> [${short(p.b)}] "${snippet(byId.get(p.b).content, 26)}"${flag}`;
+      });
+      const largeLines = memories.filter((m) => m.content.length > LARGE_NODE_CHARS).sort((a, b) => b.content.length - a.content.length).map(
+        (m) => `- ${m.content.length} chars, ${degree.get(m.id) ?? 0} link(s)  [${short(m.id)}] "${snippet(m.content, 50)}"`
+      );
+      const section = (title, lines, empty) => lines.length > 0 ? `${title} (${lines.length}):
+${lines.join("\n")}` : `${title}: ${empty}`;
+      const header = `${memories.length} memories, ${linkedPairs.size} link${linkedPairs.size === 1 ? "" : "s"}. Similarity floor ${floor.toFixed(2)}.` + (missingEmbedding > 0 ? ` (${missingEmbedding} without embeddings, excluded from similarity.)` : "");
+      const sections = [
+        header,
+        "",
+        section("ORPHANS", orphanLines, "none \u2014 every memory is linked."),
+        "",
+        section("LINK CANDIDATES", candidateLines, `none above ${floor.toFixed(2)}.`),
+        "",
+        section("EXISTING LINKS", existingLines, "none."),
+        "",
+        section("LARGE NODES", largeLines, "none."),
+        "",
+        "Nothing was modified. Decide the edits and apply them with updateMemoryLink / adjustMemoryLinkStrength / createMemory / updateMemory / deleteMemory."
       ];
       return textResult(sections.join("\n"));
     }
@@ -31259,11 +31470,13 @@ function registerGetMemoryPolicy(server, env) {
 function registerAllTools(server, env) {
   registerRecallMemory(server, env);
   registerListMemories(server, env);
+  registerSuggestMemoryLinks(server, env);
   registerOpenMemoryGraph(server, env);
   registerGetMemoryPolicy(server, env);
   registerCreateMemory(server, env);
   registerUpdateMemory(server, env);
   registerUpdateMemoryLink(server, env);
+  registerAdjustMemoryLinkStrength(server, env);
   registerDeleteMemory(server, env);
 }
 
