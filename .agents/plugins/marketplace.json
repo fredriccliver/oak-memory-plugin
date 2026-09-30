@@ -1,0 +1,20 @@
+{
+  "name": "oak-memory-local",
+  "interface": {
+    "displayName": "OAK Local"
+  },
+  "plugins": [
+    {
+      "name": "oak-memory",
+      "source": {
+        "source": "local",
+        "path": "./plugins/oak-memory"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

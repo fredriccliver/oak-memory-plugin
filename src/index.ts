@@ -1,5 +1,5 @@
 /**
- * Entrypoint: MCP stdio server exposing @openaikits/memory as Claude Code tools.
+ * Entrypoint: MCP stdio server exposing @openaikits/memory to AI clients.
  *
  * IMPORTANT: stdio transport uses stdout for JSON-RPC framing. Never use
  * console.log anywhere in this process — all diagnostics go to console.error.
@@ -17,10 +17,10 @@ async function main() {
 
   // `instructions` is the only channel that reaches the model without it having
   // to look at a tool first: the client injects it into the system prompt at
-  // session start. That is what turns this from a set of tools Claude might
+  // session start. That is what turns this from a set of tools the model might
   // notice into a policy it follows.
   const server = new McpServer(
-    { name: 'oak-memory-plugin', version: '0.1.0' },
+    { name: 'oak-memory-plugin', version: '0.2.0' },
     { instructions: buildServerInstructions(env.policy) },
   );
 

@@ -3,10 +3,8 @@
  *
  * Resolution order, first hit wins: process.env, then a plugin-root .env, then
  * a user-level file outside the plugin. The user-level file is the one that
- * matters for an installed plugin: installing copies the plugin into
- * ~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/, so a .env sitting
- * in the source repo is both gitignored (may not be copied) and version-scoped
- * (wiped on the next update). Config kept outside that tree survives both.
+ * matters for an installed plugin: both Claude Code and Codex install plugins
+ * into replaceable caches, so config kept outside that tree survives updates.
  * The plugin-root .env remains the convenient path when running from a checkout.
  *
  * Fails fast to stderr — never stdout, which is the MCP stdio JSON-RPC channel.
@@ -59,22 +57,73 @@ function loadEnvFile(filePath: string): void {
   }
 }
 
+function envFileSets(filePath: string, name: string): boolean {
+  let content: string;
+  try {
+    content = fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return false;
+  }
+
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq === -1 || line.slice(0, eq).trim() !== name) continue;
+    let value = line.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    return value.length > 0 && !/^\$\{.*\}$/.test(value);
+  }
+  return false;
+}
+
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, '..');
-const claudeConfigDir =
+const pluginRoot =
+  process.env.PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, '..');
+const sharedConfigDir =
+  process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), '.config', 'oak-memory');
+const sharedEnvFile = path.join(sharedConfigDir, 'oak-memory.env');
+const legacyClaudeConfigDir =
   process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
-const userEnvFile = path.join(claudeConfigDir, 'oak-memory.env');
+const legacyEnvFile = path.join(legacyClaudeConfigDir, 'oak-memory.env');
+
+// Existing Claude-only installs keep working without migration. New installs
+// use a client-neutral location shared by Claude Code and Codex. A stray empty
+// shared file must not mask a complete legacy configuration.
+const userEnvFile =
+  process.env.OAK_CONFIG_DIR ||
+  envFileSets(sharedEnvFile, 'MEMORY_DATABASE_URL') ||
+  !envFileSets(legacyEnvFile, 'MEMORY_DATABASE_URL')
+    ? sharedEnvFile
+    : legacyEnvFile;
+const fallbackUserEnvFile = process.env.OAK_CONFIG_DIR
+  ? undefined
+  : userEnvFile === sharedEnvFile
+    ? legacyEnvFile
+    : sharedEnvFile;
 
 // A custom policy is prose, and prose wraps. It lives in its own file rather
 // than an env var because the KEY=VALUE parser above is line-oriented and would
 // silently truncate a multi-line rule at the first newline.
-const defaultPolicyFile = path.join(claudeConfigDir, 'oak-memory-policy.md');
+const defaultPolicyFile = path.join(path.dirname(userEnvFile), 'oak-memory-policy.md');
+const fallbackPolicyFile = fallbackUserEnvFile
+  ? path.join(path.dirname(fallbackUserEnvFile), 'oak-memory-policy.md')
+  : undefined;
 
 // loadEnvFile never overwrites an already-set var, so earlier calls win.
 // "Already set" means readEnvVar-set: an unexpanded `${VAR}` from .mcp.json
 // counts as unset, so these files can supply the value it failed to expand.
 loadEnvFile(path.join(pluginRoot, '.env'));
 loadEnvFile(userEnvFile);
+// During migration, the selected file is authoritative but the other standard
+// location may still contain policy values that have not moved yet. Fill only
+// missing values from it; loadEnvFile never overwrites an earlier source.
+if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
 
 export interface Env {
   memoryDatabaseUrl: string;
@@ -84,11 +133,13 @@ export interface Env {
   policy: MemoryPolicy;
   /** Resolved paths, reported by getMemoryPolicy so the user knows what to edit. */
   envFile: string;
+  /** Legacy/shared compatibility source used only to fill missing values. */
+  fallbackEnvFile?: string;
   policyFile: string;
 }
 
 /**
- * Claude Code's `.mcp.json` `${VAR}` substitution does not fall back to an
+ * Some MCP clients' `${VAR}` substitution does not fall back to an
  * empty string when VAR is unset in the ambient environment — it passes the
  * literal, unexpanded `"${VAR}"` string through as the value instead. A plain
  * `?.trim() || default` fallback doesn't catch that (a non-empty garbage
@@ -117,7 +168,12 @@ function required(name: string): string {
 }
 
 function resolvePolicyFile(): string {
-  return readEnvVar('MEMORY_POLICY_FILE') ?? defaultPolicyFile;
+  const explicit = readEnvVar('MEMORY_POLICY_FILE');
+  if (explicit) return explicit;
+  if (fallbackPolicyFile && !fs.existsSync(defaultPolicyFile) && fs.existsSync(fallbackPolicyFile)) {
+    return fallbackPolicyFile;
+  }
+  return defaultPolicyFile;
 }
 
 function parseBool(value: string | undefined, fallback: boolean, warn: Warn): boolean {
@@ -183,7 +239,7 @@ export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
   if (rawScope === undefined) {
     warn(
       `[oak-memory-plugin] No MEMORY_POLICY_SCOPE set — storing nothing until there is one.\n` +
-        `  Run \`/memory-config\` in Claude Code, or \`npm run setup -- --reconfigure\`,\n` +
+        `  Run the memory configuration workflow, or \`npm run setup -- --reconfigure\`,\n` +
         `  or set it in ${userEnvFile}. Valid values: ${MEMORY_SCOPES.join(', ')}`,
     );
     return unconfigured('unset');
@@ -234,6 +290,7 @@ export function loadEnv(): Env {
     ollamaEmbeddingModel: readEnvVar('OLLAMA_EMBEDDING_MODEL') ?? 'bge-m3',
     policy: loadPolicy(),
     envFile: userEnvFile,
+    fallbackEnvFile: fallbackUserEnvFile,
     policyFile: resolvePolicyFile(),
   };
 }

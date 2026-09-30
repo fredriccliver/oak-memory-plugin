@@ -1,20 +1,20 @@
 # oak-memory-plugin
 
-A Claude Code plugin that gives Claude a **persistent, cross-project long-term memory** about you — backed by
-a real vector+graph database, not markdown files.
+An OAK.memory plugin for **Codex and Claude Code** that provides persistent, cross-project long-term memory
+about you, backed by a real vector+graph database rather than flat markdown notes.
 
 Claude Code's built-in memory is a folder of markdown notes. That's fine for lightweight preferences, but it
-doesn't do semantic search, doesn't rank by relevance, and doesn't model relationships between facts. This
-plugin is a Claude Code **integration** of [OAK.memory](https://openaikits.com) — an autonomous memory
+doesn't do semantic search, doesn't rank by relevance, and doesn't model relationships between facts.
+This plugin integrates [OAK.memory](https://openaikits.com) — an autonomous memory
 infrastructure for AI ([`@openaikits/memory`](https://github.com/fredriccliver/Memory),
-[technical paper](https://lnkd.in/gqgzejUV)) — exposed as an MCP server, so Claude can recall and store facts
+[technical paper](https://lnkd.in/gqgzejUV)) — exposed as an MCP server, so Codex and Claude can recall and store facts
 about you the same way across every project and every session.
 
 OAK.memory's premise is that memory belongs in the stack as **infrastructure**, the way inference and model
 providers already are — general-purpose and domain-independent, not re-invented per application. Its core idea
 is the **entity-specific associative network**: associations differ per individual, so personalization comes
 from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
-infrastructure; the engine itself knows nothing about Claude Code.
+infrastructure; the engine itself knows nothing about the AI client using it.
 
 ## Requirements
 
@@ -27,32 +27,33 @@ with `npm run setup` before the plugin works:
 - **[Ollama](https://ollama.com/download)** — generates embeddings locally (`bge-m3`, ~270 MB, pulled for
   you). No API key; nothing leaves your machine.
 - **Node.js 18+** and a **local checkout of this repo** — `npm run setup` lives here and is where the one-time
-  provisioning runs. A marketplace install only copies the plugin into `~/.claude/plugins/cache/…`; it does not
-  clone anything you can run setup from.
+  provisioning runs. A marketplace install only copies the packaged plugin; it does not clone a development
+  checkout from which setup can run.
 
 ```bash
 git clone https://github.com/fredriccliver/oak-memory-plugin
 cd oak-memory-plugin
 npm install
-npm run setup     # idempotent: starts Postgres, pulls the model, writes ~/.claude/oak-memory.env, asks your memory policy
+npm run setup     # starts Postgres, pulls the model, writes shared config, asks your memory policy
 ```
 
-Until `npm run setup` has written `MEMORY_DATABASE_URL` (into `~/.claude/oak-memory.env`), the server exits at
+Until `npm run setup` has written `MEMORY_DATABASE_URL` (normally into
+`~/.config/oak-memory/oak-memory.env`), the server exits at
 startup — the database URL is the one setting with no safe default. Once setup passes, register the plugin
 (see [Install](#install)) and the memory is live in every project. Full details and manual/hosted-DB
 alternatives are in [Setup](#setup).
 
 ## Why this exists
 
-This is deliberately **not** a replacement for project-scoped `CLAUDE.md` files or Claude Code's file-based
-auto-memory. Those own "facts about this project." This plugin owns "facts about *you*" — your preferences,
+This is deliberately **not** a replacement for project-scoped `AGENTS.md`, `CLAUDE.md`, or file-based
+project memory. Those own "facts about this project." This plugin owns "facts about *you*" — your preferences,
 experiences, and decisions — as a single flat identity shared across all your machines and projects. If you
 ever need to split that (e.g. a work identity vs. a personal identity), see [Entity scoping](#entity-scoping).
 
 ## Architecture
 
 ```
-Claude Code  <-- MCP tool calls -->  this plugin's stdio server  -->  @openaikits/memory  -->  Postgres (pgvector)
+Codex / Claude Code  <-- MCP -->  this plugin's stdio server  -->  @openaikits/memory  -->  Postgres (pgvector)
                                                                             |
                                                                   Ollama (local embeddings)
 ```
@@ -68,14 +69,15 @@ OpenAI API key, no per-call cost, no data leaving the machine. See [Local embedd
 how this is wired given the engine's schema hardcodes a different vector width than local models produce.
 
 Every memory operation is **model-initiated tool calling**: nothing intercepts your prompt to search on your
-behalf, and nothing writes without Claude deciding to. What a `UserPromptSubmit` hook adds is timing, not
+behalf, and nothing writes without the model deciding to. What a `UserPromptSubmit` hook adds is timing, not
 authority — it restates your policy alongside each prompt, so recalling and saving are decided next to the
 work instead of by a system-prompt instruction that has been decaying since session start. It is closer to
 `MemoryConnector.prepareContext()` than to `onAfterResponse()`: it primes the turn, then gets out of the way.
 See [Memory policy](#memory-policy).
 
-Two slash commands (`/memory-recall`, `/memory-save`) exist for explicit manual invocation when you don't want
-to rely on the model noticing on its own.
+Claude Code also exposes slash commands for explicit invocation. In Codex, use ordinary requests such as
+"remember this", "what do you remember about my workflow?", or "show my memory graph"; the bundled skill
+maps those requests to the same MCP tools.
 
 ## Tools exposed
 
@@ -141,18 +143,23 @@ it does not outrank it.
 
 Three independent axes, chosen at `npm run setup` and changeable any time:
 
-| Axis | Variable | Values | Default |
+| Axis | Variable | Values | Setup wizard default |
 |---|---|---|---|
 | **What to remember** | `MEMORY_POLICY_SCOPE` | `preferences`, `important`, `everything`, `custom` | `everything` |
-| **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only on `/memory-save`) | `true` |
+| **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only when explicitly asked) | `true` |
 | **How hard to search** | `MEMORY_POLICY_RECALL` | `minimal`, `balanced`, `aggressive` | `balanced` |
+
+The scope has no runtime default: if `MEMORY_POLICY_SCOPE` is absent or invalid, writes fail closed. The
+`everything` value above is only the choice preselected by the interactive setup wizard.
 
 Reading and writing are separate axes because they have different costs. Writing is the side with the privacy
 question, so it gets its own switch; searching what you already chose to store costs nothing but a lookup.
-That's also why `/memory-save` and `/memory-recall` each override their own axis and not the other — running
-one *is* the decision the policy exists to make on your behalf.
+That's also why an explicit save or recall request overrides its own axis and not the other — making the
+request *is* the decision the policy exists to make on your behalf. Claude Code also exposes those requests
+as `/memory-save` and `/memory-recall`.
 
-`custom` takes your rule from `~/.claude/oak-memory-policy.md` (override with `MEMORY_POLICY_FILE`).
+`custom` takes your rule from `oak-memory-policy.md` beside the selected config file (override with
+`MEMORY_POLICY_FILE`).
 Everything outside HTML comments in that file is handed to the model verbatim, so write it as an instruction
 — "Store only my coding preferences and architecture decisions" — not as notes. Edit it any time; no rebuild.
 
@@ -170,10 +177,10 @@ or `/memory-config stop saving unless I ask` inside Claude Code.
 > **Narrowing the scope is not forgetting.** It governs what gets written from now on and never touches what's
 > already stored. To remove existing memories, use `/memory-graph` to see them and `deleteMemory` to drop them.
 
-A bad policy value is never fatal — unlike a missing `MEMORY_DATABASE_URL`, it warns on stderr and falls back
-to the default rather than locking you out of memories you already have. `custom` with a missing or empty
-policy file degrades to `everything` and says so, because silently having no rule reads to the model as "store
-nothing" rather than as an error. This means the config file can disagree with what's running, which is why
+A bad policy value is never fatal — unlike a missing `MEMORY_DATABASE_URL`, the server stays readable and
+warns on stderr. Content creation or updates, new links, and link-strength changes fail closed until the scope
+is fixed; deletion and link removal remain available for cleanup. `custom` with a missing or empty rule
+behaves the same way. This means the config file can disagree with what's running, which is why
 `getMemoryPolicy` reports the resolved policy instead of just reading the file back.
 
 ## Setup
@@ -186,7 +193,8 @@ npm run setup
 `npm run setup` is idempotent — it checks each piece and only does what's missing, so re-running it is safe and
 is also the fastest way to diagnose a broken install. It starts the Postgres container (named volume,
 `--restart unless-stopped`, so memories survive both `docker rm` and a reboot), creates the `vector` extension,
-pulls the embedding model, writes `~/.claude/oak-memory.env`, builds, and finishes with a smoke test that makes
+pulls the embedding model, writes the selected config file, ensures the Claude and Codex bundles are present
+and synchronized, and finishes with a smoke test that makes
 a **real database call** — because startup and `tools/list` both pass even when the database is unreachable.
 
 It needs [Docker](https://www.docker.com/products/docker-desktop/) and [Ollama](https://ollama.com/download)
@@ -197,13 +205,13 @@ separate memory instance, or for exercising setup against a throwaway container 
 
 ```bash
 OAK_CONTAINER=oak-test OAK_VOLUME=oak-test-vol OAK_PORT=55499 \
-  CLAUDE_CONFIG_DIR=/tmp/oak-test npm run setup
+  OAK_CONFIG_DIR=/tmp/oak-test npm run setup
 ```
 
 <details>
 <summary>Why Postgres, rather than an embedded database that needs no Docker?</summary>
 
-Because each Claude Code session spawns its **own** MCP server process. An embedded engine like
+Because each AI client session spawns its **own** MCP server process. An embedded engine like
 [PGlite](https://pglite.dev) is [single-connection](https://github.com/electric-sql/pglite/issues/324) —
 several processes against one data directory corrupt the WAL. Real Postgres handles that concurrency natively.
 Zero-install would mean either risking your memory graph or running a database daemon anyway, just without
@@ -214,7 +222,7 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
 <details>
 <summary>Manual setup / other databases (hosted Supabase, etc.)</summary>
 
-1. **A Postgres database where the `pgvector` extension is installable**, reachable from wherever Claude Code
+1. **A Postgres database where the `pgvector` extension is installable**, reachable from wherever the AI client
    runs. Options:
    - **Dedicated local container (recommended for a personal, cross-project memory store)** — don't reuse
      another project's dev database; that ties this plugin's durability to that project's lifecycle:
@@ -250,20 +258,30 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
 | `MEMORY_ENTITY_ID` | No (default `fredriccliver`) | The fixed identity all memories are scoped to. See [Entity scoping](#entity-scoping). |
 | `OLLAMA_BASE_URL` | No (default `http://localhost:11434/v1`) | Ollama's OpenAI-compatible endpoint. |
 | `OLLAMA_EMBEDDING_MODEL` | No (default `bge-m3`) | Embedding model to request from Ollama. Must be multilingual if you store memories in a language other than English — see [Local embeddings](#local-embeddings). Changing it invalidates every stored embedding. |
-| `MEMORY_POLICY_SCOPE` | No (default `everything`) | What to remember. See [Memory policy](#memory-policy). |
+| `MEMORY_POLICY_SCOPE` | Yes for writes | What may be remembered. If unset or invalid, writes are refused. See [Memory policy](#memory-policy). |
 | `MEMORY_POLICY_AUTOSAVE` | No (default `true`) | Whether to save unprompted. |
 | `MEMORY_POLICY_RECALL` | No (default `balanced`) | How hard to search before answering. |
-| `MEMORY_POLICY_FILE` | No (default `~/.claude/oak-memory-policy.md`) | Where a `custom` scope's rule text lives. |
+| `MEMORY_POLICY_FILE` | No (default beside `oak-memory.env`) | Where a `custom` scope's rule text lives. |
 
-`src/env.ts` resolves these in order, first hit wins:
+`src/env.ts` resolves these in order, first value wins:
 
-1. `process.env` — exported in your shell before launching `claude`.
+1. `process.env` — exported before launching the client.
 2. `<plugin root>/.env` — convenient when running from a checkout.
-3. `~/.claude/oak-memory.env` — **the one to use for an installed plugin.**
+3. `~/.config/oak-memory/oak-memory.env` — **the one to use for a new installed plugin.**
+4. `~/.claude/oak-memory.env` — compatibility fallback for an existing Claude Code installation.
 
-Prefer (3). Installing copies the plugin into `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, so
-a `.env` in the source repo is both gitignored (may not be copied) and version-scoped (wiped by the next
-update). `~/.claude/oak-memory.env` sits outside that tree and survives both — configure once, never again.
+Prefer (3). It sits outside every client's replaceable plugin cache and can be shared by Codex and Claude
+Code. Existing `~/.claude/oak-memory.env` installations remain supported and are used automatically until the
+shared config sets `MEMORY_DATABASE_URL`; an empty shared file or one missing that required value cannot mask
+a working legacy configuration. During migration, whichever standard file supplies the database URL is the
+primary file and missing values fall back to the other one, so moving the URL before the policy does not
+silently disable writes. Set `OAK_CONFIG_DIR` to explicitly choose one client-neutral location with no legacy
+fallback.
+
+The primary file always wins for keys it contains, including invalid values; fallback is for missing values,
+not error recovery. If a partially migrated policy is reported as invalid, remove the mistaken policy key
+from the primary file to keep using the legacy value, or run `npm run setup -- --reconfigure` to write a
+complete policy into the primary file.
 
 > Claude Code's `${VAR}` substitution in `.mcp.json` does **not** resolve to an empty string when `VAR` is
 > unset — it passes the literal `"${VAR}"` through. `readEnvVar()` treats that shape as unset, so an unset
@@ -309,18 +327,43 @@ comparable. Existing memories must be re-embedded (delete and re-create them) or
 graph, and an entity can be a user, persona, workspace, or agent. This plugin deliberately collapses that to
 **one fixed global identity** via `MEMORY_ENTITY_ID`, because the goal is "the same memory follows me
 everywhere," not per-project memory graphs. If you ever want separate memory spaces (e.g. work vs. personal),
-point different Claude Code environments at different `MEMORY_ENTITY_ID` values — they share the same database,
+point different client environments at different `MEMORY_ENTITY_ID` values — they share the same database,
 just different logical graphs.
 
 This is also why `/memory-graph` is a genuinely useful view rather than a debug tool: the associative network
-*is* the personalization, so being able to see and prune it is how you steer what Claude recalls.
+*is* the personalization, so being able to see and prune it is how you steer what the client recalls.
 
 ## Install
 
 Run [`npm run setup`](#setup) first — it provisions the database and writes the config.
 
-This repo is its own marketplace (`.claude-plugin/marketplace.json`), so it installs as a normal plugin —
-which is what makes the memory available in **every** project, along with the slash commands. Register it in
+### Codex
+
+The repository includes a Codex marketplace and a self-contained package under `plugins/oak-memory`. Build,
+register, and install it locally:
+
+```bash
+npm run build
+codex plugin marketplace add /absolute/path/to/oak-memory-plugin
+codex plugin add oak-memory@oak-memory-local
+```
+
+Start a new Codex task after installation so the skill and MCP tools are loaded. Review and trust the bundled
+`UserPromptSubmit` hook when Codex asks; non-managed hooks do not run until they are trusted.
+
+> **Required for full policy behavior:** approve that hook before relying on proactive recall or autosave.
+> The MCP tools still work without it, but the per-prompt policy reminder is absent, so those proactive
+> behaviors can become less reliable without an obvious error.
+
+Codex injects `PLUGIN_ROOT` for installed plugin hooks; the hook command uses it to locate the packaged
+`dist/hook.mjs`. During verification, confirm the hook appears in the trust prompt and that a fresh task loads
+the OAK.memory skill. If either is absent, treat the installation as incomplete rather than relying on the MCP
+server alone.
+
+### Claude Code
+
+This repo remains its own Claude marketplace (`.claude-plugin/marketplace.json`), so the existing integration
+and slash commands continue to work. Register it in
 `~/.claude/settings.json`:
 
 ```jsonc
@@ -348,8 +391,9 @@ Restart Claude Code. No shell exports, no `--plugin-dir` flag, no per-project se
 ```bash
 npm install          # postinstall runs `npm run build` automatically
 npm run setup        # idempotent: provision DB + model + config, then smoke-test
+npm test             # typecheck + config-migration regression test
 npm run typecheck    # tsc --noEmit
-npm run build        # esbuild -> dist/index.mjs (MCP server) + dist/hook.mjs (UserPromptSubmit hook)
+npm run build        # build shared bundles, then sync the self-contained Codex package
 ```
 
 Both bundles are committed, because `hooks/hooks.json` and `.mcp.json` point at `dist/` and an install is not
@@ -397,10 +441,10 @@ Any smoke test for this must therefore run the bundle **from a directory with no
 
 ## Verification / smoke test
 
-Do this standalone, before wiring the plugin into Claude Code:
+Do this standalone, before wiring the plugin into Codex or Claude Code:
 
 0. **Relocation check — the one that actually matters.** Copy `dist/index.mjs` alone into an empty directory
-   (no `node_modules`, no `.env`), set `CLAUDE_PLUGIN_ROOT` to it, and call a tool that **hits the database**
+   (no `node_modules`, no `.env`), set `PLUGIN_ROOT` (or legacy `CLAUDE_PLUGIN_ROOT`) to it, and call a tool that **hits the database**
    (`listMemories` is the cheapest — it skips the Ollama embedding round-trip). This reproduces installed-plugin
    conditions exactly. Startup and `tools/list` succeeding prove nothing here: both passed while `pg` was
    unresolvable, and the failure only appeared on the first DB call.
@@ -414,8 +458,13 @@ Do this standalone, before wiring the plugin into Claude Code:
    - `updateMemory({memoryId, content: "Moved to Busan"})` → `recallMemory` again with the same query →
      confirm the updated content comes back.
    - `deleteMemory({memoryId})` → `recallMemory` again → confirm it's gone.
-4. Only after 1–3 pass: test it loaded into a real Claude Code session (see below) before any permanent
+4. Only after 1–3 pass: test it loaded into a real Codex or Claude Code session (see below) before any permanent
    install.
+
+For Codex, install the local package as described above, start a fresh task, approve the bundled
+`UserPromptSubmit` hook, and verify the OAK.memory skill plus all 10 MCP tools are present. Exercise
+`getMemoryPolicy` and one real database-backed read from the installed `plugins/oak-memory/dist` package;
+the root bundle passing does not by itself prove the packaged path is wired correctly.
 
 ### Testing inside a real Claude Code session
 

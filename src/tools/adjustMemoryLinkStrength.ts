@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Env } from '../env.js';
 import { getMemoryClient } from '../memoryClient.js';
+import { scopeRule, type MemoryPolicy } from '../policy.js';
 import { textResult } from './format.js';
 
 export const adjustMemoryLinkStrengthInputSchema = {
@@ -21,7 +22,15 @@ export const adjustMemoryLinkStrengthInputSchema = {
     .describe("Edge type to adjust (default 'related')."),
 };
 
-export const adjustMemoryLinkStrengthDescription = `Set the strength of an existing link between two memories.
+export function adjustMemoryLinkStrengthDescription(policy: MemoryPolicy): string {
+  if (policy.scope === null) {
+    return `Changing memory link strength is currently disabled, and calling this tool will fail.
+
+**Why**: ${scopeRule(policy)}
+
+Deleting memories and removing links remain available for cleanup.`;
+  }
+  return `Set the strength of an existing link between two memories.
 
 **Purpose**: edge strength is how hard recall pulls two memories together — a tuning knob updateMemoryLink
 doesn't expose (it only adds/removes at a fixed default). Use this in a curation pass to make tightly-coupled
@@ -37,13 +46,14 @@ related things actually are.
 - The link must already exist — add it first with updateMemoryLink. This only re-weights.
 - Adjusts every stored edge between the two memories (both directions) to the target.
 - Sets an absolute target, not a delta.`;
+}
 
 export function registerAdjustMemoryLinkStrength(server: any, env: Env) {
   server.registerTool(
     'adjustMemoryLinkStrength',
     {
       title: 'Adjust memory link strength',
-      description: adjustMemoryLinkStrengthDescription,
+      description: adjustMemoryLinkStrengthDescription(env.policy),
       inputSchema: adjustMemoryLinkStrengthInputSchema,
     },
     async ({
@@ -57,6 +67,13 @@ export function registerAdjustMemoryLinkStrength(server: any, env: Env) {
       strength: number;
       type?: string;
     }) => {
+      if (env.policy.scope === null) {
+        return textResult(
+          `Refused: no memory policy is set, so there is no scope permitting memory link changes.\n\n` +
+            `Nothing was changed. Deleting memories and removing links remain available for cleanup.`,
+          true,
+        );
+      }
       if (fromMemoryId === toMemoryId) {
         return textResult('Cannot adjust a link from a memory to itself.', true);
       }

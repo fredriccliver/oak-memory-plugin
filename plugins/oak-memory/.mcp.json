@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "oak-memory": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/index.mjs"],
+      "cwd": ".",
+      "env_vars": [
+        "MEMORY_DATABASE_URL",
+        "MEMORY_ENTITY_ID",
+        "OLLAMA_BASE_URL",
+        "OLLAMA_EMBEDDING_MODEL",
+        "MEMORY_POLICY_SCOPE",
+        "MEMORY_POLICY_AUTOSAVE",
+        "MEMORY_POLICY_RECALL",
+        "MEMORY_POLICY_FILE",
+        "OAK_CONFIG_DIR",
+        "CLAUDE_CONFIG_DIR"
+      ]
+    }
+  }
+}

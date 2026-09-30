@@ -8,7 +8,7 @@
  * wrong, it says so and leaves the decision to you.
  *
  * Deliberately NOT replacing Postgres with an embedded engine (PGlite): each
- * Claude Code session spawns its own MCP server process, and PGlite is
+ * AI client session spawns its own MCP server process, and PGlite is
  * single-connection — several processes against one data directory corrupt the
  * WAL. A real Postgres handles that concurrency natively, so the goal here is
  * to make it effortless to set up, not to remove it.
@@ -36,9 +36,38 @@ const OLLAMA_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? 'bge-m3';
 const RECONFIGURE = process.argv.includes('--reconfigure');
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const claudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
-const envFile = path.join(claudeConfigDir, 'oak-memory.env');
-const policyFile = path.join(claudeConfigDir, 'oak-memory-policy.md');
+const sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), '.config', 'oak-memory');
+const sharedEnvFile = path.join(sharedConfigDir, 'oak-memory.env');
+const legacyConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
+const legacyEnvFile = path.join(legacyConfigDir, 'oak-memory.env');
+
+// Keep this selection predicate in sync with src/env.ts. Setup must write the
+// same primary file the installed MCP server will read.
+function envFileSets(filePath, name) {
+  try {
+    return fs
+      .readFileSync(filePath, 'utf8')
+      .split('\n')
+      .some(rawLine => {
+        const line = rawLine.trim();
+        if (!line || line.startsWith('#')) return false;
+        const eq = line.indexOf('=');
+        if (eq === -1 || line.slice(0, eq).trim() !== name) return false;
+        const value = line.slice(eq + 1).trim().replace(/^(['"])(.*)\1$/, '$2');
+        return value.length > 0 && !/^\$\{.*\}$/.test(value);
+      });
+  } catch {
+    return false;
+  }
+}
+
+const envFile =
+  process.env.OAK_CONFIG_DIR ||
+  envFileSets(sharedEnvFile, 'MEMORY_DATABASE_URL') ||
+  !envFileSets(legacyEnvFile, 'MEMORY_DATABASE_URL')
+    ? sharedEnvFile
+    : legacyEnvFile;
+const policyFile = path.join(path.dirname(envFile), 'oak-memory-policy.md');
 
 const ok = msg => console.log(`  \x1b[32m✓\x1b[0m ${msg}`);
 const info = msg => console.log(`  \x1b[36m→\x1b[0m ${msg}`);
@@ -101,7 +130,7 @@ function ensureContainer() {
     info(`creating ${CONTAINER} (${IMAGE}) on port ${PORT}`);
     // A *named* volume, so memories survive `docker rm` of the container, and
     // `--restart unless-stopped`, so they survive a reboot without a manual
-    // `docker start` before every Claude Code session.
+    // `docker start` before every AI client session.
     run('docker', [
       'run', '-d',
       '--name', CONTAINER,
@@ -219,8 +248,8 @@ const SCOPES = [
 ];
 
 const TRIGGERS = [
-  ['proactive', 'Claude decides, and saves as it learns'],
-  ['manual', 'nothing is stored unless you run /memory-save'],
+  ['proactive', 'your AI assistant decides, and saves as it learns'],
+  ['manual', 'nothing is stored unless you explicitly ask the assistant'],
 ];
 
 const RECALLS = [
@@ -232,10 +261,10 @@ const RECALLS = [
 const POLICY_FILE_HEADER = `<!--
   oak-memory custom policy.
 
-  Everything outside HTML comments in this file is handed to Claude verbatim as
+  Everything outside HTML comments in this file is handed to the AI assistant verbatim as
   the rule for what to remember about you — so write it as an instruction, not
   as notes. Comments like this one are stripped. Edits apply to the next
-  Claude Code session; no rebuild needed.
+  AI client session; no rebuild needed.
 -->`;
 
 const describe = policy =>
@@ -264,15 +293,37 @@ async function resolvePolicy() {
   step('Memory policy');
 
   const existing = readEnvFile();
-  const currentScope = existing.match(/^\s*MEMORY_POLICY_SCOPE\s*=\s*(.+)$/m)?.[1].trim();
+  const currentValue = name =>
+    existing
+      .match(new RegExp(`^\\s*${name}\\s*=\\s*(.+)$`, 'm'))?.[1]
+      .trim()
+      .replace(/^(['"])(.*)\1$/, '$2');
+  const currentScope = currentValue('MEMORY_POLICY_SCOPE');
   if (currentScope && !RECONFIGURE) {
-    const currentAutosave = existing.match(/^\s*MEMORY_POLICY_AUTOSAVE\s*=\s*(.+)$/m)?.[1].trim();
-    const currentRecall = existing.match(/^\s*MEMORY_POLICY_RECALL\s*=\s*(.+)$/m)?.[1].trim();
+    const currentAutosave = currentValue('MEMORY_POLICY_AUTOSAVE');
+    const currentRecall = currentValue('MEMORY_POLICY_RECALL');
+    const problems = [];
+    if (!SCOPES.some(([scope]) => scope === currentScope)) {
+      problems.push(`MEMORY_POLICY_SCOPE=${currentScope}`);
+    }
+    if (currentAutosave && !['true', 'false'].includes(currentAutosave.toLowerCase())) {
+      problems.push(`MEMORY_POLICY_AUTOSAVE=${currentAutosave}`);
+    }
+    if (currentRecall && !RECALLS.some(([recall]) => recall === currentRecall)) {
+      problems.push(`MEMORY_POLICY_RECALL=${currentRecall}`);
+    }
+    if (problems.length > 0) {
+      fail(
+        `Invalid memory policy in ${envFile}: ${problems.join(', ')}`,
+        'The primary config intentionally wins over legacy fallback, even when invalid.\n' +
+          'Fix or remove those keys, or run `npm run setup -- --reconfigure` to replace them.',
+      );
+    }
     ok(
       'already configured — ' +
         describe({
           scope: currentScope,
-          autosave: currentAutosave !== 'false',
+          autosave: currentAutosave?.toLowerCase() !== 'false',
           recall: currentRecall ?? DEFAULT_RECALL,
         }),
     );
@@ -290,12 +341,12 @@ async function resolvePolicy() {
     return defaults;
   }
 
-  console.log('\n  Three questions decide how Claude uses memory. All changeable later');
-  console.log('  \x1b[2mwith `npm run setup -- --reconfigure`, or /memory-config inside Claude Code.\x1b[0m');
+  console.log('\n  Three questions decide how your AI assistant uses memory. All changeable later');
+  console.log('  \x1b[2mwith `npm run setup -- --reconfigure`, or the memory configuration workflow.\x1b[0m');
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
-    const scope = await choose(rl, 'What should Claude remember?', SCOPES, DEFAULT_SCOPE);
+    const scope = await choose(rl, 'What should your AI assistant remember?', SCOPES, DEFAULT_SCOPE);
     const trigger = await choose(rl, 'When should it save?', TRIGGERS, 'proactive');
     const recall = await choose(rl, 'How hard should it search before answering?', RECALLS, DEFAULT_RECALL);
 
@@ -387,8 +438,8 @@ function ensureEnvFile() {
     envFile,
     `# oak-memory plugin configuration — written by \`npm run setup\`.
 #
-# Lives outside the plugin on purpose: installing/updating replaces
-# ~/.claude/plugins/cache/oak-memory/..., so this is the copy that survives.
+# Lives outside the plugin on purpose: installing/updating replaces plugin
+# caches, so this client-neutral copy survives and can be shared by Codex and Claude Code.
 #
 # Memories live in the \`${CONTAINER}\` container's \`${VOLUME}\` volume.
 MEMORY_DATABASE_URL=${DB_URL}
@@ -404,12 +455,24 @@ MEMORY_DATABASE_URL=${DB_URL}
 
 function ensureBuild() {
   step('Build');
-  const bundle = path.join(repoRoot, 'dist', 'index.mjs');
-  if (!fs.existsSync(bundle)) {
-    info('dist/index.mjs missing — building');
+  const sharedDir = path.join(repoRoot, 'dist');
+  const codexDir = path.join(repoRoot, 'plugins', 'oak-memory', 'dist');
+  const bundleNames = ['index.mjs', 'hook.mjs'];
+  const bundlesMatch = bundleNames.every(name => {
+    const sharedBundle = path.join(sharedDir, name);
+    const codexBundle = path.join(codexDir, name);
+    return (
+      fs.existsSync(sharedBundle) &&
+      fs.existsSync(codexBundle) &&
+      fs.readFileSync(sharedBundle).equals(fs.readFileSync(codexBundle))
+    );
+  });
+
+  if (!bundlesMatch) {
+    info('client bundles missing or out of sync — building');
     execFileSync('npm', ['run', 'build'], { cwd: repoRoot, stdio: 'inherit' });
   }
-  ok('dist/index.mjs present');
+  ok('Claude and Codex bundles present and synchronized');
 }
 
 // ---------------------------------------------------------------- Smoke test
@@ -493,14 +556,19 @@ async function main() {
   console.log(`
 \x1b[32m\x1b[1mReady.\x1b[0m
 
-Register the plugin in ~/.claude/settings.json (once), then restart Claude Code:
+The shared configuration is ready at ${envFile}.
+
+For Claude Code, register the plugin in ~/.claude/settings.json and restart:
 
   "extraKnownMarketplaces": {
     "oak-memory": { "source": { "source": "directory", "path": "${repoRoot}" } }
   },
   "enabledPlugins": { "oak-memory@oak-memory": true }
 
-Then try:  /memory-save I prefer TDD   ·   /memory-graph
+For Codex, add this repository as a local marketplace, install oak-memory,
+then start a new task. See README.md for the exact commands.
+
+Then try: "Remember that I prefer TDD" · "Show my memory graph"
 `);
 }
 

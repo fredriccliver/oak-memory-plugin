@@ -51,9 +51,9 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
           ? [
               REASON_HEADLINES[policy.reason ?? 'unset'],
               '',
-              '**Nothing is being stored, and `createMemory` is refused.** Memories already stored are',
-              'still readable and searchable — this affects writing only. No default scope has been',
-              'substituted: the user has to choose one.',
+              '**Nothing new is being stored.** `createMemory`, content updates, new links, and link-strength',
+              'changes are refused. Memories already stored remain readable; deletion and link removal stay',
+              'available for cleanup. No default scope has been substituted: the user has to choose one.',
             ]
           : [
               `- **Scope**: ${policy.scope}`,
@@ -80,11 +80,18 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
         `- \`MEMORY_POLICY_AUTOSAVE\` — true, false`,
         `- \`MEMORY_POLICY_RECALL\` — ${RECALL_LEVELS.join(', ')}`,
         `- A \`custom\` scope's rule text lives in \`${env.policyFile}\``,
+        ...(env.fallbackEnvFile
+          ? [
+              '',
+              `Missing values also fall back to \`${env.fallbackEnvFile}\` for migration compatibility.`,
+              `Values in \`${env.envFile}\` take precedence.`,
+            ]
+          : []),
         '',
         // The server loads policy once at startup and hands `instructions` to the
         // client during the initialize handshake. Nothing re-reads either after
         // that, so an edit made now is invisible until the process restarts.
-        'Changes take effect in the **next Claude Code session** — this server read its policy at',
+        'Changes take effect in the **next Claude Code or Codex session** — this server read its policy at',
         'startup and the client received the instructions during the initial handshake. Neither is',
         're-read mid-session, so tell the user to restart before expecting new behaviour.',
       ];
