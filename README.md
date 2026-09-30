@@ -4,7 +4,7 @@ An OAK.memory plugin for **Codex and Claude Code** that provides persistent, cro
 about you, backed by a real vector+graph database rather than flat markdown notes.
 
 Claude Code's built-in memory is a folder of markdown notes. That's fine for lightweight preferences, but it
-doesn't do semantic search, doesn't rank by relevance, and doesn't model relationships between facts. This
+doesn't do semantic search, doesn't rank by relevance, and doesn't model relationships between facts.
 This plugin integrates [OAK.memory](https://openaikits.com) — an autonomous memory
 infrastructure for AI ([`@openaikits/memory`](https://github.com/fredriccliver/Memory),
 [technical paper](https://lnkd.in/gqgzejUV)) — exposed as an MCP server, so Codex and Claude can recall and store facts
@@ -188,8 +188,8 @@ npm run setup
 `npm run setup` is idempotent — it checks each piece and only does what's missing, so re-running it is safe and
 is also the fastest way to diagnose a broken install. It starts the Postgres container (named volume,
 `--restart unless-stopped`, so memories survive both `docker rm` and a reboot), creates the `vector` extension,
-pulls the embedding model, writes `~/.config/oak-memory/oak-memory.env`, builds both client packages, and
-finishes with a smoke test that makes
+pulls the embedding model, writes the selected config file, ensures the Claude and Codex bundles are present
+and synchronized, and finishes with a smoke test that makes
 a **real database call** — because startup and `tools/list` both pass even when the database is unreachable.
 
 It needs [Docker](https://www.docker.com/products/docker-desktop/) and [Ollama](https://ollama.com/download)
@@ -263,10 +263,13 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
 1. `process.env` — exported before launching the client.
 2. `<plugin root>/.env` — convenient when running from a checkout.
 3. `~/.config/oak-memory/oak-memory.env` — **the one to use for a new installed plugin.**
+4. `~/.claude/oak-memory.env` — fallback for an existing Claude Code installation when (3) does not set
+   `MEMORY_DATABASE_URL`.
 
 Prefer (3). It sits outside every client's replaceable plugin cache and can be shared by Codex and Claude
-Code. Existing `~/.claude/oak-memory.env` installations remain supported and are used automatically until a
-shared config file is created. Set `OAK_CONFIG_DIR` to choose a different client-neutral location.
+Code. Existing `~/.claude/oak-memory.env` installations remain supported and are used automatically until the
+shared config sets `MEMORY_DATABASE_URL`; an empty shared file or one missing that required value cannot mask
+a working legacy configuration. Set `OAK_CONFIG_DIR` to explicitly choose a different client-neutral location.
 
 > Claude Code's `${VAR}` substitution in `.mcp.json` does **not** resolve to an empty string when `VAR` is
 > unset — it passes the literal `"${VAR}"` through. `readEnvVar()` treats that shape as unset, so an unset

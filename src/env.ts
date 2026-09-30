@@ -57,6 +57,31 @@ function loadEnvFile(filePath: string): void {
   }
 }
 
+function envFileSets(filePath: string, name: string): boolean {
+  let content: string;
+  try {
+    content = fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return false;
+  }
+
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq === -1 || line.slice(0, eq).trim() !== name) continue;
+    let value = line.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    return value.length > 0 && !/^\$\{.*\}$/.test(value);
+  }
+  return false;
+}
+
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const pluginRoot =
   process.env.PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, '..');
@@ -68,9 +93,12 @@ const legacyClaudeConfigDir =
 const legacyEnvFile = path.join(legacyClaudeConfigDir, 'oak-memory.env');
 
 // Existing Claude-only installs keep working without migration. New installs
-// use a client-neutral location shared by Claude Code and Codex.
+// use a client-neutral location shared by Claude Code and Codex. A stray empty
+// shared file must not mask a complete legacy configuration.
 const userEnvFile =
-  process.env.OAK_CONFIG_DIR || fs.existsSync(sharedEnvFile) || !fs.existsSync(legacyEnvFile)
+  process.env.OAK_CONFIG_DIR ||
+  envFileSets(sharedEnvFile, 'MEMORY_DATABASE_URL') ||
+  !envFileSets(legacyEnvFile, 'MEMORY_DATABASE_URL')
     ? sharedEnvFile
     : legacyEnvFile;
 

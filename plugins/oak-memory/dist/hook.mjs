@@ -10,7 +10,7 @@ var RECALL_LEVELS = ["minimal", "balanced", "aggressive"];
 var DEFAULT_AUTOSAVE = true;
 var DEFAULT_RECALL = "balanced";
 var RECALL_RULES = {
-  minimal: 'Call `recallMemory` only when the user points at the past themselves \u2014 "remember when", "like I told you", "my usual setup" \u2014 or when they run `/memory-recall`. Otherwise do not go looking; answer from what is in front of you.',
+  minimal: 'Call `recallMemory` only when the user points at the past themselves \u2014 "remember when", "like I told you", "my usual setup" \u2014 or explicitly asks you to search memory. Otherwise do not go looking; answer from what is in front of you.',
   balanced: "Call `recallMemory` when the question plausibly depends on this user's preferences, past decisions, or personal context \u2014 especially before advising, recommending, or making a choice on their behalf. Skip it for self-contained or mechanical requests where nothing about them would change the answer.",
   aggressive: "Call `recallMemory` before every substantive answer, not just the ones that obviously depend on personal context \u2014 assume something relevant is stored until a search says otherwise. Prefer several narrow queries over one broad one. Never conclude you don't know something about this user without checking first: an empty result costs one call, a wrong assumption costs their trust."
 };
@@ -86,13 +86,33 @@ function loadEnvFile(filePath) {
     }
   }
 }
+function envFileSets(filePath, name) {
+  let content;
+  try {
+    content = fs.readFileSync(filePath, "utf8");
+  } catch {
+    return false;
+  }
+  for (const rawLine of content.split("\n")) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq === -1 || line.slice(0, eq).trim() !== name) continue;
+    let value = line.slice(eq + 1).trim();
+    if (value.startsWith('"') && value.endsWith('"') || value.startsWith("'") && value.endsWith("'")) {
+      value = value.slice(1, -1);
+    }
+    return value.length > 0 && !/^\$\{.*\}$/.test(value);
+  }
+  return false;
+}
 var moduleDir = path.dirname(fileURLToPath(import.meta.url));
 var pluginRoot = process.env.PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, "..");
 var sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), ".config", "oak-memory");
 var sharedEnvFile = path.join(sharedConfigDir, "oak-memory.env");
 var legacyClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), ".claude");
 var legacyEnvFile = path.join(legacyClaudeConfigDir, "oak-memory.env");
-var userEnvFile = process.env.OAK_CONFIG_DIR || fs.existsSync(sharedEnvFile) || !fs.existsSync(legacyEnvFile) ? sharedEnvFile : legacyEnvFile;
+var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
 var defaultPolicyFile = path.join(path.dirname(userEnvFile), "oak-memory-policy.md");
 loadEnvFile(path.join(pluginRoot, ".env"));
 loadEnvFile(userEnvFile);

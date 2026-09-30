@@ -40,8 +40,29 @@ const sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), '.
 const sharedEnvFile = path.join(sharedConfigDir, 'oak-memory.env');
 const legacyConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
 const legacyEnvFile = path.join(legacyConfigDir, 'oak-memory.env');
+
+function envFileSets(filePath, name) {
+  try {
+    return fs
+      .readFileSync(filePath, 'utf8')
+      .split('\n')
+      .some(rawLine => {
+        const line = rawLine.trim();
+        if (!line || line.startsWith('#')) return false;
+        const eq = line.indexOf('=');
+        if (eq === -1 || line.slice(0, eq).trim() !== name) return false;
+        const value = line.slice(eq + 1).trim().replace(/^(['"])(.*)\1$/, '$2');
+        return value.length > 0 && !/^\$\{.*\}$/.test(value);
+      });
+  } catch {
+    return false;
+  }
+}
+
 const envFile =
-  process.env.OAK_CONFIG_DIR || fs.existsSync(sharedEnvFile) || !fs.existsSync(legacyEnvFile)
+  process.env.OAK_CONFIG_DIR ||
+  envFileSets(sharedEnvFile, 'MEMORY_DATABASE_URL') ||
+  !envFileSets(legacyEnvFile, 'MEMORY_DATABASE_URL')
     ? sharedEnvFile
     : legacyEnvFile;
 const policyFile = path.join(path.dirname(envFile), 'oak-memory-policy.md');
@@ -226,7 +247,7 @@ const SCOPES = [
 
 const TRIGGERS = [
   ['proactive', 'your AI assistant decides, and saves as it learns'],
-  ['manual', 'nothing is stored unless you run /memory-save'],
+  ['manual', 'nothing is stored unless you explicitly ask the assistant'],
 ];
 
 const RECALLS = [
@@ -410,12 +431,24 @@ MEMORY_DATABASE_URL=${DB_URL}
 
 function ensureBuild() {
   step('Build');
-  const bundle = path.join(repoRoot, 'dist', 'index.mjs');
-  if (!fs.existsSync(bundle)) {
-    info('dist/index.mjs missing — building');
+  const sharedDir = path.join(repoRoot, 'dist');
+  const codexDir = path.join(repoRoot, 'plugins', 'oak-memory', 'dist');
+  const bundleNames = ['index.mjs', 'hook.mjs'];
+  const bundlesMatch = bundleNames.every(name => {
+    const sharedBundle = path.join(sharedDir, name);
+    const codexBundle = path.join(codexDir, name);
+    return (
+      fs.existsSync(sharedBundle) &&
+      fs.existsSync(codexBundle) &&
+      fs.readFileSync(sharedBundle).equals(fs.readFileSync(codexBundle))
+    );
+  });
+
+  if (!bundlesMatch) {
+    info('client bundles missing or out of sync — building');
     execFileSync('npm', ['run', 'build'], { cwd: repoRoot, stdio: 'inherit' });
   }
-  ok('dist/index.mjs present');
+  ok('Claude and Codex bundles present and synchronized');
 }
 
 // ---------------------------------------------------------------- Smoke test

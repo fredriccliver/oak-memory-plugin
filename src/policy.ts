@@ -9,7 +9,8 @@
  * Reading and writing are deliberately separate. Writing is the side with the
  * privacy cost, so it gets its own switch; searching what the user already
  * chose to store costs them nothing but latency, which is why the axes have
- * different defaults and why /memory-save can override one without the other.
+ * different defaults and why an explicit save request can override one without
+ * the other.
  *
  * The policy's entire job is to reach the model, so it travels three paths: the
  * MCP `instructions` field (injected once per session into the system prompt),
@@ -64,7 +65,7 @@ export const DEFAULT_RECALL = 'balanced' satisfies RecallLevel;
 const RECALL_RULES: Record<RecallLevel, string> = {
   minimal:
     'Call `recallMemory` only when the user points at the past themselves — "remember when", ' +
-    '"like I told you", "my usual setup" — or when they run `/memory-recall`. Otherwise do not go ' +
+    '"like I told you", "my usual setup" — or explicitly asks you to search memory. Otherwise do not go ' +
     'looking; answer from what is in front of you.',
   balanced:
     'Call `recallMemory` when the question plausibly depends on this user\'s preferences, past ' +
@@ -141,8 +142,9 @@ export function autosaveRule(policy: MemoryPolicy): string {
         'initiative — do not wait to be asked. Call `recallMemory` first to check for an existing ' +
         'or conflicting version, and call `updateMemory` on that one instead of storing a duplicate.'
     : 'Do NOT call `createMemory` on your own initiative, no matter how clearly a fact fits the ' +
-        'scope above. Write only when the user explicitly asks you to — `/memory-save`, "remember ' +
-        'this", or similar. This restricts writing only: recall stays proactive, and reading ' +
+        'scope above. Write only when the user explicitly asks you to — "remember this", an ' +
+        'equivalent client command, or similar. This restricts writing only: recall stays proactive, and ' +
+        'reading ' +
         'memory never needs permission.';
 }
 
