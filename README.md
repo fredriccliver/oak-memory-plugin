@@ -143,11 +143,14 @@ it does not outrank it.
 
 Three independent axes, chosen at `npm run setup` and changeable any time:
 
-| Axis | Variable | Values | Default |
+| Axis | Variable | Values | Setup wizard default |
 |---|---|---|---|
 | **What to remember** | `MEMORY_POLICY_SCOPE` | `preferences`, `important`, `everything`, `custom` | `everything` |
 | **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only when explicitly asked) | `true` |
 | **How hard to search** | `MEMORY_POLICY_RECALL` | `minimal`, `balanced`, `aggressive` | `balanced` |
+
+The scope has no runtime default: if `MEMORY_POLICY_SCOPE` is absent or invalid, writes fail closed. The
+`everything` value above is only the choice preselected by the interactive setup wizard.
 
 Reading and writing are separate axes because they have different costs. Writing is the side with the privacy
 question, so it gets its own switch; searching what you already chose to store costs nothing but a lookup.
@@ -342,6 +345,10 @@ codex plugin add oak-memory@oak-memory-local
 Start a new Codex task after installation so the skill and MCP tools are loaded. Review and trust the bundled
 `UserPromptSubmit` hook when Codex asks; non-managed hooks do not run until they are trusted.
 
+> **Required for full policy behavior:** approve that hook before relying on proactive recall or autosave.
+> The MCP tools still work without it, but the per-prompt policy reminder is absent, so those proactive
+> behaviors can become less reliable without an obvious error.
+
 ### Claude Code
 
 This repo remains its own Claude marketplace (`.claude-plugin/marketplace.json`), so the existing integration
@@ -373,6 +380,7 @@ Restart Claude Code. No shell exports, no `--plugin-dir` flag, no per-project se
 ```bash
 npm install          # postinstall runs `npm run build` automatically
 npm run setup        # idempotent: provision DB + model + config, then smoke-test
+npm test             # typecheck + config-migration regression test
 npm run typecheck    # tsc --noEmit
 npm run build        # build shared bundles, then sync the self-contained Codex package
 ```
