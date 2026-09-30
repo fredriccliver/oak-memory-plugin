@@ -277,6 +277,11 @@ primary file and missing values fall back to the other one, so moving the URL be
 silently disable writes. Set `OAK_CONFIG_DIR` to explicitly choose one client-neutral location with no legacy
 fallback.
 
+The primary file always wins for keys it contains, including invalid values; fallback is for missing values,
+not error recovery. If a partially migrated policy is reported as invalid, remove the mistaken policy key
+from the primary file to keep using the legacy value, or run `npm run setup -- --reconfigure` to write a
+complete policy into the primary file.
+
 > Claude Code's `${VAR}` substitution in `.mcp.json` does **not** resolve to an empty string when `VAR` is
 > unset — it passes the literal `"${VAR}"` through. `readEnvVar()` treats that shape as unset, so an unset
 > var falls through to the files above instead of becoming a garbage connection string.
@@ -430,10 +435,10 @@ Any smoke test for this must therefore run the bundle **from a directory with no
 
 ## Verification / smoke test
 
-Do this standalone, before wiring the plugin into Claude Code:
+Do this standalone, before wiring the plugin into Codex or Claude Code:
 
 0. **Relocation check — the one that actually matters.** Copy `dist/index.mjs` alone into an empty directory
-   (no `node_modules`, no `.env`), set `CLAUDE_PLUGIN_ROOT` to it, and call a tool that **hits the database**
+   (no `node_modules`, no `.env`), set `PLUGIN_ROOT` (or legacy `CLAUDE_PLUGIN_ROOT`) to it, and call a tool that **hits the database**
    (`listMemories` is the cheapest — it skips the Ollama embedding round-trip). This reproduces installed-plugin
    conditions exactly. Startup and `tools/list` succeeding prove nothing here: both passed while `pg` was
    unresolvable, and the failure only appeared on the first DB call.
@@ -447,8 +452,13 @@ Do this standalone, before wiring the plugin into Claude Code:
    - `updateMemory({memoryId, content: "Moved to Busan"})` → `recallMemory` again with the same query →
      confirm the updated content comes back.
    - `deleteMemory({memoryId})` → `recallMemory` again → confirm it's gone.
-4. Only after 1–3 pass: test it loaded into a real Claude Code session (see below) before any permanent
+4. Only after 1–3 pass: test it loaded into a real Codex or Claude Code session (see below) before any permanent
    install.
+
+For Codex, install the local package as described above, start a fresh task, approve the bundled
+`UserPromptSubmit` hook, and verify the OAK.memory skill plus all 10 MCP tools are present. Exercise
+`getMemoryPolicy` and one real database-backed read from the installed `plugins/oak-memory/dist` package;
+the root bundle passing does not by itself prove the packaged path is wired correctly.
 
 ### Testing inside a real Claude Code session
 

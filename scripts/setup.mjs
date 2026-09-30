@@ -41,6 +41,8 @@ const sharedEnvFile = path.join(sharedConfigDir, 'oak-memory.env');
 const legacyConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
 const legacyEnvFile = path.join(legacyConfigDir, 'oak-memory.env');
 
+// Keep this selection predicate in sync with src/env.ts. Setup must write the
+// same primary file the installed MCP server will read.
 function envFileSets(filePath, name) {
   try {
     return fs

@@ -30404,7 +30404,15 @@ var updateMemoryInputSchema = {
   memoryId: external_exports.string().describe("UUID of the memory to update (from a recallMemory result, not a table index)."),
   content: external_exports.string().describe("Updated memory content (natural language). Store the changed personal info.")
 };
-var updateMemoryDescription = `Update an existing memory.
+function updateMemoryDescription(policy) {
+  if (policy.scope === null) {
+    return `Updating memory content is currently disabled, and calling this tool will fail.
+
+**Why**: ${scopeRule(policy)}
+
+Deletion remains available so the user can remove data even while no write scope is configured.`;
+  }
+  return `Update an existing memory.
 
 **When to use**:
 - recallMemory returned a memory whose info has since changed or was inaccurate
@@ -30415,15 +30423,24 @@ var updateMemoryDescription = `Update an existing memory.
 - Prefer update over delete-then-create; updating preserves existing links.
 
 **Notes**: memoryId must be a real UUID from a recallMemory result.`;
+}
 function registerUpdateMemory(server, env) {
   server.registerTool(
     "updateMemory",
     {
       title: "Update memory",
-      description: updateMemoryDescription,
+      description: updateMemoryDescription(env.policy),
       inputSchema: updateMemoryInputSchema
     },
     async ({ memoryId, content }) => {
+      if (env.policy.scope === null) {
+        return textResult(
+          `Refused: no memory policy is set, so there is no scope permitting memory content updates.
+
+Nothing was changed. Deletion remains available, or the user can choose a memory policy and restart the AI client before retrying.`,
+          true
+        );
+      }
       const { toolHandler } = await getMemoryClient(env);
       const result = await toolHandler.handleUpdateMemory({ memoryId, content });
       if (!result.success || !result.data) {
