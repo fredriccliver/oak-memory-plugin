@@ -1,0 +1,17 @@
+{
+  "description": "Keeps the user's recall and save policy present at the point where Codex handles each prompt.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/dist/hook.mjs\"",
+            "timeout": 10,
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ]
+  }
+}

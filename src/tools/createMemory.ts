@@ -67,8 +67,8 @@ export function registerCreateMemory(server: any, env: Env) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting this.\n\n` +
             `Nothing was stored. Tell the user what you were about to store, and that choosing a ` +
-            `policy with \`/memory-config\` will let it through — their choice applies after ` +
-            `restarting Claude Code.`,
+            `memory policy will let it through — their choice applies after ` +
+            `restarting the AI client.`,
           true,
         );
       }

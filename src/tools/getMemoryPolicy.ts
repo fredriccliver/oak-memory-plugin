@@ -84,7 +84,7 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
         // The server loads policy once at startup and hands `instructions` to the
         // client during the initialize handshake. Nothing re-reads either after
         // that, so an edit made now is invisible until the process restarts.
-        'Changes take effect in the **next Claude Code session** — this server read its policy at',
+        'Changes take effect in the **next Claude Code or Codex session** — this server read its policy at',
         'startup and the client received the instructions during the initial handshake. Neither is',
         're-read mid-session, so tell the user to restart before expecting new behaviour.',
       ];

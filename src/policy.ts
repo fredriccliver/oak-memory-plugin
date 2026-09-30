@@ -13,7 +13,7 @@
  *
  * The policy's entire job is to reach the model, so it travels three paths: the
  * MCP `instructions` field (injected once per session into the system prompt),
- * the tool descriptions (which travel with the tools), and the Stop hook
+ * the tool descriptions (which travel with the tools), and the lifecycle hook
  * (re-stated at every turn boundary). The first two, because a client that
  * ignores `instructions` still renders tool descriptions, and a client that
  * defers tool schemas until first use still shows `instructions`. The third
@@ -130,8 +130,8 @@ const UNCONFIGURED_WRITE_RULE =
   'cannot consent to a scope they have not seen.\n\n' +
   'So raise it instead. If they ask you to remember something, or if you learn something you would ' +
   'otherwise have saved, tell them plainly that their memory policy is not set, say what was about ' +
-  'to be stored, and point them at `/memory-config` to choose. Then honour whatever they pick — ' +
-  'their answer takes effect once they restart Claude Code.\n\n' +
+  'to be stored, and point them to the memory configuration workflow. Then honour whatever they pick — ' +
+  'their answer takes effect once they restart their AI client.\n\n' +
   'This blocks writing only. Memories already stored are read and searched as normal.';
 
 export function autosaveRule(policy: MemoryPolicy): string {

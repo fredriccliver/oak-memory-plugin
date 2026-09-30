@@ -1,16 +1,17 @@
 {
   "name": "oak-memory-plugin",
   "version": "0.2.0",
-  "description": "Claude Code plugin exposing @openaikits/memory (Postgres+pgvector vector/graph memory engine) as an MCP server for persistent, cross-project long-term memory.",
+  "description": "Claude Code and Codex plugin exposing @openaikits/memory as an MCP server for persistent, cross-project long-term memory.",
   "type": "module",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "postinstall": "npm run build",
     "setup": "node scripts/setup.mjs",
-    "build": "npm run build:server && npm run build:hook",
+    "build": "npm run build:server && npm run build:hook && npm run build:codex",
     "build:server": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --alias:@openaikits/memory=./node_modules/@openaikits/memory/src/index.ts --external:pg-native --banner:js=\"import{createRequire as __oakCreateRequire}from'node:module';const require=__oakCreateRequire(import.meta.url);\"",
     "build:hook": "esbuild src/hook.ts --bundle --platform=node --format=esm --outfile=dist/hook.mjs",
+    "build:codex": "node scripts/build-codex-package.mjs",
     "dev": "npm run build && node dist/index.mjs",
     "typecheck": "tsc --noEmit",
     "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs"
