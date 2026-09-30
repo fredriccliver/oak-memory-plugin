@@ -30458,7 +30458,15 @@ var updateMemoryLinkInputSchema = {
   toMemoryId: external_exports.string().describe("Target memory UUID (from a recallMemory result)."),
   action: external_exports.enum(["add", "remove"]).describe("Whether to add or remove the link.")
 };
-var updateMemoryLinkDescription = `Add or remove a link between two memories.
+function updateMemoryLinkDescription(policy) {
+  const policyNote = policy.scope === null ? `
+
+Adding links is currently disabled and will fail because no write scope is configured.
+
+**Why**: ${scopeRule(policy)}
+
+Removing links remains available for cleanup.` : "";
+  return `Add or remove a link between two memories.
 
 **Purpose**: linking improves future recall \u2014 memories found via different queries or long chains may not
 surface together otherwise. Linking increases the chance related memories are used together.
@@ -30470,13 +30478,14 @@ surface together otherwise. Linking increases the chance related memories are us
 **Notes**:
 - Use real UUIDs from recallMemory results, not labels.
 - For a bidirectional link, call this twice (fromMemoryId<->toMemoryId).
-- Only add links when the relation is clear; don't re-link already-linked pairs.`;
+- Only add links when the relation is clear; don't re-link already-linked pairs.${policyNote}`;
+}
 function registerUpdateMemoryLink(server, env) {
   server.registerTool(
     "updateMemoryLink",
     {
       title: "Update memory link",
-      description: updateMemoryLinkDescription,
+      description: updateMemoryLinkDescription(env.policy),
       inputSchema: updateMemoryLinkInputSchema
     },
     async ({
@@ -30484,6 +30493,14 @@ function registerUpdateMemoryLink(server, env) {
       toMemoryId,
       action
     }) => {
+      if (env.policy.scope === null && action === "add") {
+        return textResult(
+          `Refused: no memory policy is set, so there is no scope permitting new memory links.
+
+Nothing was changed. Removing an existing link remains available for cleanup.`,
+          true
+        );
+      }
       const { toolHandler } = await getMemoryClient(env);
       const result = await toolHandler.handleUpdateMemoryLink({ fromMemoryId, toMemoryId, action });
       if (!result.success || !result.data) {
@@ -30504,7 +30521,15 @@ var adjustMemoryLinkStrengthInputSchema = {
   ),
   type: external_exports.string().optional().describe("Edge type to adjust (default 'related').")
 };
-var adjustMemoryLinkStrengthDescription = `Set the strength of an existing link between two memories.
+function adjustMemoryLinkStrengthDescription(policy) {
+  if (policy.scope === null) {
+    return `Changing memory link strength is currently disabled, and calling this tool will fail.
+
+**Why**: ${scopeRule(policy)}
+
+Deleting memories and removing links remain available for cleanup.`;
+  }
+  return `Set the strength of an existing link between two memories.
 
 **Purpose**: edge strength is how hard recall pulls two memories together \u2014 a tuning knob updateMemoryLink
 doesn't expose (it only adds/removes at a fixed default). Use this in a curation pass to make tightly-coupled
@@ -30520,12 +30545,13 @@ related things actually are.
 - The link must already exist \u2014 add it first with updateMemoryLink. This only re-weights.
 - Adjusts every stored edge between the two memories (both directions) to the target.
 - Sets an absolute target, not a delta.`;
+}
 function registerAdjustMemoryLinkStrength(server, env) {
   server.registerTool(
     "adjustMemoryLinkStrength",
     {
       title: "Adjust memory link strength",
-      description: adjustMemoryLinkStrengthDescription,
+      description: adjustMemoryLinkStrengthDescription(env.policy),
       inputSchema: adjustMemoryLinkStrengthInputSchema
     },
     async ({
@@ -30534,6 +30560,14 @@ function registerAdjustMemoryLinkStrength(server, env) {
       strength,
       type
     }) => {
+      if (env.policy.scope === null) {
+        return textResult(
+          `Refused: no memory policy is set, so there is no scope permitting memory link changes.
+
+Nothing was changed. Deleting memories and removing links remain available for cleanup.`,
+          true
+        );
+      }
       if (fromMemoryId === toMemoryId) {
         return textResult("Cannot adjust a link from a memory to itself.", true);
       }
@@ -31474,9 +31508,9 @@ function registerGetMemoryPolicy(server, env) {
         ...unset ? [
           REASON_HEADLINES[policy.reason ?? "unset"],
           "",
-          "**Nothing is being stored, and `createMemory` is refused.** Memories already stored are",
-          "still readable and searchable \u2014 this affects writing only. No default scope has been",
-          "substituted: the user has to choose one."
+          "**Nothing new is being stored.** `createMemory`, content updates, new links, and link-strength",
+          "changes are refused. Memories already stored remain readable; deletion and link removal stay",
+          "available for cleanup. No default scope has been substituted: the user has to choose one."
         ] : [
           `- **Scope**: ${policy.scope}`,
           `- **Autosave**: ${policy.autosave ? "on \u2014 saves proactively" : "off \u2014 saves only when asked"}`,

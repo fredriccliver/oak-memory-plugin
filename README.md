@@ -178,9 +178,10 @@ or `/memory-config stop saving unless I ask` inside Claude Code.
 > already stored. To remove existing memories, use `/memory-graph` to see them and `deleteMemory` to drop them.
 
 A bad policy value is never fatal — unlike a missing `MEMORY_DATABASE_URL`, the server stays readable and
-warns on stderr. Writes fail closed until the scope is fixed; `custom` with a missing or empty rule behaves
-the same way. This means the config file can disagree with what's running, which is why `getMemoryPolicy`
-reports the resolved policy instead of just reading the file back.
+warns on stderr. Content creation or updates, new links, and link-strength changes fail closed until the scope
+is fixed; deletion and link removal remain available for cleanup. `custom` with a missing or empty rule
+behaves the same way. This means the config file can disagree with what's running, which is why
+`getMemoryPolicy` reports the resolved policy instead of just reading the file back.
 
 ## Setup
 

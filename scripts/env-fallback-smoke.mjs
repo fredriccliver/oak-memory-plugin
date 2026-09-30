@@ -84,6 +84,39 @@ try {
     throw new Error(`Unconfigured updateMemory was not refused:\n${text}`);
   }
   console.log('unconfigured memory content update guard: passed');
+
+  for (const request of [
+    {
+      name: 'createMemory',
+      arguments: { content: 'must not write' },
+      label: 'createMemory',
+    },
+    {
+      name: 'updateMemoryLink',
+      arguments: {
+        fromMemoryId: '00000000-0000-0000-0000-000000000001',
+        toMemoryId: '00000000-0000-0000-0000-000000000002',
+        action: 'add',
+      },
+      label: 'new memory link',
+    },
+    {
+      name: 'adjustMemoryLinkStrength',
+      arguments: {
+        fromMemoryId: '00000000-0000-0000-0000-000000000001',
+        toMemoryId: '00000000-0000-0000-0000-000000000002',
+        strength: 0.8,
+      },
+      label: 'memory link strength change',
+    },
+  ]) {
+    const guarded = await unconfiguredClient.callTool(request);
+    const guardedText = guarded.content?.find((item) => item.type === 'text')?.text ?? '';
+    if (!guarded.isError || !guardedText.includes('Nothing was')) {
+      throw new Error(`Unconfigured ${request.label} was not refused:\n${guardedText}`);
+    }
+  }
+  console.log('unconfigured create/link mutation guards: passed');
 } finally {
   await unconfiguredClient.close();
   fs.rmSync(unconfiguredRoot, { recursive: true, force: true });
