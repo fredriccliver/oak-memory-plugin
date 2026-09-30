@@ -16,10 +16,28 @@ fs.writeFileSync(
   'MEMORY_POLICY_SCOPE=preferences\nMEMORY_POLICY_AUTOSAVE=false\nMEMORY_POLICY_RECALL=minimal\n',
 );
 
+const childEnv = { ...process.env, HOME: root };
+for (const name of [
+  'OAK_CONFIG_DIR',
+  'CLAUDE_CONFIG_DIR',
+  'PLUGIN_ROOT',
+  'CLAUDE_PLUGIN_ROOT',
+  'MEMORY_DATABASE_URL',
+  'MEMORY_ENTITY_ID',
+  'MEMORY_POLICY_SCOPE',
+  'MEMORY_POLICY_AUTOSAVE',
+  'MEMORY_POLICY_RECALL',
+  'MEMORY_POLICY_FILE',
+  'OLLAMA_BASE_URL',
+  'OLLAMA_EMBEDDING_MODEL',
+]) {
+  delete childEnv[name];
+}
+
 const transport = new StdioClientTransport({
   command: 'node',
   args: [new URL('../dist/index.mjs', import.meta.url).pathname],
-  env: { ...process.env, HOME: root },
+  env: childEnv,
   stderr: 'pipe',
 });
 const client = new Client({ name: 'oak-env-fallback-smoke', version: '1.0.0' });
@@ -27,7 +45,12 @@ try {
   await client.connect(transport);
   const result = await client.callTool({ name: 'getMemoryPolicy', arguments: {} });
   const text = result.content?.find((item) => item.type === 'text')?.text ?? '';
-  for (const expected of ['**Scope**: preferences', '**Autosave**: off', '**Recall**: minimal']) {
+  for (const expected of [
+    '**Scope**: preferences',
+    '**Autosave**: off',
+    '**Recall**: minimal',
+    path.join(root, '.claude', 'oak-memory.env'),
+  ]) {
     if (!text.includes(expected)) throw new Error(`Missing expected policy output: ${expected}\n${text}`);
   }
   console.log('shared database URL + legacy policy fallback: passed');

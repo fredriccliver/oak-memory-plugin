@@ -325,7 +325,7 @@ point different client environments at different `MEMORY_ENTITY_ID` values — t
 just different logical graphs.
 
 This is also why `/memory-graph` is a genuinely useful view rather than a debug tool: the associative network
-*is* the personalization, so being able to see and prune it is how you steer what Claude recalls.
+*is* the personalization, so being able to see and prune it is how you steer what the client recalls.
 
 ## Install
 

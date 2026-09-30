@@ -80,6 +80,13 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
         `- \`MEMORY_POLICY_AUTOSAVE\` — true, false`,
         `- \`MEMORY_POLICY_RECALL\` — ${RECALL_LEVELS.join(', ')}`,
         `- A \`custom\` scope's rule text lives in \`${env.policyFile}\``,
+        ...(env.fallbackEnvFile
+          ? [
+              '',
+              `Missing values also fall back to \`${env.fallbackEnvFile}\` for migration compatibility.`,
+              `Values in \`${env.envFile}\` take precedence.`,
+            ]
+          : []),
         '',
         // The server loads policy once at startup and hands `instructions` to the
         // client during the initialize handshake. Nothing re-reads either after

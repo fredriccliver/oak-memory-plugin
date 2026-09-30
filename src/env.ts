@@ -133,6 +133,8 @@ export interface Env {
   policy: MemoryPolicy;
   /** Resolved paths, reported by getMemoryPolicy so the user knows what to edit. */
   envFile: string;
+  /** Legacy/shared compatibility source used only to fill missing values. */
+  fallbackEnvFile?: string;
   policyFile: string;
 }
 
@@ -288,6 +290,7 @@ export function loadEnv(): Env {
     ollamaEmbeddingModel: readEnvVar('OLLAMA_EMBEDDING_MODEL') ?? 'bge-m3',
     policy: loadPolicy(),
     envFile: userEnvFile,
+    fallbackEnvFile: fallbackUserEnvFile,
     policyFile: resolvePolicyFile(),
   };
 }

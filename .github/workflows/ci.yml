@@ -24,3 +24,7 @@ jobs:
           cmp dist/index.mjs plugins/oak-memory/dist/index.mjs
           cmp dist/hook.mjs plugins/oak-memory/dist/hook.mjs
       - run: npm run build
+      - name: Verify generated bundles remain synchronized
+        run: |
+          cmp dist/index.mjs plugins/oak-memory/dist/index.mjs
+          cmp dist/hook.mjs plugins/oak-memory/dist/hook.mjs

@@ -26709,6 +26709,7 @@ function loadEnv() {
     ollamaEmbeddingModel: readEnvVar("OLLAMA_EMBEDDING_MODEL") ?? "bge-m3",
     policy: loadPolicy(),
     envFile: userEnvFile,
+    fallbackEnvFile: fallbackUserEnvFile,
     policyFile: resolvePolicyFile()
   };
 }
@@ -31484,6 +31485,11 @@ function registerGetMemoryPolicy(server, env) {
         `- \`MEMORY_POLICY_AUTOSAVE\` \u2014 true, false`,
         `- \`MEMORY_POLICY_RECALL\` \u2014 ${RECALL_LEVELS.join(", ")}`,
         `- A \`custom\` scope's rule text lives in \`${env.policyFile}\``,
+        ...env.fallbackEnvFile ? [
+          "",
+          `Missing values also fall back to \`${env.fallbackEnvFile}\` for migration compatibility.`,
+          `Values in \`${env.envFile}\` take precedence.`
+        ] : [],
         "",
         // The server loads policy once at startup and hands `instructions` to the
         // client during the initialize handshake. Nothing re-reads either after
