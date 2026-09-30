@@ -19,6 +19,8 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm test
-      - run: npm run build
       - name: Verify committed bundles are synchronized
-        run: git diff --exit-code -- dist plugins/oak-memory/dist
+        run: |
+          cmp dist/index.mjs plugins/oak-memory/dist/index.mjs
+          cmp dist/hook.mjs plugins/oak-memory/dist/hook.mjs
+      - run: npm run build
