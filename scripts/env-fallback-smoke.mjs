@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -120,4 +121,23 @@ try {
 } finally {
   await unconfiguredClient.close();
   fs.rmSync(unconfiguredRoot, { recursive: true, force: true });
+}
+
+const invalidRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oak-env-invalid-'));
+try {
+  fs.writeFileSync(
+    path.join(invalidRoot, 'oak-memory.env'),
+    'MEMORY_DATABASE_URL=postgresql://unused\nMEMORY_POLICY_SCOPE=typo\n',
+  );
+  const result = spawnSync('node', [new URL('./setup.mjs', import.meta.url).pathname], {
+    encoding: 'utf8',
+    env: { ...childEnv, OAK_CONFIG_DIR: invalidRoot },
+  });
+  const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+  if (result.status === 0 || !output.includes('Invalid memory policy')) {
+    throw new Error(`Setup did not reject an invalid primary policy before provisioning:\n${output}`);
+  }
+  console.log('invalid primary policy setup guard: passed');
+} finally {
+  fs.rmSync(invalidRoot, { recursive: true, force: true });
 }

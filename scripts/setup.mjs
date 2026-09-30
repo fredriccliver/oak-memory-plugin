@@ -293,15 +293,37 @@ async function resolvePolicy() {
   step('Memory policy');
 
   const existing = readEnvFile();
-  const currentScope = existing.match(/^\s*MEMORY_POLICY_SCOPE\s*=\s*(.+)$/m)?.[1].trim();
+  const currentValue = name =>
+    existing
+      .match(new RegExp(`^\\s*${name}\\s*=\\s*(.+)$`, 'm'))?.[1]
+      .trim()
+      .replace(/^(['"])(.*)\1$/, '$2');
+  const currentScope = currentValue('MEMORY_POLICY_SCOPE');
   if (currentScope && !RECONFIGURE) {
-    const currentAutosave = existing.match(/^\s*MEMORY_POLICY_AUTOSAVE\s*=\s*(.+)$/m)?.[1].trim();
-    const currentRecall = existing.match(/^\s*MEMORY_POLICY_RECALL\s*=\s*(.+)$/m)?.[1].trim();
+    const currentAutosave = currentValue('MEMORY_POLICY_AUTOSAVE');
+    const currentRecall = currentValue('MEMORY_POLICY_RECALL');
+    const problems = [];
+    if (!SCOPES.some(([scope]) => scope === currentScope)) {
+      problems.push(`MEMORY_POLICY_SCOPE=${currentScope}`);
+    }
+    if (currentAutosave && !['true', 'false'].includes(currentAutosave.toLowerCase())) {
+      problems.push(`MEMORY_POLICY_AUTOSAVE=${currentAutosave}`);
+    }
+    if (currentRecall && !RECALLS.some(([recall]) => recall === currentRecall)) {
+      problems.push(`MEMORY_POLICY_RECALL=${currentRecall}`);
+    }
+    if (problems.length > 0) {
+      fail(
+        `Invalid memory policy in ${envFile}: ${problems.join(', ')}`,
+        'The primary config intentionally wins over legacy fallback, even when invalid.\n' +
+          'Fix or remove those keys, or run `npm run setup -- --reconfigure` to replace them.',
+      );
+    }
     ok(
       'already configured — ' +
         describe({
           scope: currentScope,
-          autosave: currentAutosave !== 'false',
+          autosave: currentAutosave?.toLowerCase() !== 'false',
           recall: currentRecall ?? DEFAULT_RECALL,
         }),
     );

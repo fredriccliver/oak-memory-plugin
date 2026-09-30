@@ -355,6 +355,11 @@ Start a new Codex task after installation so the skill and MCP tools are loaded.
 > The MCP tools still work without it, but the per-prompt policy reminder is absent, so those proactive
 > behaviors can become less reliable without an obvious error.
 
+Codex injects `PLUGIN_ROOT` for installed plugin hooks; the hook command uses it to locate the packaged
+`dist/hook.mjs`. During verification, confirm the hook appears in the trust prompt and that a fresh task loads
+the OAK.memory skill. If either is absent, treat the installation as incomplete rather than relying on the MCP
+server alone.
+
 ### Claude Code
 
 This repo remains its own Claude marketplace (`.claude-plugin/marketplace.json`), so the existing integration

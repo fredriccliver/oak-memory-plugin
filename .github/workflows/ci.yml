@@ -18,12 +18,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm test
       - name: Verify committed bundles are synchronized
         run: |
           cmp dist/index.mjs plugins/oak-memory/dist/index.mjs
           cmp dist/hook.mjs plugins/oak-memory/dist/hook.mjs
-      - run: npm run build
+      - run: npm test
       - name: Verify generated bundles remain synchronized
         run: |
           cmp dist/index.mjs plugins/oak-memory/dist/index.mjs

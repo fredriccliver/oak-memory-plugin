@@ -46,8 +46,8 @@ export function registerUpdateMemory(server: any, env: Env) {
       if (env.policy.scope === null) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting memory content updates.\n\n` +
-            `Nothing was changed. Deletion remains available, or the user can choose a memory policy and ` +
-            `restart the AI client before retrying.`,
+            `Nothing was changed. Deletion remains available. Run the memory configuration workflow or ` +
+            `\`npm run setup -- --reconfigure\`, then restart the AI client before retrying.`,
           true,
         );
       }
