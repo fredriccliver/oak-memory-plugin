@@ -101,17 +101,29 @@ const userEnvFile =
   !envFileSets(legacyEnvFile, 'MEMORY_DATABASE_URL')
     ? sharedEnvFile
     : legacyEnvFile;
+const fallbackUserEnvFile = process.env.OAK_CONFIG_DIR
+  ? undefined
+  : userEnvFile === sharedEnvFile
+    ? legacyEnvFile
+    : sharedEnvFile;
 
 // A custom policy is prose, and prose wraps. It lives in its own file rather
 // than an env var because the KEY=VALUE parser above is line-oriented and would
 // silently truncate a multi-line rule at the first newline.
 const defaultPolicyFile = path.join(path.dirname(userEnvFile), 'oak-memory-policy.md');
+const fallbackPolicyFile = fallbackUserEnvFile
+  ? path.join(path.dirname(fallbackUserEnvFile), 'oak-memory-policy.md')
+  : undefined;
 
 // loadEnvFile never overwrites an already-set var, so earlier calls win.
 // "Already set" means readEnvVar-set: an unexpanded `${VAR}` from .mcp.json
 // counts as unset, so these files can supply the value it failed to expand.
 loadEnvFile(path.join(pluginRoot, '.env'));
 loadEnvFile(userEnvFile);
+// During migration, the selected file is authoritative but the other standard
+// location may still contain policy values that have not moved yet. Fill only
+// missing values from it; loadEnvFile never overwrites an earlier source.
+if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
 
 export interface Env {
   memoryDatabaseUrl: string;
@@ -154,7 +166,12 @@ function required(name: string): string {
 }
 
 function resolvePolicyFile(): string {
-  return readEnvVar('MEMORY_POLICY_FILE') ?? defaultPolicyFile;
+  const explicit = readEnvVar('MEMORY_POLICY_FILE');
+  if (explicit) return explicit;
+  if (fallbackPolicyFile && !fs.existsSync(defaultPolicyFile) && fs.existsSync(fallbackPolicyFile)) {
+    return fallbackPolicyFile;
+  }
+  return defaultPolicyFile;
 }
 
 function parseBool(value: string | undefined, fallback: boolean, warn: Warn): boolean {

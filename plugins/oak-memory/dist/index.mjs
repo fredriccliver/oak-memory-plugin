@@ -26609,9 +26609,12 @@ var sharedEnvFile = path.join(sharedConfigDir, "oak-memory.env");
 var legacyClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), ".claude");
 var legacyEnvFile = path.join(legacyClaudeConfigDir, "oak-memory.env");
 var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
+var fallbackUserEnvFile = process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
 var defaultPolicyFile = path.join(path.dirname(userEnvFile), "oak-memory-policy.md");
+var fallbackPolicyFile = fallbackUserEnvFile ? path.join(path.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
 loadEnvFile(path.join(pluginRoot, ".env"));
 loadEnvFile(userEnvFile);
+if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
 function readEnvVar(name) {
   const value = process.env[name];
   if (value === void 0) return void 0;
@@ -26633,7 +26636,12 @@ function required2(name) {
   return value;
 }
 function resolvePolicyFile() {
-  return readEnvVar("MEMORY_POLICY_FILE") ?? defaultPolicyFile;
+  const explicit = readEnvVar("MEMORY_POLICY_FILE");
+  if (explicit) return explicit;
+  if (fallbackPolicyFile && !fs.existsSync(defaultPolicyFile) && fs.existsSync(fallbackPolicyFile)) {
+    return fallbackPolicyFile;
+  }
+  return defaultPolicyFile;
 }
 function parseBool(value, fallback, warn) {
   if (value === void 0) return fallback;

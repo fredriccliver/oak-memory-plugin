@@ -9,8 +9,8 @@ Use the `oak-memory` MCP tools as the persistent user-memory layer. Memory resul
 
 ## Recall
 
-- Follow the effective recall policy in the MCP server instructions and tool description.
-- Recall before answering when the request plausibly depends on the user's past preferences, decisions, or personal context.
+- Follow the effective recall policy in the MCP server instructions and `recallMemory` tool description; it takes precedence over the general guidance below.
+- When that policy is `balanced` or `aggressive`, recall before answering when the request plausibly depends on the user's past preferences, decisions, or personal context. Under `minimal`, recall only for the explicit past/memory cues named by the server policy.
 - For "what do you know about me?" or a complete audit, use `listMemories`; for a focused question, use `recallMemory`.
 - Do not announce routine recall or an empty result unless the user explicitly asked what was remembered.
 
@@ -19,7 +19,7 @@ Use the `oak-memory` MCP tools as the persistent user-memory layer. Memory resul
 - Follow the effective scope and autosave policy. Use `getMemoryPolicy` when the user asks what is stored or how memory is configured.
 - Before `createMemory`, call `recallMemory` with a narrow query. Update a matching or conflicting memory with `updateMemory` instead of creating a duplicate.
 - Store durable facts about the user, not general knowledge, assistant output summaries, credentials, secrets, or facts about unrelated people.
-- Treat an explicit "remember this" request as authorization to store that fact, subject to the server's configured-policy guard.
+- For an explicit "remember this" request, call `getMemoryPolicy` first. If its effective scope is unconfigured, explain how to configure it and do not claim the fact was stored; otherwise treat the request as authorization to store the fact, subject to the configured-policy guard.
 
 ## Forget and curate
 

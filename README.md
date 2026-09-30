@@ -146,13 +146,14 @@ Three independent axes, chosen at `npm run setup` and changeable any time:
 | Axis | Variable | Values | Default |
 |---|---|---|---|
 | **What to remember** | `MEMORY_POLICY_SCOPE` | `preferences`, `important`, `everything`, `custom` | `everything` |
-| **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only on `/memory-save`) | `true` |
+| **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only when explicitly asked) | `true` |
 | **How hard to search** | `MEMORY_POLICY_RECALL` | `minimal`, `balanced`, `aggressive` | `balanced` |
 
 Reading and writing are separate axes because they have different costs. Writing is the side with the privacy
 question, so it gets its own switch; searching what you already chose to store costs nothing but a lookup.
-That's also why `/memory-save` and `/memory-recall` each override their own axis and not the other — running
-one *is* the decision the policy exists to make on your behalf.
+That's also why an explicit save or recall request overrides its own axis and not the other — making the
+request *is* the decision the policy exists to make on your behalf. Claude Code also exposes those requests
+as `/memory-save` and `/memory-recall`.
 
 `custom` takes your rule from `oak-memory-policy.md` beside the selected config file (override with
 `MEMORY_POLICY_FILE`).
@@ -258,18 +259,20 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
 | `MEMORY_POLICY_RECALL` | No (default `balanced`) | How hard to search before answering. |
 | `MEMORY_POLICY_FILE` | No (default beside `oak-memory.env`) | Where a `custom` scope's rule text lives. |
 
-`src/env.ts` resolves these in order, first hit wins:
+`src/env.ts` resolves these in order, first value wins:
 
 1. `process.env` — exported before launching the client.
 2. `<plugin root>/.env` — convenient when running from a checkout.
 3. `~/.config/oak-memory/oak-memory.env` — **the one to use for a new installed plugin.**
-4. `~/.claude/oak-memory.env` — fallback for an existing Claude Code installation when (3) does not set
-   `MEMORY_DATABASE_URL`.
+4. `~/.claude/oak-memory.env` — compatibility fallback for an existing Claude Code installation.
 
 Prefer (3). It sits outside every client's replaceable plugin cache and can be shared by Codex and Claude
 Code. Existing `~/.claude/oak-memory.env` installations remain supported and are used automatically until the
 shared config sets `MEMORY_DATABASE_URL`; an empty shared file or one missing that required value cannot mask
-a working legacy configuration. Set `OAK_CONFIG_DIR` to explicitly choose a different client-neutral location.
+a working legacy configuration. During migration, whichever standard file supplies the database URL is the
+primary file and missing values fall back to the other one, so moving the URL before the policy does not
+silently disable writes. Set `OAK_CONFIG_DIR` to explicitly choose one client-neutral location with no legacy
+fallback.
 
 > Claude Code's `${VAR}` substitution in `.mcp.json` does **not** resolve to an empty string when `VAR` is
 > unset — it passes the literal `"${VAR}"` through. `readEnvVar()` treats that shape as unset, so an unset
