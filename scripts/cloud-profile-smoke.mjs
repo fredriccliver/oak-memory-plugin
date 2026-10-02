@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -88,6 +89,19 @@ try {
     assert.equal((await client.callTool({ name: 'recallMemory', arguments: {} })).isError, true);
     assert.ok(!stderr.includes(keyA) && !stderr.includes(keyB), 'no credentials in diagnostics');
   } finally { await client.close(); }
+  revoked = false;
+  const runner = spawn(process.execPath, ['scripts/local-backend-roundtrip.mjs'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  let runnerOutput = ''; let runnerErrors = '';
+  runner.stdout.on('data', data => { runnerOutput += data; });
+  runner.stderr.on('data', data => { runnerErrors += data; });
+  runner.stdin.end(JSON.stringify({ endpoint, profiles: [
+    { name: 'personal', graphId: a, key: keyA, role: 'owner', authorUserId: 'person-1' },
+    { name: 'team', graphId: b, key: keyB, role: 'reader', authorUserId: 'person-1' },
+  ] }));
+  const runnerExit = await new Promise((resolve, reject) => { runner.on('error', reject); runner.on('exit', resolve); });
+  assert.equal(runnerExit, 0, 'Runtime fixture runner must pass mocked read-only integration');
+  assert.ok(runnerOutput.includes('PASS local backend SDK/stdio integration'));
+  assert.ok(!runnerOutput.includes(keyA) && !runnerOutput.includes(keyB) && !runnerErrors.includes(keyA) && !runnerErrors.includes(keyB));
   assert.ok(requests.includes(a) && requests.includes(b));
   console.log('Cloud profiles: SDK transport, no DB startup, identity, isolation, reader denial, revocation, in-flight snapshot and defaults verified.');
 } finally { http.closeAllConnections(); await new Promise(resolve => http.close(resolve)); rmSync(temp, { recursive: true, force: true }); }

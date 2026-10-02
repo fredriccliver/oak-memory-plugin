@@ -17,7 +17,8 @@
     "test:env-fallback": "node scripts/env-fallback-smoke.mjs",
     "typecheck": "tsc --noEmit",
     "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs",
-    "test:cloud-profiles": "node scripts/cloud-profile-smoke.mjs"
+    "test:cloud-profiles": "node scripts/cloud-profile-smoke.mjs",
+    "test:local-backend": "node scripts/local-backend-roundtrip.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

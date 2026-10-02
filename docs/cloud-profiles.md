@@ -90,3 +90,21 @@ without DB env, identity/role context, graph isolation, reader write denial,
 revocation, failed-switch behavior, in-flight graph snapshots, local switching,
 stored-default isolation, and credential-free diagnostics. It makes no production
 requests and creates no live keys or memories.
+
+## Disposable real-backend integration
+
+After the backend owner starts a disposable local Next/Postgres fixture, run
+`npm run test:local-backend` with runtime JSON on stdin. The runner accepts only
+an HTTP loopback `/api/mcp` endpoint with an explicit port. JSON contains
+`endpoint`, `profiles` (at least two entries with `name`, `graphId`, `key`, `role`,
+`authorUserId`), and optional `allowWrites: true`. Supply values through a secure
+local runtime handoff; never paste keys into a command, chat, or log. Keys remain
+in memory and in the child process environment; temporary profile metadata
+contains only environment references and is removed afterward.
+
+The runner checks the actual packaged stdio bridge, tool discovery, graph/role/
+author context, profile switching, invalid-key failure with prior-selection
+retention, and credential-free diagnostics. With explicit fixture write enablement,
+it creates unique disposable memories, verifies list/recall and original quotes,
+checks reader denial, and deletes only the memories it created in a cleanup block.
+It makes no production requests and never reads live plugin configuration.
