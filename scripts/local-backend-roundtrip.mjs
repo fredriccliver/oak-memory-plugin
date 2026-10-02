@@ -4,6 +4,8 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -38,7 +40,7 @@ try {
   writeFileSync(profileFile, JSON.stringify({ defaultProfile: first.name, profiles }), { mode: 0o600 });
   client = new Client({ name: 'oak-disposable-backend-integration', version: '1' });
   const transport = new StdioClientTransport({
-    command: process.execPath, args: [path.resolve('dist/index.mjs')],
+    command: process.execPath, args: [path.join(repoRoot, 'dist/index.mjs')],
     env: {
       PATH: process.env.PATH ?? '', HOME: temporary,
       OAK_CONFIG_DIR: temporary, PLUGIN_ROOT: temporary,
