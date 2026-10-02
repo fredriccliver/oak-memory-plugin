@@ -124,7 +124,9 @@ try {
   assert.equal((await session.callTool('createMemory')).isError, true, 'reader writes denied by server');
   await assert.rejects(session.select('wrong'));
   assert.equal(session.snapshot().name, 'team', 'failed switch keeps existing session');
+  await session.listTools();
   revoked = true;
+  assert.ok((await session.listTools()).tools.some(t => t.name === 'recallMemory'), 'last discovered schema remains available when authorization is revoked');
   await assert.rejects(session.callTool('recallMemory'));
   assert.equal(session.snapshot().name, 'team', 'revocation does not fall back');
   revoked = false;

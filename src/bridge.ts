@@ -16,6 +16,7 @@ const errorResult = () => ({ ...text({ error: 'Selected memory store request fai
 export class ProfileSession {
   private selection: Selection;
   private switchRevision = 0;
+  private toolLists = new Map<string, Awaited<ReturnType<Client['listTools']>>>();
   constructor(private config: Profiles, name: string) {
     this.selection = this.resolve(name);
   }
@@ -57,12 +58,21 @@ export class ProfileSession {
   }
   async listTools() {
     const snapshot = this.snapshot();
-    return this.withClient(snapshot, async client => {
+    try {
+      const listed = await this.withClient(snapshot, async client => {
       const tools = [];
       let cursor: string | undefined;
       do { const page = await client.listTools(cursor ? { cursor } : undefined); tools.push(...page.tools); cursor = page.nextCursor; } while (cursor);
       return { tools: tools.filter(t => !['listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus', ...(snapshot.profile.backend === 'cloud' ? ['getMemoryPolicy'] : [])].includes(t.name)) };
-    });
+      });
+      this.toolLists.set(snapshot.name, listed);
+      return listed;
+    } catch (error) {
+      // Discovery cache grants no access: every call still authenticates anew.
+      const previous = this.toolLists.get(snapshot.name);
+      if (previous) return previous;
+      throw error;
+    }
   }
   async callTool(name: string, args: Record<string, unknown> = {}) {
     const snapshot = this.snapshot(); // capture before the first await
@@ -107,7 +117,7 @@ export async function startProfileBridge(config: Profiles, name: string) {
             if (store.storeId !== snapshot.profile.graphId || !['owner', 'editor', 'reader'].includes(store.role) || typeof store.authorUserId !== 'string') throw new Error('Context mismatch');
             return text({ profile: snapshot.name, backend: 'cloud', verified: true, store });
           }
-          return text({ profile: snapshot.name, backend: 'local', verified: true, context });
+          return text({ profile: snapshot.name, backend: 'local', verified: true, verificationScope: 'local configuration only; database connectivity is not checked', context });
         } catch {
           return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: 'Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used.' }), isError: true };
         }

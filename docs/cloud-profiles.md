@@ -113,3 +113,9 @@ retention, and credential-free diagnostics. With explicit fixture write enableme
 it creates unique disposable memories, verifies list/recall and original quotes,
 checks reader denial, and deletes only the memories it created in a cleanup block.
 It makes no production requests and never reads live plugin configuration.
+
+Connection status verifies cloud graph membership and recording identity. Local
+status verifies configuration/policy only, not database or embedding connectivity.
+After successful discovery, transient discovery failures retain that profile's
+last tool schema; each invocation still authenticates against the selected server.
+A profile that has never connected exposes setup/status tools until configured.

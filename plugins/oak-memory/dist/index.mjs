@@ -29771,6 +29771,7 @@ var ProfileSession = class {
   }
   selection;
   switchRevision = 0;
+  toolLists = /* @__PURE__ */ new Map();
   resolve(name) {
     const profile = this.config.profiles[name];
     if (!profile) throw new Error("Unknown memory profile");
@@ -29814,16 +29815,24 @@ var ProfileSession = class {
   }
   async listTools() {
     const snapshot = this.snapshot();
-    return this.withClient(snapshot, async (client) => {
-      const tools = [];
-      let cursor;
-      do {
-        const page = await client.listTools(cursor ? { cursor } : void 0);
-        tools.push(...page.tools);
-        cursor = page.nextCursor;
-      } while (cursor);
-      return { tools: tools.filter((t) => !["listMemoryProfiles", "selectMemoryProfile", "memoryConnectionStatus", ...snapshot.profile.backend === "cloud" ? ["getMemoryPolicy"] : []].includes(t.name)) };
-    });
+    try {
+      const listed = await this.withClient(snapshot, async (client) => {
+        const tools = [];
+        let cursor;
+        do {
+          const page = await client.listTools(cursor ? { cursor } : void 0);
+          tools.push(...page.tools);
+          cursor = page.nextCursor;
+        } while (cursor);
+        return { tools: tools.filter((t) => !["listMemoryProfiles", "selectMemoryProfile", "memoryConnectionStatus", ...snapshot.profile.backend === "cloud" ? ["getMemoryPolicy"] : []].includes(t.name)) };
+      });
+      this.toolLists.set(snapshot.name, listed);
+      return listed;
+    } catch (error2) {
+      const previous = this.toolLists.get(snapshot.name);
+      if (previous) return previous;
+      throw error2;
+    }
   }
   async callTool(name, args = {}) {
     const snapshot = this.snapshot();
@@ -29880,7 +29889,7 @@ ${attributionInstructions}`
             if (store.storeId !== snapshot.profile.graphId || !["owner", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
             return text({ profile: snapshot.name, backend: "cloud", verified: true, store });
           }
-          return text({ profile: snapshot.name, backend: "local", verified: true, context });
+          return text({ profile: snapshot.name, backend: "local", verified: true, verificationScope: "local configuration only; database connectivity is not checked", context });
         } catch {
           return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: "Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used." }), isError: true };
         }
