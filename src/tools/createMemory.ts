@@ -46,8 +46,8 @@ conflicting version of it) already exists — if it does, use updateMemory inste
 
 **Notes**:
 - Use relatedMemoryIds to link to relevant existing memories surfaced by recallMemory.
-- This is scoped to a single fixed user identity for this plugin installation — do not ask for or pass an
-  entity/user id, it is configured server-side.`;
+- This is scoped to the selected memory graph. Identity and access are configured server-side.
+  Authenticated author and semantic subject are distinct. Preserve original quotes and never guess actors.`;
 }
 
 export function registerCreateMemory(server: any, env: Env) {

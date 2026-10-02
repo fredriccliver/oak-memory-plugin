@@ -38,9 +38,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/codegen/code.js
+// node_modules/ajv/dist/compile/codegen/code.js
 var require_code = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/codegen/code.js"(exports) {
+  "node_modules/ajv/dist/compile/codegen/code.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.regexpCode = exports.getEsmExportName = exports.getProperty = exports.safeStringify = exports.stringify = exports.strConcat = exports.addCodeArg = exports.str = exports._ = exports.nil = exports._Code = exports.Name = exports.IDENTIFIER = exports._CodeOrName = void 0;
@@ -192,9 +192,9 @@ var require_code = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/codegen/scope.js
+// node_modules/ajv/dist/compile/codegen/scope.js
 var require_scope = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/codegen/scope.js"(exports) {
+  "node_modules/ajv/dist/compile/codegen/scope.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ValueScope = exports.ValueScopeName = exports.Scope = exports.varKinds = exports.UsedValueState = void 0;
@@ -337,9 +337,9 @@ var require_scope = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/codegen/index.js
+// node_modules/ajv/dist/compile/codegen/index.js
 var require_codegen = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/codegen/index.js"(exports) {
+  "node_modules/ajv/dist/compile/codegen/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.or = exports.and = exports.not = exports.CodeGen = exports.operators = exports.varKinds = exports.ValueScopeName = exports.ValueScope = exports.Scope = exports.Name = exports.regexpCode = exports.stringify = exports.getProperty = exports.nil = exports.strConcat = exports.str = exports._ = void 0;
@@ -1057,9 +1057,9 @@ var require_codegen = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/util.js
+// node_modules/ajv/dist/compile/util.js
 var require_util = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/util.js"(exports) {
+  "node_modules/ajv/dist/compile/util.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.checkStrictMode = exports.getErrorPath = exports.Type = exports.useFunc = exports.setEvaluated = exports.evaluatedPropsToName = exports.mergeEvaluated = exports.eachItem = exports.unescapeJsonPointer = exports.escapeJsonPointer = exports.escapeFragment = exports.unescapeFragment = exports.schemaRefOrVal = exports.schemaHasRulesButRef = exports.schemaHasRules = exports.checkUnknownRules = exports.alwaysValidSchema = exports.toHash = void 0;
@@ -1224,9 +1224,9 @@ var require_util = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/names.js
+// node_modules/ajv/dist/compile/names.js
 var require_names = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/names.js"(exports) {
+  "node_modules/ajv/dist/compile/names.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -1263,9 +1263,9 @@ var require_names = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/errors.js
+// node_modules/ajv/dist/compile/errors.js
 var require_errors = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/errors.js"(exports) {
+  "node_modules/ajv/dist/compile/errors.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.extendErrors = exports.resetErrorsCount = exports.reportExtraError = exports.reportError = exports.keyword$DataError = exports.keywordError = void 0;
@@ -1385,9 +1385,9 @@ var require_errors = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/boolSchema.js
+// node_modules/ajv/dist/compile/validate/boolSchema.js
 var require_boolSchema = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/boolSchema.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/boolSchema.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.boolOrEmptySchema = exports.topBoolOrEmptySchema = void 0;
@@ -1436,9 +1436,9 @@ var require_boolSchema = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/rules.js
+// node_modules/ajv/dist/compile/rules.js
 var require_rules = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/rules.js"(exports) {
+  "node_modules/ajv/dist/compile/rules.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getRules = exports.isJSONType = void 0;
@@ -1467,9 +1467,9 @@ var require_rules = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/applicability.js
+// node_modules/ajv/dist/compile/validate/applicability.js
 var require_applicability = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/applicability.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/applicability.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.shouldUseRule = exports.shouldUseGroup = exports.schemaHasRulesForType = void 0;
@@ -1490,9 +1490,9 @@ var require_applicability = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/dataType.js
+// node_modules/ajv/dist/compile/validate/dataType.js
 var require_dataType = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/dataType.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/dataType.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.reportTypeError = exports.checkDataTypes = exports.checkDataType = exports.coerceAndCheckDataType = exports.getJSONTypes = exports.getSchemaTypes = exports.DataType = void 0;
@@ -1674,9 +1674,9 @@ var require_dataType = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/defaults.js
+// node_modules/ajv/dist/compile/validate/defaults.js
 var require_defaults = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/defaults.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/defaults.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.assignDefaults = void 0;
@@ -1711,9 +1711,9 @@ var require_defaults = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/code.js
+// node_modules/ajv/dist/vocabularies/code.js
 var require_code2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/code.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/code.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateUnion = exports.validateArray = exports.usePattern = exports.callValidateCode = exports.schemaProperties = exports.allSchemaProperties = exports.noPropertyInData = exports.propertyInData = exports.isOwnProperty = exports.hasPropFunc = exports.reportMissingProp = exports.checkMissingProp = exports.checkReportMissingProp = void 0;
@@ -1844,9 +1844,9 @@ var require_code2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/keyword.js
+// node_modules/ajv/dist/compile/validate/keyword.js
 var require_keyword = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/keyword.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/keyword.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateKeywordUsage = exports.validSchemaType = exports.funcKeywordCode = exports.macroKeywordCode = void 0;
@@ -1962,9 +1962,9 @@ var require_keyword = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/subschema.js
+// node_modules/ajv/dist/compile/validate/subschema.js
 var require_subschema = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/subschema.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/subschema.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.extendSubschemaMode = exports.extendSubschemaData = exports.getSubschema = void 0;
@@ -2045,9 +2045,9 @@ var require_subschema = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/fast-deep-equal/index.js
+// node_modules/fast-deep-equal/index.js
 var require_fast_deep_equal = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/fast-deep-equal/index.js"(exports, module) {
+  "node_modules/fast-deep-equal/index.js"(exports, module) {
     "use strict";
     module.exports = function equal(a, b) {
       if (a === b) return true;
@@ -2080,9 +2080,9 @@ var require_fast_deep_equal = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/json-schema-traverse/index.js
+// node_modules/json-schema-traverse/index.js
 var require_json_schema_traverse = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/json-schema-traverse/index.js"(exports, module) {
+  "node_modules/json-schema-traverse/index.js"(exports, module) {
     "use strict";
     var traverse = module.exports = function(schema, opts, cb) {
       if (typeof opts == "function") {
@@ -2168,9 +2168,9 @@ var require_json_schema_traverse = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/resolve.js
+// node_modules/ajv/dist/compile/resolve.js
 var require_resolve = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/resolve.js"(exports) {
+  "node_modules/ajv/dist/compile/resolve.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getSchemaRefs = exports.resolveUrl = exports.normalizeId = exports._getFullPath = exports.getFullPath = exports.inlineRef = void 0;
@@ -2324,9 +2324,9 @@ var require_resolve = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/index.js
+// node_modules/ajv/dist/compile/validate/index.js
 var require_validate = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/validate/index.js"(exports) {
+  "node_modules/ajv/dist/compile/validate/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getData = exports.KeywordCxt = exports.validateFunctionCode = void 0;
@@ -2832,9 +2832,9 @@ var require_validate = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/validation_error.js
+// node_modules/ajv/dist/runtime/validation_error.js
 var require_validation_error = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/validation_error.js"(exports) {
+  "node_modules/ajv/dist/runtime/validation_error.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ValidationError = class extends Error {
@@ -2848,9 +2848,9 @@ var require_validation_error = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/ref_error.js
+// node_modules/ajv/dist/compile/ref_error.js
 var require_ref_error = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/ref_error.js"(exports) {
+  "node_modules/ajv/dist/compile/ref_error.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var resolve_1 = require_resolve();
@@ -2865,9 +2865,9 @@ var require_ref_error = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/index.js
+// node_modules/ajv/dist/compile/index.js
 var require_compile = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/compile/index.js"(exports) {
+  "node_modules/ajv/dist/compile/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.resolveSchema = exports.getCompilingSchema = exports.resolveRef = exports.compileSchema = exports.SchemaEnv = void 0;
@@ -3089,9 +3089,9 @@ var require_compile = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/refs/data.json
+// node_modules/ajv/dist/refs/data.json
 var require_data = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/refs/data.json"(exports, module) {
+  "node_modules/ajv/dist/refs/data.json"(exports, module) {
     module.exports = {
       $id: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
       description: "Meta-schema for $data reference (JSON AnySchema extension proposal)",
@@ -3108,9 +3108,9 @@ var require_data = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/fast-uri/lib/utils.js
+// node_modules/fast-uri/lib/utils.js
 var require_utils = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/fast-uri/lib/utils.js"(exports, module) {
+  "node_modules/fast-uri/lib/utils.js"(exports, module) {
     "use strict";
     var isUUID = RegExp.prototype.test.bind(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu);
     var isIPv4 = RegExp.prototype.test.bind(/^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u);
@@ -3234,8 +3234,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path3) {
-      let input = path3;
+    function removeDotSegments(path4) {
+      let input = path4;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3421,9 +3421,9 @@ var require_utils = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/fast-uri/lib/schemes.js
+// node_modules/fast-uri/lib/schemes.js
 var require_schemes = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/fast-uri/lib/schemes.js"(exports, module) {
+  "node_modules/fast-uri/lib/schemes.js"(exports, module) {
     "use strict";
     var { isUUID } = require_utils();
     var URN_REG = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
@@ -3487,8 +3487,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path3, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path3 && path3 !== "/" ? path3 : void 0;
+        const [path4, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path4 && path4 !== "/" ? path4 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -3631,9 +3631,9 @@ var require_schemes = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/fast-uri/index.js
+// node_modules/fast-uri/index.js
 var require_fast_uri = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/fast-uri/index.js"(exports, module) {
+  "node_modules/fast-uri/index.js"(exports, module) {
     "use strict";
     var { normalizeIPv6, removeDotSegments, recomposeAuthority, normalizePercentEncoding, normalizePathEncoding, escapePreservingEscapes, reescapeHostDelimiters, isIPv4, nonSimpleDomain } = require_utils();
     var { SCHEMES, getSchemeHandler } = require_schemes();
@@ -3917,9 +3917,9 @@ var require_fast_uri = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/uri.js
+// node_modules/ajv/dist/runtime/uri.js
 var require_uri = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/uri.js"(exports) {
+  "node_modules/ajv/dist/runtime/uri.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var uri = require_fast_uri();
@@ -3928,9 +3928,9 @@ var require_uri = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/core.js
+// node_modules/ajv/dist/core.js
 var require_core = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/core.js"(exports) {
+  "node_modules/ajv/dist/core.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = void 0;
@@ -4320,7 +4320,7 @@ var require_core = __commonJS({
       errorsText(errors = this.errors, { separator = ", ", dataVar = "data" } = {}) {
         if (!errors || errors.length === 0)
           return "No errors";
-        return errors.map((e) => `${dataVar}${e.instancePath} ${e.message}`).reduce((text, msg) => text + separator + msg);
+        return errors.map((e) => `${dataVar}${e.instancePath} ${e.message}`).reduce((text2, msg) => text2 + separator + msg);
       }
       $dataMetaSchema(metaSchema, keywordsJsonPointers) {
         const rules = this.RULES.all;
@@ -4539,9 +4539,9 @@ var require_core = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/core/id.js
+// node_modules/ajv/dist/vocabularies/core/id.js
 var require_id = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/core/id.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/core/id.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var def = {
@@ -4554,9 +4554,9 @@ var require_id = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/core/ref.js
+// node_modules/ajv/dist/vocabularies/core/ref.js
 var require_ref = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/core/ref.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/core/ref.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.callRef = exports.getValidate = void 0;
@@ -4676,9 +4676,9 @@ var require_ref = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/core/index.js
+// node_modules/ajv/dist/vocabularies/core/index.js
 var require_core2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/core/index.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/core/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var id_1 = require_id();
@@ -4697,9 +4697,9 @@ var require_core2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitNumber.js
+// node_modules/ajv/dist/vocabularies/validation/limitNumber.js
 var require_limitNumber = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitNumber.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/limitNumber.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -4729,9 +4729,9 @@ var require_limitNumber = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/multipleOf.js
+// node_modules/ajv/dist/vocabularies/validation/multipleOf.js
 var require_multipleOf = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/multipleOf.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/multipleOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -4757,9 +4757,9 @@ var require_multipleOf = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/ucs2length.js
+// node_modules/ajv/dist/runtime/ucs2length.js
 var require_ucs2length = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/ucs2length.js"(exports) {
+  "node_modules/ajv/dist/runtime/ucs2length.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function ucs2length(str) {
@@ -4783,9 +4783,9 @@ var require_ucs2length = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitLength.js
+// node_modules/ajv/dist/vocabularies/validation/limitLength.js
 var require_limitLength = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitLength.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/limitLength.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -4815,9 +4815,9 @@ var require_limitLength = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/pattern.js
+// node_modules/ajv/dist/vocabularies/validation/pattern.js
 var require_pattern = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/pattern.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/pattern.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -4852,9 +4852,9 @@ var require_pattern = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitProperties.js
+// node_modules/ajv/dist/vocabularies/validation/limitProperties.js
 var require_limitProperties = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitProperties.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/limitProperties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -4881,9 +4881,9 @@ var require_limitProperties = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/required.js
+// node_modules/ajv/dist/vocabularies/validation/required.js
 var require_required = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/required.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/required.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -4963,9 +4963,9 @@ var require_required = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitItems.js
+// node_modules/ajv/dist/vocabularies/validation/limitItems.js
 var require_limitItems = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/limitItems.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/limitItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -4992,9 +4992,9 @@ var require_limitItems = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/equal.js
+// node_modules/ajv/dist/runtime/equal.js
 var require_equal = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/runtime/equal.js"(exports) {
+  "node_modules/ajv/dist/runtime/equal.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var equal = require_fast_deep_equal();
@@ -5003,9 +5003,9 @@ var require_equal = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/uniqueItems.js
+// node_modules/ajv/dist/vocabularies/validation/uniqueItems.js
 var require_uniqueItems = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/uniqueItems.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/uniqueItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var dataType_1 = require_dataType();
@@ -5070,9 +5070,9 @@ var require_uniqueItems = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/const.js
+// node_modules/ajv/dist/vocabularies/validation/const.js
 var require_const = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/const.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/const.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5099,9 +5099,9 @@ var require_const = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/enum.js
+// node_modules/ajv/dist/vocabularies/validation/enum.js
 var require_enum = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/enum.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/enum.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5148,9 +5148,9 @@ var require_enum = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/index.js
+// node_modules/ajv/dist/vocabularies/validation/index.js
 var require_validation = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/validation/index.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/validation/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var limitNumber_1 = require_limitNumber();
@@ -5186,9 +5186,9 @@ var require_validation = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/additionalItems.js
+// node_modules/ajv/dist/vocabularies/applicator/additionalItems.js
 var require_additionalItems = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/additionalItems.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/additionalItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateAdditionalItems = void 0;
@@ -5239,9 +5239,9 @@ var require_additionalItems = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/items.js
+// node_modules/ajv/dist/vocabularies/applicator/items.js
 var require_items = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/items.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/items.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateTuple = void 0;
@@ -5296,9 +5296,9 @@ var require_items = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/prefixItems.js
+// node_modules/ajv/dist/vocabularies/applicator/prefixItems.js
 var require_prefixItems = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/prefixItems.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/prefixItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var items_1 = require_items();
@@ -5313,9 +5313,9 @@ var require_prefixItems = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/items2020.js
+// node_modules/ajv/dist/vocabularies/applicator/items2020.js
 var require_items2020 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/items2020.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/items2020.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5348,9 +5348,9 @@ var require_items2020 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/contains.js
+// node_modules/ajv/dist/vocabularies/applicator/contains.js
 var require_contains = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/contains.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/contains.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5442,9 +5442,9 @@ var require_contains = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/dependencies.js
+// node_modules/ajv/dist/vocabularies/applicator/dependencies.js
 var require_dependencies = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/dependencies.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/dependencies.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateSchemaDeps = exports.validatePropertyDeps = exports.error = void 0;
@@ -5536,9 +5536,9 @@ var require_dependencies = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/propertyNames.js
+// node_modules/ajv/dist/vocabularies/applicator/propertyNames.js
 var require_propertyNames = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/propertyNames.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/propertyNames.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5579,9 +5579,9 @@ var require_propertyNames = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js
+// node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js
 var require_additionalProperties = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -5685,9 +5685,9 @@ var require_additionalProperties = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/properties.js
+// node_modules/ajv/dist/vocabularies/applicator/properties.js
 var require_properties = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/properties.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/properties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var validate_1 = require_validate();
@@ -5743,9 +5743,9 @@ var require_properties = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/patternProperties.js
+// node_modules/ajv/dist/vocabularies/applicator/patternProperties.js
 var require_patternProperties = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/patternProperties.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/patternProperties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -5817,9 +5817,9 @@ var require_patternProperties = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/not.js
+// node_modules/ajv/dist/vocabularies/applicator/not.js
 var require_not = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/not.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/not.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util();
@@ -5848,9 +5848,9 @@ var require_not = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/anyOf.js
+// node_modules/ajv/dist/vocabularies/applicator/anyOf.js
 var require_anyOf = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/anyOf.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/anyOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -5865,9 +5865,9 @@ var require_anyOf = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/oneOf.js
+// node_modules/ajv/dist/vocabularies/applicator/oneOf.js
 var require_oneOf = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/oneOf.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/oneOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5923,9 +5923,9 @@ var require_oneOf = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/allOf.js
+// node_modules/ajv/dist/vocabularies/applicator/allOf.js
 var require_allOf = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/allOf.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/allOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util();
@@ -5950,9 +5950,9 @@ var require_allOf = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/if.js
+// node_modules/ajv/dist/vocabularies/applicator/if.js
 var require_if = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/if.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/if.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6019,9 +6019,9 @@ var require_if = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/thenElse.js
+// node_modules/ajv/dist/vocabularies/applicator/thenElse.js
 var require_thenElse = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/thenElse.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/thenElse.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util();
@@ -6037,9 +6037,9 @@ var require_thenElse = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/index.js
+// node_modules/ajv/dist/vocabularies/applicator/index.js
 var require_applicator = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/applicator/index.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/applicator/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var additionalItems_1 = require_additionalItems();
@@ -6085,9 +6085,9 @@ var require_applicator = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/format/format.js
+// node_modules/ajv/dist/vocabularies/format/format.js
 var require_format = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/format/format.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/format/format.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6175,9 +6175,9 @@ var require_format = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/format/index.js
+// node_modules/ajv/dist/vocabularies/format/index.js
 var require_format2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/format/index.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/format/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var format_1 = require_format();
@@ -6186,9 +6186,9 @@ var require_format2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/metadata.js
+// node_modules/ajv/dist/vocabularies/metadata.js
 var require_metadata = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/metadata.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/metadata.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.contentVocabulary = exports.metadataVocabulary = void 0;
@@ -6209,9 +6209,9 @@ var require_metadata = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/draft7.js
+// node_modules/ajv/dist/vocabularies/draft7.js
 var require_draft7 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/draft7.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/draft7.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var core_1 = require_core2();
@@ -6231,9 +6231,9 @@ var require_draft7 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/discriminator/types.js
+// node_modules/ajv/dist/vocabularies/discriminator/types.js
 var require_types = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/discriminator/types.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/discriminator/types.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DiscrError = void 0;
@@ -6245,9 +6245,9 @@ var require_types = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/discriminator/index.js
+// node_modules/ajv/dist/vocabularies/discriminator/index.js
 var require_discriminator = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/vocabularies/discriminator/index.js"(exports) {
+  "node_modules/ajv/dist/vocabularies/discriminator/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6350,9 +6350,9 @@ var require_discriminator = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/refs/json-schema-draft-07.json
+// node_modules/ajv/dist/refs/json-schema-draft-07.json
 var require_json_schema_draft_07 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/refs/json-schema-draft-07.json"(exports, module) {
+  "node_modules/ajv/dist/refs/json-schema-draft-07.json"(exports, module) {
     module.exports = {
       $schema: "http://json-schema.org/draft-07/schema#",
       $id: "http://json-schema.org/draft-07/schema#",
@@ -6507,9 +6507,9 @@ var require_json_schema_draft_07 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/ajv.js
+// node_modules/ajv/dist/ajv.js
 var require_ajv = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv/dist/ajv.js"(exports, module) {
+  "node_modules/ajv/dist/ajv.js"(exports, module) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MissingRefError = exports.ValidationError = exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = exports.Ajv = void 0;
@@ -6577,9 +6577,9 @@ var require_ajv = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv-formats/dist/formats.js
+// node_modules/ajv-formats/dist/formats.js
 var require_formats = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv-formats/dist/formats.js"(exports) {
+  "node_modules/ajv-formats/dist/formats.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.formatNames = exports.fastFormats = exports.fullFormats = void 0;
@@ -6588,7 +6588,7 @@ var require_formats = __commonJS({
     }
     exports.fullFormats = {
       // date: http://tools.ietf.org/html/rfc3339#section-5.6
-      date: fmtDef(date3, compareDate),
+      date: fmtDef(date4, compareDate),
       // date-time: http://tools.ietf.org/html/rfc3339#section-5.6
       time: fmtDef(getTime(true), compareTime),
       "date-time": fmtDef(getDateTime(true), compareDateTime),
@@ -6654,7 +6654,7 @@ var require_formats = __commonJS({
     }
     var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
     var DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    function date3(str) {
+    function date4(str) {
       const matches = DATE.exec(str);
       if (!matches)
         return false;
@@ -6723,7 +6723,7 @@ var require_formats = __commonJS({
       const time3 = getTime(strictTimeZone);
       return function date_time(str) {
         const dateTime = str.split(DATE_TIME_SEPARATOR);
-        return dateTime.length === 2 && date3(dateTime[0]) && time3(dateTime[1]);
+        return dateTime.length === 2 && date4(dateTime[0]) && time3(dateTime[1]);
       };
     }
     function compareDateTime(dt1, dt2) {
@@ -6780,9 +6780,9 @@ var require_formats = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv-formats/dist/limit.js
+// node_modules/ajv-formats/dist/limit.js
 var require_limit = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv-formats/dist/limit.js"(exports) {
+  "node_modules/ajv-formats/dist/limit.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.formatLimitDefinition = void 0;
@@ -6852,9 +6852,9 @@ var require_limit = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/ajv-formats/dist/index.js
+// node_modules/ajv-formats/dist/index.js
 var require_dist = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/ajv-formats/dist/index.js"(exports, module) {
+  "node_modules/ajv-formats/dist/index.js"(exports, module) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var formats_1 = require_formats();
@@ -6881,12 +6881,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs3, exportName) {
+    function addFormats(ajv, list, fs4, exportName) {
       var _a;
       var _b;
       (_a = (_b = ajv.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs3[f]);
+        ajv.addFormat(f, fs4[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -6894,9 +6894,506 @@ var require_dist = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/postgres-array/index.js
+// node_modules/isexe/windows.js
+var require_windows = __commonJS({
+  "node_modules/isexe/windows.js"(exports, module) {
+    module.exports = isexe;
+    isexe.sync = sync;
+    var fs4 = __require("fs");
+    function checkPathExt(path4, options) {
+      var pathext = options.pathExt !== void 0 ? options.pathExt : process.env.PATHEXT;
+      if (!pathext) {
+        return true;
+      }
+      pathext = pathext.split(";");
+      if (pathext.indexOf("") !== -1) {
+        return true;
+      }
+      for (var i = 0; i < pathext.length; i++) {
+        var p = pathext[i].toLowerCase();
+        if (p && path4.substr(-p.length).toLowerCase() === p) {
+          return true;
+        }
+      }
+      return false;
+    }
+    function checkStat(stat, path4, options) {
+      if (!stat.isSymbolicLink() && !stat.isFile()) {
+        return false;
+      }
+      return checkPathExt(path4, options);
+    }
+    function isexe(path4, options, cb) {
+      fs4.stat(path4, function(er, stat) {
+        cb(er, er ? false : checkStat(stat, path4, options));
+      });
+    }
+    function sync(path4, options) {
+      return checkStat(fs4.statSync(path4), path4, options);
+    }
+  }
+});
+
+// node_modules/isexe/mode.js
+var require_mode = __commonJS({
+  "node_modules/isexe/mode.js"(exports, module) {
+    module.exports = isexe;
+    isexe.sync = sync;
+    var fs4 = __require("fs");
+    function isexe(path4, options, cb) {
+      fs4.stat(path4, function(er, stat) {
+        cb(er, er ? false : checkStat(stat, options));
+      });
+    }
+    function sync(path4, options) {
+      return checkStat(fs4.statSync(path4), options);
+    }
+    function checkStat(stat, options) {
+      return stat.isFile() && checkMode(stat, options);
+    }
+    function checkMode(stat, options) {
+      var mod = stat.mode;
+      var uid = stat.uid;
+      var gid = stat.gid;
+      var myUid = options.uid !== void 0 ? options.uid : process.getuid && process.getuid();
+      var myGid = options.gid !== void 0 ? options.gid : process.getgid && process.getgid();
+      var u = parseInt("100", 8);
+      var g = parseInt("010", 8);
+      var o = parseInt("001", 8);
+      var ug = u | g;
+      var ret = mod & o || mod & g && gid === myGid || mod & u && uid === myUid || mod & ug && myUid === 0;
+      return ret;
+    }
+  }
+});
+
+// node_modules/isexe/index.js
+var require_isexe = __commonJS({
+  "node_modules/isexe/index.js"(exports, module) {
+    var fs4 = __require("fs");
+    var core;
+    if (process.platform === "win32" || global.TESTING_WINDOWS) {
+      core = require_windows();
+    } else {
+      core = require_mode();
+    }
+    module.exports = isexe;
+    isexe.sync = sync;
+    function isexe(path4, options, cb) {
+      if (typeof options === "function") {
+        cb = options;
+        options = {};
+      }
+      if (!cb) {
+        if (typeof Promise !== "function") {
+          throw new TypeError("callback not provided");
+        }
+        return new Promise(function(resolve, reject) {
+          isexe(path4, options || {}, function(er, is) {
+            if (er) {
+              reject(er);
+            } else {
+              resolve(is);
+            }
+          });
+        });
+      }
+      core(path4, options || {}, function(er, is) {
+        if (er) {
+          if (er.code === "EACCES" || options && options.ignoreErrors) {
+            er = null;
+            is = false;
+          }
+        }
+        cb(er, is);
+      });
+    }
+    function sync(path4, options) {
+      try {
+        return core.sync(path4, options || {});
+      } catch (er) {
+        if (options && options.ignoreErrors || er.code === "EACCES") {
+          return false;
+        } else {
+          throw er;
+        }
+      }
+    }
+  }
+});
+
+// node_modules/which/which.js
+var require_which = __commonJS({
+  "node_modules/which/which.js"(exports, module) {
+    var isWindows = process.platform === "win32" || process.env.OSTYPE === "cygwin" || process.env.OSTYPE === "msys";
+    var path4 = __require("path");
+    var COLON = isWindows ? ";" : ":";
+    var isexe = require_isexe();
+    var getNotFoundError = (cmd) => Object.assign(new Error(`not found: ${cmd}`), { code: "ENOENT" });
+    var getPathInfo = (cmd, opt) => {
+      const colon = opt.colon || COLON;
+      const pathEnv = cmd.match(/\//) || isWindows && cmd.match(/\\/) ? [""] : [
+        // windows always checks the cwd first
+        ...isWindows ? [process.cwd()] : [],
+        ...(opt.path || process.env.PATH || /* istanbul ignore next: very unusual */
+        "").split(colon)
+      ];
+      const pathExtExe = isWindows ? opt.pathExt || process.env.PATHEXT || ".EXE;.CMD;.BAT;.COM" : "";
+      const pathExt = isWindows ? pathExtExe.split(colon) : [""];
+      if (isWindows) {
+        if (cmd.indexOf(".") !== -1 && pathExt[0] !== "")
+          pathExt.unshift("");
+      }
+      return {
+        pathEnv,
+        pathExt,
+        pathExtExe
+      };
+    };
+    var which = (cmd, opt, cb) => {
+      if (typeof opt === "function") {
+        cb = opt;
+        opt = {};
+      }
+      if (!opt)
+        opt = {};
+      const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
+      const found = [];
+      const step = (i) => new Promise((resolve, reject) => {
+        if (i === pathEnv.length)
+          return opt.all && found.length ? resolve(found) : reject(getNotFoundError(cmd));
+        const ppRaw = pathEnv[i];
+        const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
+        const pCmd = path4.join(pathPart, cmd);
+        const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
+        resolve(subStep(p, i, 0));
+      });
+      const subStep = (p, i, ii) => new Promise((resolve, reject) => {
+        if (ii === pathExt.length)
+          return resolve(step(i + 1));
+        const ext = pathExt[ii];
+        isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
+          if (!er && is) {
+            if (opt.all)
+              found.push(p + ext);
+            else
+              return resolve(p + ext);
+          }
+          return resolve(subStep(p, i, ii + 1));
+        });
+      });
+      return cb ? step(0).then((res) => cb(null, res), cb) : step(0);
+    };
+    var whichSync = (cmd, opt) => {
+      opt = opt || {};
+      const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
+      const found = [];
+      for (let i = 0; i < pathEnv.length; i++) {
+        const ppRaw = pathEnv[i];
+        const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
+        const pCmd = path4.join(pathPart, cmd);
+        const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
+        for (let j = 0; j < pathExt.length; j++) {
+          const cur = p + pathExt[j];
+          try {
+            const is = isexe.sync(cur, { pathExt: pathExtExe });
+            if (is) {
+              if (opt.all)
+                found.push(cur);
+              else
+                return cur;
+            }
+          } catch (ex) {
+          }
+        }
+      }
+      if (opt.all && found.length)
+        return found;
+      if (opt.nothrow)
+        return null;
+      throw getNotFoundError(cmd);
+    };
+    module.exports = which;
+    which.sync = whichSync;
+  }
+});
+
+// node_modules/path-key/index.js
+var require_path_key = __commonJS({
+  "node_modules/path-key/index.js"(exports, module) {
+    "use strict";
+    var pathKey = (options = {}) => {
+      const environment = options.env || process.env;
+      const platform = options.platform || process.platform;
+      if (platform !== "win32") {
+        return "PATH";
+      }
+      return Object.keys(environment).reverse().find((key) => key.toUpperCase() === "PATH") || "Path";
+    };
+    module.exports = pathKey;
+    module.exports.default = pathKey;
+  }
+});
+
+// node_modules/cross-spawn/lib/util/resolveCommand.js
+var require_resolveCommand = __commonJS({
+  "node_modules/cross-spawn/lib/util/resolveCommand.js"(exports, module) {
+    "use strict";
+    var path4 = __require("path");
+    var which = require_which();
+    var getPathKey = require_path_key();
+    function resolveCommandAttempt(parsed, withoutPathExt) {
+      const env = parsed.options.env || process.env;
+      const cwd = process.cwd();
+      const hasCustomCwd = parsed.options.cwd != null;
+      const shouldSwitchCwd = hasCustomCwd && process.chdir !== void 0 && !process.chdir.disabled;
+      if (shouldSwitchCwd) {
+        try {
+          process.chdir(parsed.options.cwd);
+        } catch (err) {
+        }
+      }
+      let resolved;
+      try {
+        resolved = which.sync(parsed.command, {
+          path: env[getPathKey({ env })],
+          pathExt: withoutPathExt ? path4.delimiter : void 0
+        });
+      } catch (e) {
+      } finally {
+        if (shouldSwitchCwd) {
+          process.chdir(cwd);
+        }
+      }
+      if (resolved) {
+        resolved = path4.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
+      }
+      return resolved;
+    }
+    function resolveCommand(parsed) {
+      return resolveCommandAttempt(parsed) || resolveCommandAttempt(parsed, true);
+    }
+    module.exports = resolveCommand;
+  }
+});
+
+// node_modules/cross-spawn/lib/util/escape.js
+var require_escape = __commonJS({
+  "node_modules/cross-spawn/lib/util/escape.js"(exports, module) {
+    "use strict";
+    var metaCharsRegExp = /([()\][%!^"`<>&|;, *?])/g;
+    function escapeCommand(arg) {
+      arg = arg.replace(metaCharsRegExp, "^$1");
+      return arg;
+    }
+    function escapeArgument(arg, doubleEscapeMetaChars) {
+      arg = `${arg}`;
+      arg = arg.replace(/(?=(\\+?)?)\1"/g, '$1$1\\"');
+      arg = arg.replace(/(?=(\\+?)?)\1$/, "$1$1");
+      arg = `"${arg}"`;
+      arg = arg.replace(metaCharsRegExp, "^$1");
+      if (doubleEscapeMetaChars) {
+        arg = arg.replace(metaCharsRegExp, "^$1");
+      }
+      return arg;
+    }
+    module.exports.command = escapeCommand;
+    module.exports.argument = escapeArgument;
+  }
+});
+
+// node_modules/shebang-regex/index.js
+var require_shebang_regex = __commonJS({
+  "node_modules/shebang-regex/index.js"(exports, module) {
+    "use strict";
+    module.exports = /^#!(.*)/;
+  }
+});
+
+// node_modules/shebang-command/index.js
+var require_shebang_command = __commonJS({
+  "node_modules/shebang-command/index.js"(exports, module) {
+    "use strict";
+    var shebangRegex = require_shebang_regex();
+    module.exports = (string4 = "") => {
+      const match = string4.match(shebangRegex);
+      if (!match) {
+        return null;
+      }
+      const [path4, argument] = match[0].replace(/#! ?/, "").split(" ");
+      const binary = path4.split("/").pop();
+      if (binary === "env") {
+        return argument;
+      }
+      return argument ? `${binary} ${argument}` : binary;
+    };
+  }
+});
+
+// node_modules/cross-spawn/lib/util/readShebang.js
+var require_readShebang = __commonJS({
+  "node_modules/cross-spawn/lib/util/readShebang.js"(exports, module) {
+    "use strict";
+    var fs4 = __require("fs");
+    var shebangCommand = require_shebang_command();
+    function readShebang(command) {
+      const size = 150;
+      const buffer = Buffer.alloc(size);
+      let fd;
+      try {
+        fd = fs4.openSync(command, "r");
+        fs4.readSync(fd, buffer, 0, size, 0);
+        fs4.closeSync(fd);
+      } catch (e) {
+      }
+      return shebangCommand(buffer.toString());
+    }
+    module.exports = readShebang;
+  }
+});
+
+// node_modules/cross-spawn/lib/parse.js
+var require_parse = __commonJS({
+  "node_modules/cross-spawn/lib/parse.js"(exports, module) {
+    "use strict";
+    var path4 = __require("path");
+    var resolveCommand = require_resolveCommand();
+    var escape2 = require_escape();
+    var readShebang = require_readShebang();
+    var isWin = process.platform === "win32";
+    var isExecutableRegExp = /\.(?:com|exe)$/i;
+    var isCmdShimRegExp = /node_modules[\\/].bin[\\/][^\\/]+\.cmd$/i;
+    function detectShebang(parsed) {
+      parsed.file = resolveCommand(parsed);
+      const shebang = parsed.file && readShebang(parsed.file);
+      if (shebang) {
+        parsed.args.unshift(parsed.file);
+        parsed.command = shebang;
+        return resolveCommand(parsed);
+      }
+      return parsed.file;
+    }
+    function parseNonShell(parsed) {
+      if (!isWin) {
+        return parsed;
+      }
+      const commandFile = detectShebang(parsed);
+      const needsShell = !isExecutableRegExp.test(commandFile);
+      if (parsed.options.forceShell || needsShell) {
+        const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
+        parsed.command = path4.normalize(parsed.command);
+        parsed.command = escape2.command(parsed.command);
+        parsed.args = parsed.args.map((arg) => escape2.argument(arg, needsDoubleEscapeMetaChars));
+        const shellCommand = [parsed.command].concat(parsed.args).join(" ");
+        parsed.args = ["/d", "/s", "/c", `"${shellCommand}"`];
+        parsed.command = process.env.comspec || "cmd.exe";
+        parsed.options.windowsVerbatimArguments = true;
+      }
+      return parsed;
+    }
+    function parse3(command, args, options) {
+      if (args && !Array.isArray(args)) {
+        options = args;
+        args = null;
+      }
+      args = args ? args.slice(0) : [];
+      options = Object.assign({}, options);
+      const parsed = {
+        command,
+        args,
+        options,
+        file: void 0,
+        original: {
+          command,
+          args
+        }
+      };
+      return options.shell ? parsed : parseNonShell(parsed);
+    }
+    module.exports = parse3;
+  }
+});
+
+// node_modules/cross-spawn/lib/enoent.js
+var require_enoent = __commonJS({
+  "node_modules/cross-spawn/lib/enoent.js"(exports, module) {
+    "use strict";
+    var isWin = process.platform === "win32";
+    function notFoundError(original, syscall) {
+      return Object.assign(new Error(`${syscall} ${original.command} ENOENT`), {
+        code: "ENOENT",
+        errno: "ENOENT",
+        syscall: `${syscall} ${original.command}`,
+        path: original.command,
+        spawnargs: original.args
+      });
+    }
+    function hookChildProcess(cp, parsed) {
+      if (!isWin) {
+        return;
+      }
+      const originalEmit = cp.emit;
+      cp.emit = function(name, arg1) {
+        if (name === "exit") {
+          const err = verifyENOENT(arg1, parsed);
+          if (err) {
+            return originalEmit.call(cp, "error", err);
+          }
+        }
+        return originalEmit.apply(cp, arguments);
+      };
+    }
+    function verifyENOENT(status, parsed) {
+      if (isWin && status === 1 && !parsed.file) {
+        return notFoundError(parsed.original, "spawn");
+      }
+      return null;
+    }
+    function verifyENOENTSync(status, parsed) {
+      if (isWin && status === 1 && !parsed.file) {
+        return notFoundError(parsed.original, "spawnSync");
+      }
+      return null;
+    }
+    module.exports = {
+      hookChildProcess,
+      verifyENOENT,
+      verifyENOENTSync,
+      notFoundError
+    };
+  }
+});
+
+// node_modules/cross-spawn/index.js
+var require_cross_spawn = __commonJS({
+  "node_modules/cross-spawn/index.js"(exports, module) {
+    "use strict";
+    var cp = __require("child_process");
+    var parse3 = require_parse();
+    var enoent = require_enoent();
+    function spawn3(command, args, options) {
+      const parsed = parse3(command, args, options);
+      const spawned = cp.spawn(parsed.command, parsed.args, parsed.options);
+      enoent.hookChildProcess(spawned, parsed);
+      return spawned;
+    }
+    function spawnSync(command, args, options) {
+      const parsed = parse3(command, args, options);
+      const result = cp.spawnSync(parsed.command, parsed.args, parsed.options);
+      result.error = result.error || enoent.verifyENOENTSync(result.status, parsed);
+      return result;
+    }
+    module.exports = spawn3;
+    module.exports.spawn = spawn3;
+    module.exports.sync = spawnSync;
+    module.exports._parse = parse3;
+    module.exports._enoent = enoent;
+  }
+});
+
+// node_modules/postgres-array/index.js
 var require_postgres_array = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/postgres-array/index.js"(exports) {
+  "node_modules/postgres-array/index.js"(exports) {
     "use strict";
     exports.parse = function(source, transform2) {
       return new ArrayParser(source, transform2).parse();
@@ -6988,9 +7485,9 @@ var require_postgres_array = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/arrayParser.js
+// node_modules/pg-types/lib/arrayParser.js
 var require_arrayParser = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/arrayParser.js"(exports, module) {
+  "node_modules/pg-types/lib/arrayParser.js"(exports, module) {
     var array2 = require_postgres_array();
     module.exports = {
       create: function(source, transform2) {
@@ -7004,9 +7501,9 @@ var require_arrayParser = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/postgres-date/index.js
+// node_modules/postgres-date/index.js
 var require_postgres_date = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/postgres-date/index.js"(exports, module) {
+  "node_modules/postgres-date/index.js"(exports, module) {
     "use strict";
     var DATE_TIME = /(\d{1,})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{1,})?.*?( BC)?$/;
     var DATE = /^(\d{1,})-(\d{2})-(\d{2})( BC)?$/;
@@ -7032,23 +7529,23 @@ var require_postgres_date = __commonJS({
       var second = parseInt(matches[6], 10);
       var ms = matches[7];
       ms = ms ? 1e3 * parseFloat(ms) : 0;
-      var date3;
+      var date4;
       var offset = timeZoneOffset(isoDate);
       if (offset != null) {
-        date3 = new Date(Date.UTC(year, month, day, hour, minute, second, ms));
+        date4 = new Date(Date.UTC(year, month, day, hour, minute, second, ms));
         if (is0To99(year)) {
-          date3.setUTCFullYear(year);
+          date4.setUTCFullYear(year);
         }
         if (offset !== 0) {
-          date3.setTime(date3.getTime() - offset);
+          date4.setTime(date4.getTime() - offset);
         }
       } else {
-        date3 = new Date(year, month, day, hour, minute, second, ms);
+        date4 = new Date(year, month, day, hour, minute, second, ms);
         if (is0To99(year)) {
-          date3.setFullYear(year);
+          date4.setFullYear(year);
         }
       }
-      return date3;
+      return date4;
     };
     function getDate(isoDate) {
       var matches = DATE.exec(isoDate);
@@ -7062,11 +7559,11 @@ var require_postgres_date = __commonJS({
       }
       var month = parseInt(matches[2], 10) - 1;
       var day = matches[3];
-      var date3 = new Date(year, month, day);
+      var date4 = new Date(year, month, day);
       if (is0To99(year)) {
-        date3.setFullYear(year);
+        date4.setFullYear(year);
       }
-      return date3;
+      return date4;
     }
     function timeZoneOffset(isoDate) {
       if (isoDate.endsWith("+00")) {
@@ -7091,9 +7588,9 @@ var require_postgres_date = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/xtend/mutable.js
+// node_modules/xtend/mutable.js
 var require_mutable = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/xtend/mutable.js"(exports, module) {
+  "node_modules/xtend/mutable.js"(exports, module) {
     module.exports = extend2;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     function extend2(target) {
@@ -7110,9 +7607,9 @@ var require_mutable = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/postgres-interval/index.js
+// node_modules/postgres-interval/index.js
 var require_postgres_interval = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/postgres-interval/index.js"(exports, module) {
+  "node_modules/postgres-interval/index.js"(exports, module) {
     "use strict";
     var extend2 = require_mutable();
     module.exports = PostgresInterval;
@@ -7201,9 +7698,9 @@ var require_postgres_interval = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/postgres-bytea/index.js
+// node_modules/postgres-bytea/index.js
 var require_postgres_bytea = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/postgres-bytea/index.js"(exports, module) {
+  "node_modules/postgres-bytea/index.js"(exports, module) {
     "use strict";
     var bufferFrom = Buffer.from || Buffer;
     module.exports = function parseBytea(input) {
@@ -7237,9 +7734,9 @@ var require_postgres_bytea = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/textParsers.js
+// node_modules/pg-types/lib/textParsers.js
 var require_textParsers = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/textParsers.js"(exports, module) {
+  "node_modules/pg-types/lib/textParsers.js"(exports, module) {
     var array2 = require_postgres_array();
     var arrayParser = require_arrayParser();
     var parseDate = require_postgres_date();
@@ -7259,8 +7756,8 @@ var require_textParsers = __commonJS({
       if (!value) return null;
       return array2.parse(value, parseBool2);
     }
-    function parseBaseTenInt(string3) {
-      return parseInt(string3, 10);
+    function parseBaseTenInt(string4) {
+      return parseInt(string4, 10);
     }
     function parseIntegerArray(value) {
       if (!value) return null;
@@ -7437,9 +7934,9 @@ var require_textParsers = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-int8/index.js
+// node_modules/pg-int8/index.js
 var require_pg_int8 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-int8/index.js"(exports, module) {
+  "node_modules/pg-int8/index.js"(exports, module) {
     "use strict";
     var BASE = 1e6;
     function readInt8(buffer) {
@@ -7517,9 +8014,9 @@ var require_pg_int8 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/binaryParsers.js
+// node_modules/pg-types/lib/binaryParsers.js
 var require_binaryParsers = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/binaryParsers.js"(exports, module) {
+  "node_modules/pg-types/lib/binaryParsers.js"(exports, module) {
     var parseInt64 = require_pg_int8();
     var parseBits = function(data, bits, offset, invert, callback) {
       offset = offset || 0;
@@ -7717,9 +8214,9 @@ var require_binaryParsers = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/builtins.js
+// node_modules/pg-types/lib/builtins.js
 var require_builtins = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/lib/builtins.js"(exports, module) {
+  "node_modules/pg-types/lib/builtins.js"(exports, module) {
     module.exports = {
       BOOL: 16,
       BYTEA: 17,
@@ -7785,9 +8282,9 @@ var require_builtins = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/index.js
+// node_modules/pg-types/index.js
 var require_pg_types = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-types/index.js"(exports) {
+  "node_modules/pg-types/index.js"(exports) {
     var textParsers = require_textParsers();
     var binaryParsers = require_binaryParsers();
     var arrayParser = require_arrayParser();
@@ -7826,9 +8323,9 @@ var require_pg_types = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/defaults.js
+// node_modules/pg/lib/defaults.js
 var require_defaults2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/defaults.js"(exports, module) {
+  "node_modules/pg/lib/defaults.js"(exports, module) {
     "use strict";
     var user;
     try {
@@ -7895,9 +8392,9 @@ var require_defaults2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/utils.js
+// node_modules/pg/lib/utils.js
 var require_utils2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/utils.js"(exports, module) {
+  "node_modules/pg/lib/utils.js"(exports, module) {
     "use strict";
     var defaults2 = require_defaults2();
     var { isDate } = __require("util/types");
@@ -7964,12 +8461,12 @@ var require_utils2 = __commonJS({
       }
       return JSON.stringify(val);
     }
-    function dateToString(date3) {
-      let offset = -date3.getTimezoneOffset();
-      let year = date3.getFullYear();
+    function dateToString(date4) {
+      let offset = -date4.getTimezoneOffset();
+      let year = date4.getFullYear();
       const isBCYear = year < 1;
       if (isBCYear) year = Math.abs(year) + 1;
-      let ret = String(year).padStart(4, "0") + "-" + String(date3.getMonth() + 1).padStart(2, "0") + "-" + String(date3.getDate()).padStart(2, "0") + "T" + String(date3.getHours()).padStart(2, "0") + ":" + String(date3.getMinutes()).padStart(2, "0") + ":" + String(date3.getSeconds()).padStart(2, "0") + "." + String(date3.getMilliseconds()).padStart(3, "0");
+      let ret = String(year).padStart(4, "0") + "-" + String(date4.getMonth() + 1).padStart(2, "0") + "-" + String(date4.getDate()).padStart(2, "0") + "T" + String(date4.getHours()).padStart(2, "0") + ":" + String(date4.getMinutes()).padStart(2, "0") + ":" + String(date4.getSeconds()).padStart(2, "0") + "." + String(date4.getMilliseconds()).padStart(3, "0");
       if (offset < 0) {
         ret += "-";
         offset *= -1;
@@ -7980,11 +8477,11 @@ var require_utils2 = __commonJS({
       if (isBCYear) ret += " BC";
       return ret;
     }
-    function dateToStringUTC(date3) {
-      let year = date3.getUTCFullYear();
+    function dateToStringUTC(date4) {
+      let year = date4.getUTCFullYear();
       const isBCYear = year < 1;
       if (isBCYear) year = Math.abs(year) + 1;
-      let ret = String(year).padStart(4, "0") + "-" + String(date3.getUTCMonth() + 1).padStart(2, "0") + "-" + String(date3.getUTCDate()).padStart(2, "0") + "T" + String(date3.getUTCHours()).padStart(2, "0") + ":" + String(date3.getUTCMinutes()).padStart(2, "0") + ":" + String(date3.getUTCSeconds()).padStart(2, "0") + "." + String(date3.getUTCMilliseconds()).padStart(3, "0");
+      let ret = String(year).padStart(4, "0") + "-" + String(date4.getUTCMonth() + 1).padStart(2, "0") + "-" + String(date4.getUTCDate()).padStart(2, "0") + "T" + String(date4.getUTCHours()).padStart(2, "0") + ":" + String(date4.getUTCMinutes()).padStart(2, "0") + ":" + String(date4.getUTCSeconds()).padStart(2, "0") + "." + String(date4.getUTCMilliseconds()).padStart(3, "0");
       ret += "+00:00";
       if (isBCYear) ret += " BC";
       return ret;
@@ -8043,9 +8540,9 @@ var require_utils2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/crypto/utils.js
+// node_modules/pg/lib/crypto/utils.js
 var require_utils3 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/crypto/utils.js"(exports, module) {
+  "node_modules/pg/lib/crypto/utils.js"(exports, module) {
     var nodeCrypto = __require("crypto");
     module.exports = {
       postgresMd5PasswordHash,
@@ -8062,11 +8559,11 @@ var require_utils3 = __commonJS({
     function randomBytes(length) {
       return webCrypto.getRandomValues(Buffer.alloc(length));
     }
-    async function md5(string3) {
+    async function md5(string4) {
       try {
-        return nodeCrypto.createHash("md5").update(string3, "utf-8").digest("hex");
+        return nodeCrypto.createHash("md5").update(string4, "utf-8").digest("hex");
       } catch (e) {
-        const data = typeof string3 === "string" ? textEncoder.encode(string3) : string3;
+        const data = typeof string4 === "string" ? textEncoder.encode(string4) : string4;
         const hash = await subtleCrypto.digest("MD5", data);
         return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
       }
@@ -8076,11 +8573,11 @@ var require_utils3 = __commonJS({
       const outer = await md5(Buffer.concat([Buffer.from(inner), salt]));
       return "md5" + outer;
     }
-    async function sha256(text) {
-      return await subtleCrypto.digest("SHA-256", text);
+    async function sha256(text2) {
+      return await subtleCrypto.digest("SHA-256", text2);
     }
-    async function hashByName(hashName, text) {
-      return await subtleCrypto.digest(hashName, text);
+    async function hashByName(hashName, text2) {
+      return await subtleCrypto.digest(hashName, text2);
     }
     async function hmacSha256(keyBuffer, msg) {
       const key = await subtleCrypto.importKey("raw", keyBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -8094,9 +8591,9 @@ var require_utils3 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/crypto/cert-signatures.js
+// node_modules/pg/lib/crypto/cert-signatures.js
 var require_cert_signatures = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/crypto/cert-signatures.js"(exports, module) {
+  "node_modules/pg/lib/crypto/cert-signatures.js"(exports, module) {
     function x509Error(msg, cert) {
       return new Error("SASL channel binding: " + msg + " when parsing public certificate " + cert.toString("base64"));
     }
@@ -8207,11 +8704,11 @@ var require_cert_signatures = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/crypto/sasl.js
+// node_modules/pg/lib/crypto/sasl.js
 var require_sasl = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/crypto/sasl.js"(exports, module) {
+  "node_modules/pg/lib/crypto/sasl.js"(exports, module) {
     "use strict";
-    var crypto = require_utils3();
+    var crypto2 = require_utils3();
     var { signatureAlgorithmHashFromCertificate } = require_cert_signatures();
     function saslprep(password) {
       const nonAsciiSpace = /[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000]/g;
@@ -8229,7 +8726,7 @@ var require_sasl = __commonJS({
       if (mechanism === "SCRAM-SHA-256-PLUS" && typeof stream.getPeerCertificate !== "function") {
         throw new Error("SASL: Mechanism SCRAM-SHA-256-PLUS requires a certificate");
       }
-      const clientNonce = crypto.randomBytes(18).toString("base64");
+      const clientNonce = crypto2.randomBytes(18).toString("base64");
       const gs2Header = mechanism === "SCRAM-SHA-256-PLUS" ? "p=tls-server-end-point" : stream ? "y" : "n";
       return {
         mechanism,
@@ -8271,20 +8768,20 @@ var require_sasl = __commonJS({
         const peerCert = stream.getPeerCertificate().raw;
         let hashName = signatureAlgorithmHashFromCertificate(peerCert);
         if (hashName === "MD5" || hashName === "SHA-1") hashName = "SHA-256";
-        const certHash = await crypto.hashByName(hashName, peerCert);
+        const certHash = await crypto2.hashByName(hashName, peerCert);
         const bindingData = Buffer.concat([Buffer.from("p=tls-server-end-point,,"), Buffer.from(certHash)]);
         channelBinding = bindingData.toString("base64");
       }
       const clientFinalMessageWithoutProof = "c=" + channelBinding + ",r=" + sv.nonce;
       const authMessage = clientFirstMessageBare + "," + serverFirstMessage + "," + clientFinalMessageWithoutProof;
       const saltBytes = Buffer.from(sv.salt, "base64");
-      const saltedPassword = await crypto.deriveKey(saslprep(password), saltBytes, sv.iteration);
-      const clientKey = await crypto.hmacSha256(saltedPassword, "Client Key");
-      const storedKey = await crypto.sha256(clientKey);
-      const clientSignature = await crypto.hmacSha256(storedKey, authMessage);
+      const saltedPassword = await crypto2.deriveKey(saslprep(password), saltBytes, sv.iteration);
+      const clientKey = await crypto2.hmacSha256(saltedPassword, "Client Key");
+      const storedKey = await crypto2.sha256(clientKey);
+      const clientSignature = await crypto2.hmacSha256(storedKey, authMessage);
       const clientProof = xorBuffers(Buffer.from(clientKey), Buffer.from(clientSignature)).toString("base64");
-      const serverKey = await crypto.hmacSha256(saltedPassword, "Server Key");
-      const serverSignatureBytes = await crypto.hmacSha256(serverKey, authMessage);
+      const serverKey = await crypto2.hmacSha256(saltedPassword, "Server Key");
+      const serverSignatureBytes = await crypto2.hmacSha256(serverKey, authMessage);
       session.message = "SASLResponse";
       session.serverSignature = Buffer.from(serverSignatureBytes).toString("base64");
       session.response = clientFinalMessageWithoutProof + ",p=" + clientProof;
@@ -8301,21 +8798,21 @@ var require_sasl = __commonJS({
         throw new Error("SASL: SCRAM-SERVER-FINAL-MESSAGE: server signature does not match");
       }
     }
-    function isPrintableChars(text) {
-      if (typeof text !== "string") {
+    function isPrintableChars(text2) {
+      if (typeof text2 !== "string") {
         throw new TypeError("SASL: text must be a string");
       }
-      return text.split("").map((_, i) => text.charCodeAt(i)).every((c) => c >= 33 && c <= 43 || c >= 45 && c <= 126);
+      return text2.split("").map((_, i) => text2.charCodeAt(i)).every((c) => c >= 33 && c <= 43 || c >= 45 && c <= 126);
     }
-    function isBase64(text) {
-      return /^(?:[a-zA-Z0-9+/]{4})*(?:[a-zA-Z0-9+/]{2}==|[a-zA-Z0-9+/]{3}=)?$/.test(text);
+    function isBase64(text2) {
+      return /^(?:[a-zA-Z0-9+/]{4})*(?:[a-zA-Z0-9+/]{2}==|[a-zA-Z0-9+/]{3}=)?$/.test(text2);
     }
-    function parseAttributePairs(text) {
-      if (typeof text !== "string") {
+    function parseAttributePairs(text2) {
+      if (typeof text2 !== "string") {
         throw new TypeError("SASL: attribute pairs text must be a string");
       }
       return new Map(
-        text.split(",").map((attrValue) => {
+        text2.split(",").map((attrValue) => {
           if (!/^.=/.test(attrValue)) {
             throw new Error("SASL: Invalid attribute pair entry");
           }
@@ -8392,9 +8889,9 @@ var require_sasl = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/type-overrides.js
+// node_modules/pg/lib/type-overrides.js
 var require_type_overrides = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/type-overrides.js"(exports, module) {
+  "node_modules/pg/lib/type-overrides.js"(exports, module) {
     "use strict";
     var types2 = require_pg_types();
     function TypeOverrides2(userTypes) {
@@ -8427,9 +8924,9 @@ var require_type_overrides = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-connection-string/index.js
+// node_modules/pg-connection-string/index.js
 var require_pg_connection_string = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-connection-string/index.js"(exports, module) {
+  "node_modules/pg-connection-string/index.js"(exports, module) {
     "use strict";
     function parse3(str, options = {}) {
       if (str.charAt(0) === "/") {
@@ -8487,15 +8984,15 @@ var require_pg_connection_string = __commonJS({
       if (config2.sslnegotiation === "direct" && config2.ssl === void 0) {
         config2.ssl = true;
       }
-      const fs3 = config2.sslcert || config2.sslkey || config2.sslrootcert ? __require("fs") : null;
+      const fs4 = config2.sslcert || config2.sslkey || config2.sslrootcert ? __require("fs") : null;
       if (config2.sslcert) {
-        config2.ssl.cert = fs3.readFileSync(config2.sslcert).toString();
+        config2.ssl.cert = fs4.readFileSync(config2.sslcert).toString();
       }
       if (config2.sslkey) {
-        config2.ssl.key = fs3.readFileSync(config2.sslkey).toString();
+        config2.ssl.key = fs4.readFileSync(config2.sslkey).toString();
       }
       if (config2.sslrootcert) {
-        config2.ssl.ca = fs3.readFileSync(config2.sslrootcert).toString();
+        config2.ssl.ca = fs4.readFileSync(config2.sslrootcert).toString();
       }
       if (options.useLibpqCompat && config2.uselibpqcompat) {
         throw new Error("Both useLibpqCompat and uselibpqcompat are set. Please use only one of them.");
@@ -8615,9 +9112,9 @@ See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode de
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/connection-parameters.js
+// node_modules/pg/lib/connection-parameters.js
 var require_connection_parameters = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/connection-parameters.js"(exports, module) {
+  "node_modules/pg/lib/connection-parameters.js"(exports, module) {
     "use strict";
     var dns = __require("dns");
     var defaults2 = require_defaults2();
@@ -8766,9 +9263,9 @@ var require_connection_parameters = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/result.js
+// node_modules/pg/lib/result.js
 var require_result = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/result.js"(exports, module) {
+  "node_modules/pg/lib/result.js"(exports, module) {
     "use strict";
     var types2 = require_pg_types();
     var matchRegexp = /^([A-Za-z]+)(?: (\d+))?(?: (\d+))?/;
@@ -8857,9 +9354,9 @@ var require_result = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/query.js
+// node_modules/pg/lib/query.js
 var require_query = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/query.js"(exports, module) {
+  "node_modules/pg/lib/query.js"(exports, module) {
     "use strict";
     var { EventEmitter } = __require("events");
     var Result2 = require_result();
@@ -9056,9 +9553,9 @@ var require_query = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/messages.js
+// node_modules/pg-protocol/dist/messages.js
 var require_messages = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/messages.js"(exports) {
+  "node_modules/pg-protocol/dist/messages.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.NoticeMessage = exports.DataRowMessage = exports.CommandCompleteMessage = exports.ReadyForQueryMessage = exports.NotificationResponseMessage = exports.BackendKeyDataMessage = exports.AuthenticationMD5Password = exports.ParameterStatusMessage = exports.ParameterDescriptionMessage = exports.RowDescriptionMessage = exports.Field = exports.CopyResponse = exports.CopyDataMessage = exports.DatabaseError = exports.copyDone = exports.emptyQuery = exports.replicationStart = exports.portalSuspended = exports.noData = exports.closeComplete = exports.bindComplete = exports.parseComplete = void 0;
@@ -9194,9 +9691,9 @@ var require_messages = __commonJS({
     };
     exports.ReadyForQueryMessage = ReadyForQueryMessage;
     var CommandCompleteMessage = class {
-      constructor(length, text) {
+      constructor(length, text2) {
         this.length = length;
-        this.text = text;
+        this.text = text2;
         this.name = "commandComplete";
       }
     };
@@ -9221,9 +9718,9 @@ var require_messages = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/buffer-writer.js
+// node_modules/pg-protocol/dist/buffer-writer.js
 var require_buffer_writer = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/buffer-writer.js"(exports) {
+  "node_modules/pg-protocol/dist/buffer-writer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Writer = void 0;
@@ -9257,22 +9754,22 @@ var require_buffer_writer = __commonJS({
         this.buffer[this.offset++] = num >>> 0 & 255;
         return this;
       }
-      addCString(string3) {
-        if (!string3) {
+      addCString(string4) {
+        if (!string4) {
           this.ensure(1);
         } else {
-          const len = Buffer.byteLength(string3);
+          const len = Buffer.byteLength(string4);
           this.ensure(len + 1);
-          this.buffer.write(string3, this.offset, "utf-8");
+          this.buffer.write(string4, this.offset, "utf-8");
           this.offset += len;
         }
         this.buffer[this.offset++] = 0;
         return this;
       }
-      addString(string3 = "") {
-        const len = Buffer.byteLength(string3);
+      addString(string4 = "") {
+        const len = Buffer.byteLength(string4);
         this.ensure(len);
-        this.buffer.write(string3, this.offset);
+        this.buffer.write(string4, this.offset);
         this.offset += len;
         return this;
       }
@@ -9282,8 +9779,8 @@ var require_buffer_writer = __commonJS({
       // `addInt32(Buffer.byteLength(s)).addString(s)` pairing scanned the string
       // three times (byteLength for the prefix, byteLength again inside addString,
       // then the encode), which is costly for large text parameters.
-      addInt32PrefixedString(string3) {
-        const len = Buffer.byteLength(string3);
+      addInt32PrefixedString(string4) {
+        const len = Buffer.byteLength(string4);
         this.ensure(4 + len);
         const buffer = this.buffer;
         let offset = this.offset;
@@ -9291,7 +9788,7 @@ var require_buffer_writer = __commonJS({
         buffer[offset++] = len >>> 16 & 255;
         buffer[offset++] = len >>> 8 & 255;
         buffer[offset++] = len >>> 0 & 255;
-        buffer.write(string3, offset, "utf-8");
+        buffer.write(string4, offset, "utf-8");
         this.offset = offset + len;
         return this;
       }
@@ -9325,9 +9822,9 @@ var require_buffer_writer = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/serializer.js
+// node_modules/pg-protocol/dist/serializer.js
 var require_serializer = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/serializer.js"(exports) {
+  "node_modules/pg-protocol/dist/serializer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.serialize = void 0;
@@ -9368,8 +9865,8 @@ var require_serializer = __commonJS({
         /* code.startup */
       );
     };
-    var query = (text) => {
-      return writer.addCString(text).flush(
+    var query = (text2) => {
+      return writer.addCString(text2).flush(
         81
         /* code.query */
       );
@@ -9472,13 +9969,13 @@ var require_serializer = __commonJS({
       buffer.writeInt32BE(secretKey, 12);
       return buffer;
     };
-    var cstringMessage = (code, string3) => {
-      const stringLen = Buffer.byteLength(string3);
+    var cstringMessage = (code, string4) => {
+      const stringLen = Buffer.byteLength(string4);
       const len = 4 + stringLen + 1;
       const buffer = Buffer.allocUnsafe(1 + len);
       buffer[0] = code;
       buffer.writeInt32BE(len, 1);
-      buffer.write(string3, 5, "utf-8");
+      buffer.write(string4, 5, "utf-8");
       buffer[len] = 0;
       return buffer;
     };
@@ -9494,8 +9991,8 @@ var require_serializer = __commonJS({
       return msg.name ? cstringMessage(68, `${msg.type}${msg.name || ""}`) : msg.type === "P" ? emptyDescribePortal : emptyDescribeStatement;
     };
     var close = (msg) => {
-      const text = `${msg.type}${msg.name || ""}`;
-      return cstringMessage(67, text);
+      const text2 = `${msg.type}${msg.name || ""}`;
+      return cstringMessage(67, text2);
     };
     var copyData = (chunk) => {
       return writer.add(chunk).flush(
@@ -9547,9 +10044,9 @@ var require_serializer = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/buffer-reader.js
+// node_modules/pg-protocol/dist/buffer-reader.js
 var require_buffer_reader = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/buffer-reader.js"(exports) {
+  "node_modules/pg-protocol/dist/buffer-reader.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.BufferReader = void 0;
@@ -9606,9 +10103,9 @@ var require_buffer_reader = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/parser.js
+// node_modules/pg-protocol/dist/parser.js
 var require_parser = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/parser.js"(exports) {
+  "node_modules/pg-protocol/dist/parser.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Parser = void 0;
@@ -9767,8 +10264,8 @@ var require_parser = __commonJS({
       return new messages_1.ReadyForQueryMessage(LATEINIT_LENGTH, status);
     };
     var parseCommandCompleteMessage = (reader) => {
-      const text = reader.cstring();
-      return new messages_1.CommandCompleteMessage(LATEINIT_LENGTH, text);
+      const text2 = reader.cstring();
+      return new messages_1.CommandCompleteMessage(LATEINIT_LENGTH, text2);
     };
     var parseCopyData = (reader, length) => {
       const chunk = reader.bytes(length - 4);
@@ -9913,9 +10410,9 @@ var require_parser = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/index.js
+// node_modules/pg-protocol/dist/index.js
 var require_dist2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-protocol/dist/index.js"(exports) {
+  "node_modules/pg-protocol/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DatabaseError = exports.serialize = void 0;
@@ -9937,18 +10434,18 @@ var require_dist2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-cloudflare/dist/empty.js
+// node_modules/pg-cloudflare/dist/empty.js
 var require_empty = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-cloudflare/dist/empty.js"(exports) {
+  "node_modules/pg-cloudflare/dist/empty.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = {};
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/stream.js
+// node_modules/pg/lib/stream.js
 var require_stream = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/stream.js"(exports, module) {
+  "node_modules/pg/lib/stream.js"(exports, module) {
     var { getStream, getSecureStream } = getStreamFuncs();
     module.exports = {
       /**
@@ -10012,9 +10509,9 @@ var require_stream = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/connection.js
+// node_modules/pg/lib/connection.js
 var require_connection = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/connection.js"(exports, module) {
+  "node_modules/pg/lib/connection.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
     var { parse: parse3, serialize } = require_dist2();
@@ -10149,8 +10646,8 @@ var require_connection = __commonJS({
         }
         return this.stream.write(buffer);
       }
-      query(text) {
-        this._send(serialize.query(text));
+      query(text2) {
+        this._send(serialize.query(text2));
       }
       // send parse message
       parse(query) {
@@ -10209,9 +10706,9 @@ var require_connection = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/split2/index.js
+// node_modules/split2/index.js
 var require_split2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/split2/index.js"(exports, module) {
+  "node_modules/split2/index.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var { StringDecoder } = __require("string_decoder");
@@ -10260,12 +10757,12 @@ var require_split2 = __commonJS({
         self.push(val);
       }
     }
-    function noop(incoming) {
+    function noop2(incoming) {
       return incoming;
     }
     function split(matcher, mapper, options) {
       matcher = matcher || /\r?\n/;
-      mapper = mapper || noop;
+      mapper = mapper || noop2;
       options = options || {};
       switch (arguments.length) {
         case 1:
@@ -10284,7 +10781,7 @@ var require_split2 = __commonJS({
             matcher = /\r?\n/;
           } else if (typeof mapper === "object") {
             options = mapper;
-            mapper = noop;
+            mapper = noop2;
           }
       }
       options = Object.assign({}, options);
@@ -10310,11 +10807,11 @@ var require_split2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pgpass/lib/helper.js
+// node_modules/pgpass/lib/helper.js
 var require_helper = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pgpass/lib/helper.js"(exports, module) {
+  "node_modules/pgpass/lib/helper.js"(exports, module) {
     "use strict";
-    var path3 = __require("path");
+    var path4 = __require("path");
     var Stream = __require("stream").Stream;
     var split = require_split2();
     var util2 = __require("util");
@@ -10353,7 +10850,7 @@ var require_helper = __commonJS({
     };
     module.exports.getFileName = function(rawEnv) {
       var env = rawEnv || process.env;
-      var file = env.PGPASSFILE || (isWin ? path3.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path3.join(env.HOME || "./", ".pgpass"));
+      var file = env.PGPASSFILE || (isWin ? path4.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path4.join(env.HOME || "./", ".pgpass"));
       return file;
     };
     module.exports.usePgPass = function(stats, fname) {
@@ -10481,20 +10978,20 @@ var require_helper = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pgpass/lib/index.js
+// node_modules/pgpass/lib/index.js
 var require_lib = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pgpass/lib/index.js"(exports, module) {
+  "node_modules/pgpass/lib/index.js"(exports, module) {
     "use strict";
-    var path3 = __require("path");
-    var fs3 = __require("fs");
+    var path4 = __require("path");
+    var fs4 = __require("fs");
     var helper = require_helper();
     module.exports = function(connInfo, cb) {
       var file = helper.getFileName();
-      fs3.stat(file, function(err, stat) {
+      fs4.stat(file, function(err, stat) {
         if (err || !helper.usePgPass(stat, file)) {
           return cb(void 0);
         }
-        var st = fs3.createReadStream(file);
+        var st = fs4.createReadStream(file);
         helper.getPassword(connInfo, st, cb);
       });
     };
@@ -10502,9 +10999,9 @@ var require_lib = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/client.js
+// node_modules/pg/lib/client.js
 var require_client = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/client.js"(exports, module) {
+  "node_modules/pg/lib/client.js"(exports, module) {
     var EventEmitter = __require("events").EventEmitter;
     var utils = require_utils2();
     var nodeUtils = __require("util");
@@ -10514,7 +11011,7 @@ var require_client = __commonJS({
     var Query2 = require_query();
     var defaults2 = require_defaults2();
     var Connection2 = require_connection();
-    var crypto = require_utils3();
+    var crypto2 = require_utils3();
     var activeQueryDeprecationNotice = nodeUtils.deprecate(
       () => {
       },
@@ -10550,7 +11047,7 @@ var require_client = __commonJS({
       }
       return defaultValue;
     }
-    var Client2 = class extends EventEmitter {
+    var Client3 = class extends EventEmitter {
       constructor(config2) {
         super();
         this.connectionParameters = new ConnectionParameters(config2);
@@ -10765,7 +11262,7 @@ var require_client = __commonJS({
       _handleAuthMD5Password(msg) {
         this._getPassword(async () => {
           try {
-            const hashedPassword = await crypto.postgresMd5PasswordHash(this.user, this.password, msg.salt);
+            const hashedPassword = await crypto2.postgresMd5PasswordHash(this.user, this.password, msg.salt);
             this.connection.password(hashedPassword);
           } catch (e) {
             this.emit("error", e);
@@ -11139,14 +11636,14 @@ var require_client = __commonJS({
         return this._queryQueue;
       }
     };
-    Client2.Query = Query2;
-    module.exports = Client2;
+    Client3.Query = Query2;
+    module.exports = Client3;
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg-pool/index.js
+// node_modules/pg-pool/index.js
 var require_pg_pool = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg-pool/index.js"(exports, module) {
+  "node_modules/pg-pool/index.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
     var NOOP = function() {
@@ -11200,7 +11697,7 @@ var require_pg_pool = __commonJS({
       };
     }
     var Pool2 = class extends EventEmitter {
-      constructor(options, Client2) {
+      constructor(options, Client3) {
         super();
         this.options = Object.assign({}, options);
         if (options != null && "password" in options) {
@@ -11223,7 +11720,7 @@ var require_pg_pool = __commonJS({
         this.options.maxLifetimeSeconds = this.options.maxLifetimeSeconds || 0;
         this.log = this.options.log || function() {
         };
-        this.Client = this.options.Client || Client2 || require_lib2().Client;
+        this.Client = this.options.Client || Client3 || require_lib2().Client;
         this.Promise = this.options.Promise || global.Promise;
         if (typeof this.options.idleTimeoutMillis === "undefined") {
           this.options.idleTimeoutMillis = 1e4;
@@ -11491,9 +11988,9 @@ var require_pg_pool = __commonJS({
         this._idle.push(new IdleItem(client, idleListener, tid));
         this._pulseQueue();
       }
-      query(text, values, cb) {
-        if (typeof text === "function") {
-          const response2 = promisify(this.Promise, text);
+      query(text2, values, cb) {
+        if (typeof text2 === "function") {
+          const response2 = promisify(this.Promise, text2);
           setImmediate(function() {
             return response2.callback(new Error("Passing a function as the first parameter to pool.query is not supported"));
           });
@@ -11521,7 +12018,7 @@ var require_pg_pool = __commonJS({
           client.once("error", onError);
           this.log("dispatching query");
           try {
-            client.query(text, values, (err2, res) => {
+            client.query(text2, values, (err2, res) => {
               this.log("query dispatched");
               client.removeListener("error", onError);
               if (clientReleased) {
@@ -11570,9 +12067,9 @@ var require_pg_pool = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/native/query.js
+// node_modules/pg/lib/native/query.js
 var require_query2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/native/query.js"(exports, module) {
+  "node_modules/pg/lib/native/query.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
     var util2 = __require("util");
@@ -11711,9 +12208,9 @@ var require_query2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/native/client.js
+// node_modules/pg/lib/native/client.js
 var require_client2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/native/client.js"(exports, module) {
+  "node_modules/pg/lib/native/client.js"(exports, module) {
     var nodeUtils = __require("util");
     var Native;
     try {
@@ -11731,7 +12228,7 @@ var require_client2 = __commonJS({
       },
       "Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead."
     );
-    var Client2 = module.exports = function(config2) {
+    var Client3 = module.exports = function(config2) {
       EventEmitter.call(this);
       config2 = config2 || {};
       this._Promise = config2.Promise || global.Promise;
@@ -11758,9 +12255,9 @@ var require_client2 = __commonJS({
       this.port = cp.port;
       this.namedQueries = {};
     };
-    Client2.Query = NativeQuery;
-    util2.inherits(Client2, EventEmitter);
-    Client2.prototype._errorAllQueries = function(err) {
+    Client3.Query = NativeQuery;
+    util2.inherits(Client3, EventEmitter);
+    Client3.prototype._errorAllQueries = function(err) {
       const enqueueError = (query) => {
         process.nextTick(() => {
           query.native = this.native;
@@ -11774,7 +12271,7 @@ var require_client2 = __commonJS({
       this._queryQueue.forEach(enqueueError);
       this._queryQueue.length = 0;
     };
-    Client2.prototype._connect = function(cb) {
+    Client3.prototype._connect = function(cb) {
       const self = this;
       if (this._connecting) {
         process.nextTick(() => cb(new Error("Client has already been connected. You cannot reuse a client.")));
@@ -11807,7 +12304,7 @@ var require_client2 = __commonJS({
         });
       });
     };
-    Client2.prototype.connect = function(callback) {
+    Client3.prototype.connect = function(callback) {
       if (callback) {
         this._connect(callback);
         return;
@@ -11822,7 +12319,7 @@ var require_client2 = __commonJS({
         });
       });
     };
-    Client2.prototype.query = function(config2, values, callback) {
+    Client3.prototype.query = function(config2, values, callback) {
       let query;
       let result;
       let readTimeout;
@@ -11894,7 +12391,7 @@ var require_client2 = __commonJS({
       this._pulseQueryQueue();
       return result;
     };
-    Client2.prototype.end = function(cb) {
+    Client3.prototype.end = function(cb) {
       const self = this;
       this._ending = true;
       if (this._connecting && !this._connected) {
@@ -11919,10 +12416,10 @@ var require_client2 = __commonJS({
       });
       return result;
     };
-    Client2.prototype._hasActiveQuery = function() {
+    Client3.prototype._hasActiveQuery = function() {
       return this._activeQuery && this._activeQuery.state !== "error" && this._activeQuery.state !== "end";
     };
-    Client2.prototype._pulseQueryQueue = function(initialConnection) {
+    Client3.prototype._pulseQueryQueue = function(initialConnection) {
       if (!this._connected) {
         return;
       }
@@ -11943,7 +12440,7 @@ var require_client2 = __commonJS({
         self._pulseQueryQueue();
       });
     };
-    Client2.prototype.cancel = function(query) {
+    Client3.prototype.cancel = function(query) {
       if (this._activeQuery === query) {
         this.native.cancel(function() {
         });
@@ -11951,38 +12448,38 @@ var require_client2 = __commonJS({
         this._queryQueue.splice(this._queryQueue.indexOf(query), 1);
       }
     };
-    Client2.prototype.ref = function() {
+    Client3.prototype.ref = function() {
     };
-    Client2.prototype.unref = function() {
+    Client3.prototype.unref = function() {
     };
-    Client2.prototype.setTypeParser = function(oid, format, parseFn) {
+    Client3.prototype.setTypeParser = function(oid, format, parseFn) {
       return this._types.setTypeParser(oid, format, parseFn);
     };
-    Client2.prototype.getTypeParser = function(oid, format) {
+    Client3.prototype.getTypeParser = function(oid, format) {
       return this._types.getTypeParser(oid, format);
     };
-    Client2.prototype.isConnected = function() {
+    Client3.prototype.isConnected = function() {
       return this._connected;
     };
-    Client2.prototype.getTransactionStatus = function() {
+    Client3.prototype.getTransactionStatus = function() {
       return this.native.getTransactionStatus();
     };
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/native/index.js
+// node_modules/pg/lib/native/index.js
 var require_native = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/native/index.js"(exports, module) {
+  "node_modules/pg/lib/native/index.js"(exports, module) {
     "use strict";
     module.exports = require_client2();
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/index.js
+// node_modules/pg/lib/index.js
 var require_lib2 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/lib/index.js"(exports, module) {
+  "node_modules/pg/lib/index.js"(exports, module) {
     "use strict";
-    var Client2 = require_client();
+    var Client3 = require_client();
     var defaults2 = require_defaults2();
     var Connection2 = require_connection();
     var Result2 = require_result();
@@ -11991,10 +12488,10 @@ var require_lib2 = __commonJS({
     var TypeOverrides2 = require_type_overrides();
     var { DatabaseError: DatabaseError2 } = require_dist2();
     var { escapeIdentifier: escapeIdentifier2, escapeLiteral: escapeLiteral2 } = require_utils2();
-    var poolFactory = (Client3) => {
+    var poolFactory = (Client4) => {
       return class BoundPool extends Pool2 {
         constructor(options) {
-          super(options, Client3);
+          super(options, Client4);
         }
       };
     };
@@ -12013,7 +12510,7 @@ var require_lib2 = __commonJS({
       this.Result = Result2;
       this.utils = utils;
     };
-    var clientConstructor = Client2;
+    var clientConstructor = Client3;
     var forceNative = false;
     try {
       forceNative = !!process.env.NODE_PG_FORCE_NATIVE;
@@ -12044,10 +12541,10 @@ var require_lib2 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pg/esm/index.mjs
+// node_modules/pg/esm/index.mjs
 var esm_exports = {};
 __export(esm_exports, {
-  Client: () => Client,
+  Client: () => Client2,
   Connection: () => Connection,
   DatabaseError: () => DatabaseError,
   Pool: () => Pool,
@@ -12060,11 +12557,11 @@ __export(esm_exports, {
   escapeLiteral: () => escapeLiteral,
   types: () => types
 });
-var import_lib, Client, Pool, Connection, types, Query, DatabaseError, escapeIdentifier, escapeLiteral, Result, TypeOverrides, defaults, esm_default;
+var import_lib, Client2, Pool, Connection, types, Query, DatabaseError, escapeIdentifier, escapeLiteral, Result, TypeOverrides, defaults, esm_default;
 var init_esm = __esm({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pg/esm/index.mjs"() {
+  "node_modules/pg/esm/index.mjs"() {
     import_lib = __toESM(require_lib2(), 1);
-    Client = import_lib.default.Client;
+    Client2 = import_lib.default.Client;
     Pool = import_lib.default.Pool;
     Connection = import_lib.default.Connection;
     types = import_lib.default.types;
@@ -12079,9 +12576,9 @@ var init_esm = __esm({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pgvector/src/utils/sparse-vector.js
+// node_modules/pgvector/src/utils/sparse-vector.js
 var require_sparse_vector = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pgvector/src/utils/sparse-vector.js"(exports, module) {
+  "node_modules/pgvector/src/utils/sparse-vector.js"(exports, module) {
     var util2 = __require("node:util");
     var SparseVector = class {
       constructor(value, dimensions) {
@@ -12150,9 +12647,9 @@ var require_sparse_vector = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pgvector/src/utils/index.js
+// node_modules/pgvector/src/utils/index.js
 var require_utils4 = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pgvector/src/utils/index.js"(exports, module) {
+  "node_modules/pgvector/src/utils/index.js"(exports, module) {
     var util2 = __require("node:util");
     var { SparseVector } = require_sparse_vector();
     function vectorFromSql(value) {
@@ -12244,9 +12741,9 @@ var require_utils4 = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/pgvector/src/pg/index.js
+// node_modules/pgvector/src/pg/index.js
 var require_pg = __commonJS({
-  "../../../../../../Projects/oak-memory-plugin/node_modules/pgvector/src/pg/index.js"(exports, module) {
+  "node_modules/pgvector/src/pg/index.js"(exports, module) {
     var utils = require_utils4();
     var { toSql } = require_utils4();
     async function registerTypes(client) {
@@ -12277,7 +12774,7 @@ var require_pg = __commonJS({
   }
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/external.js
+// node_modules/zod/v3/external.js
 var external_exports = {};
 __export(external_exports, {
   BRAND: () => BRAND,
@@ -12389,7 +12886,7 @@ __export(external_exports, {
   void: () => voidType
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/helpers/util.js
+// node_modules/zod/v3/helpers/util.js
 var util;
 (function(util2) {
   util2.assertEqual = (_) => {
@@ -12523,7 +13020,7 @@ var getParsedType = (data) => {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/ZodError.js
+// node_modules/zod/v3/ZodError.js
 var ZodIssueCode = util.arrayToEnum([
   "invalid_type",
   "invalid_literal",
@@ -12641,7 +13138,7 @@ ZodError.create = (issues) => {
   return error2;
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/locales/en.js
+// node_modules/zod/v3/locales/en.js
 var errorMap = (issue2, _ctx) => {
   let message;
   switch (issue2.code) {
@@ -12744,7 +13241,7 @@ var errorMap = (issue2, _ctx) => {
 };
 var en_default = errorMap;
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/errors.js
+// node_modules/zod/v3/errors.js
 var overrideErrorMap = en_default;
 function setErrorMap(map) {
   overrideErrorMap = map;
@@ -12753,10 +13250,10 @@ function getErrorMap() {
   return overrideErrorMap;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/helpers/parseUtil.js
+// node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path3, errorMaps, issueData } = params;
-  const fullPath = [...path3, ...issueData.path || []];
+  const { data, path: path4, errorMaps, issueData } = params;
+  const fullPath = [...path4, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -12863,20 +13360,20 @@ var isDirty = (x) => x.status === "dirty";
 var isValid = (x) => x.status === "valid";
 var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/helpers/errorUtil.js
+// node_modules/zod/v3/helpers/errorUtil.js
 var errorUtil;
 (function(errorUtil2) {
   errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
   errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
 })(errorUtil || (errorUtil = {}));
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v3/types.js
+// node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path3, key) {
+  constructor(parent, value, path4, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path3;
+    this._path = path4;
     this._key = key;
   }
   get path() {
@@ -16318,7 +16815,7 @@ var coerce = {
 };
 var NEVER = INVALID;
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/core.js
+// node_modules/zod/v4/core/core.js
 var NEVER2 = Object.freeze({
   status: "aborted"
 });
@@ -16378,7 +16875,7 @@ function config(newConfig) {
   return globalConfig;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/util.js
+// node_modules/zod/v4/core/util.js
 var util_exports = {};
 __export(util_exports, {
   BIGINT_FORMAT_RANGES: () => BIGINT_FORMAT_RANGES,
@@ -16514,10 +17011,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path3) {
-  if (!path3)
+function getElementAtPath(obj, path4) {
+  if (!path4)
     return obj;
-  return path3.reduce((acc, key) => acc?.[key], obj);
+  return path4.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -16837,11 +17334,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path3, issues) {
+function prefixIssues(path4, issues) {
   return issues.map((iss) => {
     var _a;
     (_a = iss).path ?? (_a.path = []);
-    iss.path.unshift(path3);
+    iss.path.unshift(path4);
     return iss;
   });
 }
@@ -16899,7 +17396,7 @@ var Class = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/errors.js
+// node_modules/zod/v4/core/errors.js
 var initializer = (inst, def) => {
   inst.name = "$ZodError";
   Object.defineProperty(inst, "_zod", {
@@ -16974,7 +17471,7 @@ function formatError(error2, _mapper) {
   return fieldErrors;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/parse.js
+// node_modules/zod/v4/core/parse.js
 var _parse = (_Err) => (schema, value, _ctx, _params) => {
   const ctx = _ctx ? Object.assign(_ctx, { async: false }) : { async: false };
   const result = schema._zod.run({ value, issues: [] }, ctx);
@@ -17026,7 +17523,7 @@ var _safeParseAsync = (_Err) => async (schema, value, _ctx) => {
 };
 var safeParseAsync = /* @__PURE__ */ _safeParseAsync($ZodRealError);
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/regexes.js
+// node_modules/zod/v4/core/regexes.js
 var cuid = /^[cC][^\s-]{8,}$/;
 var cuid2 = /^[0-9a-z]+$/;
 var ulid = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/;
@@ -17077,6 +17574,7 @@ var string = (params) => {
   const regex = params ? `[\\s\\S]{${params?.minimum ?? 0},${params?.maximum ?? ""}}` : `[\\s\\S]*`;
   return new RegExp(`^${regex}$`);
 };
+var bigint = /^\d+n?$/;
 var integer = /^\d+$/;
 var number = /^-?\d+(?:\.\d+)?/i;
 var boolean = /true|false/i;
@@ -17084,7 +17582,7 @@ var _null = /null/i;
 var lowercase = /^[^A-Z]*$/;
 var uppercase = /^[^a-z]*$/;
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/checks.js
+// node_modules/zod/v4/core/checks.js
 var $ZodCheck = /* @__PURE__ */ $constructor("$ZodCheck", (inst, def) => {
   var _a;
   inst._zod ?? (inst._zod = {});
@@ -17469,7 +17967,7 @@ var $ZodCheckOverwrite = /* @__PURE__ */ $constructor("$ZodCheckOverwrite", (ins
   };
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/doc.js
+// node_modules/zod/v4/core/doc.js
 var Doc = class {
   constructor(args = []) {
     this.content = [];
@@ -17505,14 +18003,14 @@ var Doc = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/versions.js
+// node_modules/zod/v4/core/versions.js
 var version = {
   major: 4,
   minor: 0,
   patch: 0
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/schemas.js
+// node_modules/zod/v4/core/schemas.js
 var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
   var _a;
   inst ?? (inst = {});
@@ -17654,11 +18152,11 @@ var $ZodURL = /* @__PURE__ */ $constructor("$ZodURL", (inst, def) => {
   inst._zod.check = (payload) => {
     try {
       const orig = payload.value;
-      const url = new URL(orig);
-      const href = url.href;
+      const url2 = new URL(orig);
+      const href = url2.href;
       if (def.hostname) {
         def.hostname.lastIndex = 0;
-        if (!def.hostname.test(url.hostname)) {
+        if (!def.hostname.test(url2.hostname)) {
           payload.issues.push({
             code: "invalid_format",
             format: "url",
@@ -17672,7 +18170,7 @@ var $ZodURL = /* @__PURE__ */ $constructor("$ZodURL", (inst, def) => {
       }
       if (def.protocol) {
         def.protocol.lastIndex = 0;
-        if (!def.protocol.test(url.protocol.endsWith(":") ? url.protocol.slice(0, -1) : url.protocol)) {
+        if (!def.protocol.test(url2.protocol.endsWith(":") ? url2.protocol.slice(0, -1) : url2.protocol)) {
           payload.issues.push({
             code: "invalid_format",
             format: "url",
@@ -17945,6 +18443,26 @@ var $ZodBoolean = /* @__PURE__ */ $constructor("$ZodBoolean", (inst, def) => {
     return payload;
   };
 });
+var $ZodBigInt = /* @__PURE__ */ $constructor("$ZodBigInt", (inst, def) => {
+  $ZodType.init(inst, def);
+  inst._zod.pattern = bigint;
+  inst._zod.parse = (payload, _ctx) => {
+    if (def.coerce)
+      try {
+        payload.value = BigInt(payload.value);
+      } catch (_) {
+      }
+    if (typeof payload.value === "bigint")
+      return payload;
+    payload.issues.push({
+      expected: "bigint",
+      code: "invalid_type",
+      input: payload.value,
+      inst
+    });
+    return payload;
+  };
+});
 var $ZodNull = /* @__PURE__ */ $constructor("$ZodNull", (inst, def) => {
   $ZodType.init(inst, def);
   inst._zod.pattern = _null;
@@ -17962,6 +18480,10 @@ var $ZodNull = /* @__PURE__ */ $constructor("$ZodNull", (inst, def) => {
     return payload;
   };
 });
+var $ZodAny = /* @__PURE__ */ $constructor("$ZodAny", (inst, def) => {
+  $ZodType.init(inst, def);
+  inst._zod.parse = (payload) => payload;
+});
 var $ZodUnknown = /* @__PURE__ */ $constructor("$ZodUnknown", (inst, def) => {
   $ZodType.init(inst, def);
   inst._zod.parse = (payload) => payload;
@@ -17973,6 +18495,30 @@ var $ZodNever = /* @__PURE__ */ $constructor("$ZodNever", (inst, def) => {
       expected: "never",
       code: "invalid_type",
       input: payload.value,
+      inst
+    });
+    return payload;
+  };
+});
+var $ZodDate = /* @__PURE__ */ $constructor("$ZodDate", (inst, def) => {
+  $ZodType.init(inst, def);
+  inst._zod.parse = (payload, _ctx) => {
+    if (def.coerce) {
+      try {
+        payload.value = new Date(payload.value);
+      } catch (_err) {
+      }
+    }
+    const input = payload.value;
+    const isDate = input instanceof Date;
+    const isValidDate = isDate && !Number.isNaN(input.getTime());
+    if (isValidDate)
+      return payload;
+    payload.issues.push({
+      expected: "date",
+      code: "invalid_type",
+      input,
+      ...isDate ? { received: "Invalid Date" } : {},
       inst
     });
     return payload;
@@ -18750,7 +19296,7 @@ function handleRefineResult(result, payload, input, inst) {
   }
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/locales/en.js
+// node_modules/zod/v4/locales/en.js
 var parsedType = (data) => {
   const t = typeof data;
   switch (t) {
@@ -18868,7 +19414,7 @@ function en_default2() {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/registries.js
+// node_modules/zod/v4/core/registries.js
 var $output = Symbol("ZodOutput");
 var $input = Symbol("ZodInput");
 var $ZodRegistry = class {
@@ -18918,10 +19464,17 @@ function registry() {
 }
 var globalRegistry = /* @__PURE__ */ registry();
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/api.js
+// node_modules/zod/v4/core/api.js
 function _string(Class2, params) {
   return new Class2({
     type: "string",
+    ...normalizeParams(params)
+  });
+}
+function _coercedString(Class2, params) {
+  return new Class2({
+    type: "string",
+    coerce: true,
     ...normalizeParams(params)
   });
 }
@@ -19169,6 +19722,14 @@ function _number(Class2, params) {
     ...normalizeParams(params)
   });
 }
+function _coercedNumber(Class2, params) {
+  return new Class2({
+    type: "number",
+    coerce: true,
+    checks: [],
+    ...normalizeParams(params)
+  });
+}
 function _int(Class2, params) {
   return new Class2({
     type: "number",
@@ -19184,10 +19745,29 @@ function _boolean(Class2, params) {
     ...normalizeParams(params)
   });
 }
+function _coercedBoolean(Class2, params) {
+  return new Class2({
+    type: "boolean",
+    coerce: true,
+    ...normalizeParams(params)
+  });
+}
+function _coercedBigint(Class2, params) {
+  return new Class2({
+    type: "bigint",
+    coerce: true,
+    ...normalizeParams(params)
+  });
+}
 function _null2(Class2, params) {
   return new Class2({
     type: "null",
     ...normalizeParams(params)
+  });
+}
+function _any(Class2) {
+  return new Class2({
+    type: "any"
   });
 }
 function _unknown(Class2) {
@@ -19198,6 +19778,13 @@ function _unknown(Class2) {
 function _never(Class2, params) {
   return new Class2({
     type: "never",
+    ...normalizeParams(params)
+  });
+}
+function _coercedDate(Class2, params) {
+  return new Class2({
+    type: "date",
+    coerce: true,
     ...normalizeParams(params)
   });
 }
@@ -19357,7 +19944,7 @@ function _refine(Class2, fn, _params) {
   return schema;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/core/to-json-schema.js
+// node_modules/zod/v4/core/to-json-schema.js
 var JSONSchemaGenerator = class {
   constructor(params) {
     this.counter = 0;
@@ -20124,7 +20711,7 @@ function isTransforming(_schema, _ctx) {
   throw new Error(`Unknown schema type: ${def.type}`);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/mini/schemas.js
+// node_modules/zod/v4/mini/schemas.js
 var ZodMiniType = /* @__PURE__ */ $constructor("ZodMiniType", (inst, def) => {
   if (!inst._zod)
     throw new Error("Uninitialized schema in ZodMiniType.");
@@ -20170,7 +20757,7 @@ function object(shape, params) {
   return new ZodMiniObject(def);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js
 function isZ4Schema(s) {
   const schema = s;
   return !!schema._zod;
@@ -20314,7 +20901,7 @@ function getLiteralValue(schema) {
   return void 0;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/classic/iso.js
+// node_modules/zod/v4/classic/iso.js
 var iso_exports2 = {};
 __export(iso_exports2, {
   ZodISODate: () => ZodISODate,
@@ -20355,7 +20942,7 @@ function duration2(params) {
   return _isoDuration(ZodISODuration, params);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/classic/errors.js
+// node_modules/zod/v4/classic/errors.js
 var initializer2 = (inst, issues) => {
   $ZodError.init(inst, issues);
   inst.name = "ZodError";
@@ -20389,13 +20976,13 @@ var ZodRealError = $constructor("ZodError", initializer2, {
   Parent: Error
 });
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/classic/parse.js
+// node_modules/zod/v4/classic/parse.js
 var parse2 = /* @__PURE__ */ _parse(ZodRealError);
 var parseAsync2 = /* @__PURE__ */ _parseAsync(ZodRealError);
 var safeParse3 = /* @__PURE__ */ _safeParse(ZodRealError);
 var safeParseAsync3 = /* @__PURE__ */ _safeParseAsync(ZodRealError);
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/classic/schemas.js
+// node_modules/zod/v4/classic/schemas.js
 var ZodType2 = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
   $ZodType.init(inst, def);
   inst.def = def;
@@ -20538,6 +21125,9 @@ var ZodURL = /* @__PURE__ */ $constructor("ZodURL", (inst, def) => {
   $ZodURL.init(inst, def);
   ZodStringFormat.init(inst, def);
 });
+function url(params) {
+  return _url(ZodURL, params);
+}
 var ZodEmoji = /* @__PURE__ */ $constructor("ZodEmoji", (inst, def) => {
   $ZodEmoji.init(inst, def);
   ZodStringFormat.init(inst, def);
@@ -20640,12 +21230,40 @@ var ZodBoolean2 = /* @__PURE__ */ $constructor("ZodBoolean", (inst, def) => {
 function boolean2(params) {
   return _boolean(ZodBoolean2, params);
 }
+var ZodBigInt2 = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
+  $ZodBigInt.init(inst, def);
+  ZodType2.init(inst, def);
+  inst.gte = (value, params) => inst.check(_gte(value, params));
+  inst.min = (value, params) => inst.check(_gte(value, params));
+  inst.gt = (value, params) => inst.check(_gt(value, params));
+  inst.gte = (value, params) => inst.check(_gte(value, params));
+  inst.min = (value, params) => inst.check(_gte(value, params));
+  inst.lt = (value, params) => inst.check(_lt(value, params));
+  inst.lte = (value, params) => inst.check(_lte(value, params));
+  inst.max = (value, params) => inst.check(_lte(value, params));
+  inst.positive = (params) => inst.check(_gt(BigInt(0), params));
+  inst.negative = (params) => inst.check(_lt(BigInt(0), params));
+  inst.nonpositive = (params) => inst.check(_lte(BigInt(0), params));
+  inst.nonnegative = (params) => inst.check(_gte(BigInt(0), params));
+  inst.multipleOf = (value, params) => inst.check(_multipleOf(value, params));
+  const bag = inst._zod.bag;
+  inst.minValue = bag.minimum ?? null;
+  inst.maxValue = bag.maximum ?? null;
+  inst.format = bag.format ?? null;
+});
 var ZodNull2 = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
   $ZodNull.init(inst, def);
   ZodType2.init(inst, def);
 });
 function _null3(params) {
   return _null2(ZodNull2, params);
+}
+var ZodAny2 = /* @__PURE__ */ $constructor("ZodAny", (inst, def) => {
+  $ZodAny.init(inst, def);
+  ZodType2.init(inst, def);
+});
+function any() {
+  return _any(ZodAny2);
 }
 var ZodUnknown2 = /* @__PURE__ */ $constructor("ZodUnknown", (inst, def) => {
   $ZodUnknown.init(inst, def);
@@ -20661,6 +21279,15 @@ var ZodNever2 = /* @__PURE__ */ $constructor("ZodNever", (inst, def) => {
 function never(params) {
   return _never(ZodNever2, params);
 }
+var ZodDate2 = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
+  $ZodDate.init(inst, def);
+  ZodType2.init(inst, def);
+  inst.min = (value, params) => inst.check(_gte(value, params));
+  inst.max = (value, params) => inst.check(_lte(value, params));
+  const c = inst._zod.bag;
+  inst.minDate = c.minimum ? new Date(c.minimum) : null;
+  inst.maxDate = c.maximum ? new Date(c.maximum) : null;
+});
 var ZodArray2 = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   $ZodArray.init(inst, def);
   ZodType2.init(inst, def);
@@ -21006,10 +21633,50 @@ function preprocess(fn, schema) {
   return pipe(transform(fn), schema);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod/v4/classic/external.js
+// node_modules/zod/v4/classic/compat.js
+var ZodIssueCode2 = {
+  invalid_type: "invalid_type",
+  too_big: "too_big",
+  too_small: "too_small",
+  invalid_format: "invalid_format",
+  not_multiple_of: "not_multiple_of",
+  unrecognized_keys: "unrecognized_keys",
+  invalid_union: "invalid_union",
+  invalid_key: "invalid_key",
+  invalid_element: "invalid_element",
+  invalid_value: "invalid_value",
+  custom: "custom"
+};
+
+// node_modules/zod/v4/classic/coerce.js
+var coerce_exports2 = {};
+__export(coerce_exports2, {
+  bigint: () => bigint2,
+  boolean: () => boolean3,
+  date: () => date3,
+  number: () => number3,
+  string: () => string3
+});
+function string3(params) {
+  return _coercedString(ZodString2, params);
+}
+function number3(params) {
+  return _coercedNumber(ZodNumber2, params);
+}
+function boolean3(params) {
+  return _coercedBoolean(ZodBoolean2, params);
+}
+function bigint2(params) {
+  return _coercedBigint(ZodBigInt2, params);
+}
+function date3(params) {
+  return _coercedDate(ZodDate2, params);
+}
+
+// node_modules/zod/v4/classic/external.js
 config(en_default2());
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/types.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/types.js
 var LATEST_PROTOCOL_VERSION = "2025-11-25";
 var SUPPORTED_PROTOCOL_VERSIONS = [LATEST_PROTOCOL_VERSION, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"];
 var RELATED_TASK_META_KEY = "io.modelcontextprotocol/related-task";
@@ -21410,6 +22077,7 @@ var InitializedNotificationSchema = NotificationSchema.extend({
   method: literal("notifications/initialized"),
   params: NotificationsParamsSchema.optional()
 });
+var isInitializedNotification = (value) => InitializedNotificationSchema.safeParse(value).success;
 var PingRequestSchema = RequestSchema.extend({
   method: literal("ping"),
   params: BaseRequestParamsSchema.optional()
@@ -22538,12 +23206,12 @@ var UrlElicitationRequiredError = class extends McpError {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/interfaces.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/interfaces.js
 function isTerminal(status) {
   return status === "completed" || status === "failed" || status === "cancelled";
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/Options.js
+// node_modules/zod-to-json-schema/dist/esm/Options.js
 var ignoreOverride = Symbol("Let zodToJsonSchema decide on which parser to use");
 var defaultOptions = {
   name: void 0,
@@ -22577,7 +23245,7 @@ var getDefaultOptions = (options) => typeof options === "string" ? {
   ...options
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/Refs.js
+// node_modules/zod-to-json-schema/dist/esm/Refs.js
 var getRefs = (options) => {
   const _options = getDefaultOptions(options);
   const currentPath = _options.name !== void 0 ? [..._options.basePath, _options.definitionPath, _options.name] : _options.basePath;
@@ -22598,7 +23266,7 @@ var getRefs = (options) => {
   };
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/errorMessages.js
+// node_modules/zod-to-json-schema/dist/esm/errorMessages.js
 function addErrorMessage(res, key, errorMessage, refs) {
   if (!refs?.errorMessages)
     return;
@@ -22614,7 +23282,7 @@ function setResponseValueAndErrors(res, key, value, errorMessage, refs) {
   addErrorMessage(res, key, errorMessage, refs);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/getRelativePath.js
+// node_modules/zod-to-json-schema/dist/esm/getRelativePath.js
 var getRelativePath = (pathA, pathB) => {
   let i = 0;
   for (; i < pathA.length && i < pathB.length; i++) {
@@ -22624,7 +23292,7 @@ var getRelativePath = (pathA, pathB) => {
   return [(pathA.length - i).toString(), ...pathB.slice(i)].join("/");
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/any.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/any.js
 function parseAnyDef(refs) {
   if (refs.target !== "openAi") {
     return {};
@@ -22640,7 +23308,7 @@ function parseAnyDef(refs) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/array.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/array.js
 function parseArrayDef(def, refs) {
   const res = {
     type: "array"
@@ -22664,7 +23332,7 @@ function parseArrayDef(def, refs) {
   return res;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/bigint.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/bigint.js
 function parseBigintDef(def, refs) {
   const res = {
     type: "integer",
@@ -22710,24 +23378,24 @@ function parseBigintDef(def, refs) {
   return res;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/boolean.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/boolean.js
 function parseBooleanDef() {
   return {
     type: "boolean"
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/branded.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/branded.js
 function parseBrandedDef(_def, refs) {
   return parseDef(_def.type._def, refs);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/catch.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/catch.js
 var parseCatchDef = (def, refs) => {
   return parseDef(def.innerType._def, refs);
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/date.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/date.js
 function parseDateDef(def, refs, overrideDateStrategy) {
   const strategy = overrideDateStrategy ?? refs.dateStrategy;
   if (Array.isArray(strategy)) {
@@ -22786,7 +23454,7 @@ var integerDateParser = (def, refs) => {
   return res;
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/default.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/default.js
 function parseDefaultDef(_def, refs) {
   return {
     ...parseDef(_def.innerType._def, refs),
@@ -22794,12 +23462,12 @@ function parseDefaultDef(_def, refs) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/effects.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/effects.js
 function parseEffectsDef(_def, refs) {
   return refs.effectStrategy === "input" ? parseDef(_def.schema._def, refs) : parseAnyDef(refs);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/enum.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/enum.js
 function parseEnumDef(def) {
   return {
     type: "string",
@@ -22807,7 +23475,7 @@ function parseEnumDef(def) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/intersection.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/intersection.js
 var isJsonSchema7AllOfType = (type) => {
   if ("type" in type && type.type === "string")
     return false;
@@ -22849,7 +23517,7 @@ function parseIntersectionDef(def, refs) {
   } : void 0;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/literal.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/literal.js
 function parseLiteralDef(def, refs) {
   const parsedType2 = typeof def.value;
   if (parsedType2 !== "bigint" && parsedType2 !== "number" && parsedType2 !== "boolean" && parsedType2 !== "string") {
@@ -22869,7 +23537,7 @@ function parseLiteralDef(def, refs) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/string.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/string.js
 var emojiRegex2 = void 0;
 var zodPatterns = {
   /**
@@ -23194,7 +23862,7 @@ function stringifyRegExpWithFlags(regex, refs) {
   return pattern;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/record.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/record.js
 function parseRecordDef(def, refs) {
   if (refs.target === "openAi") {
     console.warn("Warning: OpenAI may not support records in schemas! Try an array of key-value pairs instead.");
@@ -23246,7 +23914,7 @@ function parseRecordDef(def, refs) {
   return schema;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/map.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/map.js
 function parseMapDef(def, refs) {
   if (refs.mapStrategy === "record") {
     return parseRecordDef(def, refs);
@@ -23271,7 +23939,7 @@ function parseMapDef(def, refs) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/nativeEnum.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/nativeEnum.js
 function parseNativeEnumDef(def) {
   const object3 = def.values;
   const actualKeys = Object.keys(def.values).filter((key) => {
@@ -23285,7 +23953,7 @@ function parseNativeEnumDef(def) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/never.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/never.js
 function parseNeverDef(refs) {
   return refs.target === "openAi" ? void 0 : {
     not: parseAnyDef({
@@ -23295,7 +23963,7 @@ function parseNeverDef(refs) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/null.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/null.js
 function parseNullDef(refs) {
   return refs.target === "openApi3" ? {
     enum: ["null"],
@@ -23305,7 +23973,7 @@ function parseNullDef(refs) {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/union.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/union.js
 var primitiveMappings = {
   ZodString: "string",
   ZodNumber: "number",
@@ -23373,7 +24041,7 @@ var asAnyOf = (def, refs) => {
   return anyOf.length ? { anyOf } : void 0;
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/nullable.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/nullable.js
 function parseNullableDef(def, refs) {
   if (["ZodString", "ZodNumber", "ZodBigInt", "ZodBoolean", "ZodNull"].includes(def.innerType._def.typeName) && (!def.innerType._def.checks || !def.innerType._def.checks.length)) {
     if (refs.target === "openApi3") {
@@ -23405,7 +24073,7 @@ function parseNullableDef(def, refs) {
   return base && { anyOf: [base, { type: "null" }] };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/number.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/number.js
 function parseNumberDef(def, refs) {
   const res = {
     type: "number"
@@ -23454,7 +24122,7 @@ function parseNumberDef(def, refs) {
   return res;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/object.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/object.js
 function parseObjectDef(def, refs) {
   const forceOptionalIntoNullable = refs.target === "openAi";
   const result = {
@@ -23524,7 +24192,7 @@ function safeIsOptional(schema) {
   }
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/optional.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/optional.js
 var parseOptionalDef = (def, refs) => {
   if (refs.currentPath.toString() === refs.propertyPath?.toString()) {
     return parseDef(def.innerType._def, refs);
@@ -23543,7 +24211,7 @@ var parseOptionalDef = (def, refs) => {
   } : parseAnyDef(refs);
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/pipeline.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/pipeline.js
 var parsePipelineDef = (def, refs) => {
   if (refs.pipeStrategy === "input") {
     return parseDef(def.in._def, refs);
@@ -23563,12 +24231,12 @@ var parsePipelineDef = (def, refs) => {
   };
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/promise.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/promise.js
 function parsePromiseDef(def, refs) {
   return parseDef(def.type._def, refs);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/set.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/set.js
 function parseSetDef(def, refs) {
   const items = parseDef(def.valueType._def, {
     ...refs,
@@ -23588,7 +24256,7 @@ function parseSetDef(def, refs) {
   return schema;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/tuple.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/tuple.js
 function parseTupleDef(def, refs) {
   if (def.rest) {
     return {
@@ -23616,24 +24284,24 @@ function parseTupleDef(def, refs) {
   }
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/undefined.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/undefined.js
 function parseUndefinedDef(refs) {
   return {
     not: parseAnyDef(refs)
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/unknown.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/unknown.js
 function parseUnknownDef(refs) {
   return parseAnyDef(refs);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parsers/readonly.js
+// node_modules/zod-to-json-schema/dist/esm/parsers/readonly.js
 var parseReadonlyDef = (def, refs) => {
   return parseDef(def.innerType._def, refs);
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/selectParser.js
+// node_modules/zod-to-json-schema/dist/esm/selectParser.js
 var selectParser = (def, typeName, refs) => {
   switch (typeName) {
     case ZodFirstPartyTypeKind.ZodString:
@@ -23709,7 +24377,7 @@ var selectParser = (def, typeName, refs) => {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/parseDef.js
+// node_modules/zod-to-json-schema/dist/esm/parseDef.js
 function parseDef(def, refs, forceResolution = false) {
   const seenItem = refs.seen.get(def);
   if (refs.override) {
@@ -23765,7 +24433,7 @@ var addMeta = (def, refs, jsonSchema) => {
   return jsonSchema;
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/zod-to-json-schema/dist/esm/zodToJsonSchema.js
+// node_modules/zod-to-json-schema/dist/esm/zodToJsonSchema.js
 var zodToJsonSchema = (schema, options) => {
   const refs = getRefs(options);
   let definitions = typeof options === "object" && options.definitions ? Object.entries(options.definitions).reduce((acc, [name2, schema2]) => ({
@@ -23827,7 +24495,7 @@ var zodToJsonSchema = (schema, options) => {
   return combined;
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-json-schema-compat.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-json-schema-compat.js
 function mapMiniTarget(t) {
   if (!t)
     return "draft-7";
@@ -23869,7 +24537,7 @@ function parseWithCompat(schema, data) {
   return result.data;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js
 var DEFAULT_REQUEST_TIMEOUT_MSEC = 6e4;
 var Protocol = class {
   constructor(_options) {
@@ -24823,7 +25491,7 @@ function mergeCapabilities(base, additional) {
   return result;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/validation/ajv-provider.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/validation/ajv-provider.js
 var import_ajv = __toESM(require_ajv(), 1);
 var import_ajv_formats = __toESM(require_dist(), 1);
 function createDefaultAjvInstance() {
@@ -24891,7 +25559,7 @@ var AjvJsonSchemaValidator = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/server.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/server.js
 var ExperimentalServerTasks = class {
   constructor(_server) {
     this._server = _server;
@@ -25104,7 +25772,7 @@ var ExperimentalServerTasks = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/helpers.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/helpers.js
 function assertToolsCallTaskCapability(requests, method, entityName) {
   if (!requests) {
     throw new Error(`${entityName} does not support task creation (required for ${method})`);
@@ -25139,7 +25807,7 @@ function assertClientRequestTaskCapability(requests, method, entityName) {
   }
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js
 var Server = class extends Protocol {
   /**
    * Initializes this server with the given name and version information.
@@ -25519,7 +26187,7 @@ var Server = class extends Protocol {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/completable.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/completable.js
 var COMPLETABLE_SYMBOL = Symbol.for("mcp.completable");
 function isCompletable(schema) {
   return !!schema && typeof schema === "object" && COMPLETABLE_SYMBOL in schema;
@@ -25533,7 +26201,7 @@ var McpZodTypeKind;
   McpZodTypeKind2["Completable"] = "McpCompletable";
 })(McpZodTypeKind || (McpZodTypeKind = {}));
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/toolNameValidation.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/toolNameValidation.js
 var TOOL_NAME_REGEX = /^[A-Za-z0-9._-]{1,128}$/;
 function validateToolName(name) {
   const warnings = [];
@@ -25591,7 +26259,7 @@ function validateAndWarnToolName(name) {
   return result.isValid;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/mcp-server.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/mcp-server.js
 var ExperimentalMcpServerTasks = class {
   constructor(_mcpServer) {
     this._mcpServer = _mcpServer;
@@ -25606,7 +26274,7 @@ var ExperimentalMcpServerTasks = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js
 var McpServer = class {
   constructor(serverInfo, options) {
     this._registeredResources = {};
@@ -26398,10 +27066,10 @@ var EMPTY_COMPLETION_RESULT = {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
 import process2 from "node:process";
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/stdio.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/stdio.js
 var ReadBuffer = class {
   append(chunk) {
     this._buffer = this._buffer ? Buffer.concat([this._buffer, chunk]) : chunk;
@@ -26429,7 +27097,7 @@ function serializeMessage(message) {
   return JSON.stringify(message) + "\n";
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
 var StdioServerTransport = class {
   constructor(_stdin = process2.stdin, _stdout = process2.stdout) {
     this._stdin = _stdin;
@@ -26490,10 +27158,2389 @@ var StdioServerTransport = class {
   }
 };
 
-// src/env.ts
+// src/profiles.ts
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using memoryConnectionStatus when available, otherwise cloud currentMemoryStore or local getMemoryPolicy. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
+function optionalEnv(name) {
+  const value = process.env[name]?.trim();
+  return !value || /^\$\{.*\}$/.test(value) ? void 0 : value;
+}
+function readProfiles() {
+  const file = optionalEnv("OAK_PROFILES_FILE") ?? optionalEnv("OAK_CONFIG_PROFILES_FILE") ?? path.join(process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), ".config", "oak-memory"), "profiles.json");
+  if (!fs.existsSync(file)) {
+    if (optionalEnv("OAK_PROFILE") || optionalEnv("OAK_CONFIG_DEFAULT_PROFILE") || optionalEnv("OAK_PROFILES_FILE") || optionalEnv("OAK_CONFIG_PROFILES_FILE")) throw new Error("Oak profiles file is missing");
+    return void 0;
+  }
+  try {
+    const value = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (!value.profiles || typeof value.defaultProfile !== "string") throw new Error();
+    for (const [name, profile] of Object.entries(value.profiles)) {
+      if (!name || !profile || !["local", "cloud"].includes(profile.backend)) throw new Error();
+      if (profile.backend === "cloud") {
+        const url2 = new URL(profile.endpoint);
+        if (url2.protocol !== "https:" && !(url2.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url2.hostname))) throw new Error();
+        if (url2.username || url2.password || url2.search || url2.hash || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(profile.graphId) || !/^[A-Z_][A-Z0-9_]*$/.test(profile.credentialEnv)) throw new Error();
+      }
+    }
+    if (!Object.hasOwn(value.profiles, value.defaultProfile)) throw new Error();
+    return value;
+  } catch {
+    throw new Error("Invalid Oak profiles configuration");
+  }
+}
+function resolveBackend(config2) {
+  const backend = optionalEnv("OAK_BACKEND");
+  if (backend && !["local", "cloud"].includes(backend)) throw new Error("Unknown OAK_BACKEND");
+  if (backend === "local") return void 0;
+  config2 ??= readProfiles();
+  const name = optionalEnv("OAK_PROFILE") ?? optionalEnv("OAK_CONFIG_DEFAULT_PROFILE") ?? config2?.defaultProfile;
+  if (!name) {
+    if (backend === "cloud") throw new Error("Cloud mode requires an explicit configured profile");
+    return void 0;
+  }
+  const profile = config2?.profiles[name];
+  if (!profile) throw new Error("Unknown Oak profile");
+  if (backend && backend !== profile.backend) throw new Error("Oak backend/profile mismatch");
+  return { name, profile: Object.freeze({ ...profile }), config: config2 };
+}
+function credential(profile) {
+  if (profile.backend !== "cloud") throw new Error("Cloud credential requested for local profile");
+  let key = optionalEnv(profile.credentialEnv);
+  if (!key) {
+    const raw = optionalEnv("OAK_CLOUD_CREDENTIALS") ?? optionalEnv("OAK_CONFIG_CLOUD_CREDENTIALS");
+    if (raw) {
+      try {
+        const values = JSON.parse(raw);
+        if (!values || typeof values !== "object" || Array.isArray(values)) throw new Error();
+        const selected = values[profile.credentialEnv];
+        if (typeof selected === "string") key = selected.trim();
+      } catch {
+        throw new Error("Invalid secure cloud credential configuration");
+      }
+    }
+  }
+  if (!key || !/^oak_[0-9a-f]{64}$/.test(key)) throw new Error("Cloud profile needs a personal graph-bound key; use the approved credential handoff");
+  return key;
+}
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/client.js
+var ExperimentalClientTasks = class {
+  constructor(_client) {
+    this._client = _client;
+  }
+  /**
+   * Calls a tool and returns an AsyncGenerator that yields response messages.
+   * The generator is guaranteed to end with either a 'result' or 'error' message.
+   *
+   * This method provides streaming access to tool execution, allowing you to
+   * observe intermediate task status updates for long-running tool calls.
+   * Automatically validates structured output if the tool has an outputSchema.
+   *
+   * @example
+   * ```typescript
+   * const stream = client.experimental.tasks.callToolStream({ name: 'myTool', arguments: {} });
+   * for await (const message of stream) {
+   *   switch (message.type) {
+   *     case 'taskCreated':
+   *       console.log('Tool execution started:', message.task.taskId);
+   *       break;
+   *     case 'taskStatus':
+   *       console.log('Tool status:', message.task.status);
+   *       break;
+   *     case 'result':
+   *       console.log('Tool result:', message.result);
+   *       break;
+   *     case 'error':
+   *       console.error('Tool error:', message.error);
+   *       break;
+   *   }
+   * }
+   * ```
+   *
+   * @param params - Tool call parameters (name and arguments)
+   * @param resultSchema - Zod schema for validating the result (defaults to CallToolResultSchema)
+   * @param options - Optional request options (timeout, signal, task creation params, etc.)
+   * @returns AsyncGenerator that yields ResponseMessage objects
+   *
+   * @experimental
+   */
+  async *callToolStream(params, resultSchema = CallToolResultSchema, options) {
+    const clientInternal = this._client;
+    const optionsWithTask = {
+      ...options,
+      // We check if the tool is known to be a task during auto-configuration, but assume
+      // the caller knows what they're doing if they pass this explicitly
+      task: options?.task ?? (clientInternal.isToolTask(params.name) ? {} : void 0)
+    };
+    const stream = clientInternal.requestStream({ method: "tools/call", params }, resultSchema, optionsWithTask);
+    const validator = clientInternal.getToolOutputValidator(params.name);
+    for await (const message of stream) {
+      if (message.type === "result" && validator) {
+        const result = message.result;
+        if (!result.structuredContent && !result.isError) {
+          yield {
+            type: "error",
+            error: new McpError(ErrorCode.InvalidRequest, `Tool ${params.name} has an output schema but did not return structured content`)
+          };
+          return;
+        }
+        if (result.structuredContent) {
+          try {
+            const validationResult = validator(result.structuredContent);
+            if (!validationResult.valid) {
+              yield {
+                type: "error",
+                error: new McpError(ErrorCode.InvalidParams, `Structured content does not match the tool's output schema: ${validationResult.errorMessage}`)
+              };
+              return;
+            }
+          } catch (error2) {
+            if (error2 instanceof McpError) {
+              yield { type: "error", error: error2 };
+              return;
+            }
+            yield {
+              type: "error",
+              error: new McpError(ErrorCode.InvalidParams, `Failed to validate structured content: ${error2 instanceof Error ? error2.message : String(error2)}`)
+            };
+            return;
+          }
+        }
+      }
+      yield message;
+    }
+  }
+  /**
+   * Gets the current status of a task.
+   *
+   * @param taskId - The task identifier
+   * @param options - Optional request options
+   * @returns The task status
+   *
+   * @experimental
+   */
+  async getTask(taskId, options) {
+    return this._client.getTask({ taskId }, options);
+  }
+  /**
+   * Retrieves the result of a completed task.
+   *
+   * @param taskId - The task identifier
+   * @param resultSchema - Zod schema for validating the result
+   * @param options - Optional request options
+   * @returns The task result
+   *
+   * @experimental
+   */
+  async getTaskResult(taskId, resultSchema, options) {
+    return this._client.getTaskResult({ taskId }, resultSchema, options);
+  }
+  /**
+   * Lists tasks with optional pagination.
+   *
+   * @param cursor - Optional pagination cursor
+   * @param options - Optional request options
+   * @returns List of tasks with optional next cursor
+   *
+   * @experimental
+   */
+  async listTasks(cursor, options) {
+    return this._client.listTasks(cursor ? { cursor } : void 0, options);
+  }
+  /**
+   * Cancels a running task.
+   *
+   * @param taskId - The task identifier
+   * @param options - Optional request options
+   *
+   * @experimental
+   */
+  async cancelTask(taskId, options) {
+    return this._client.cancelTask({ taskId }, options);
+  }
+  /**
+   * Sends a request and returns an AsyncGenerator that yields response messages.
+   * The generator is guaranteed to end with either a 'result' or 'error' message.
+   *
+   * This method provides streaming access to request processing, allowing you to
+   * observe intermediate task status updates for task-augmented requests.
+   *
+   * @param request - The request to send
+   * @param resultSchema - Zod schema for validating the result
+   * @param options - Optional request options (timeout, signal, task creation params, etc.)
+   * @returns AsyncGenerator that yields ResponseMessage objects
+   *
+   * @experimental
+   */
+  requestStream(request, resultSchema, options) {
+    return this._client.requestStream(request, resultSchema, options);
+  }
+};
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js
+function applyElicitationDefaults(schema, data) {
+  if (!schema || data === null || typeof data !== "object")
+    return;
+  if (schema.type === "object" && schema.properties && typeof schema.properties === "object") {
+    const obj = data;
+    const props = schema.properties;
+    for (const key of Object.keys(props)) {
+      const propSchema = props[key];
+      if (obj[key] === void 0 && Object.prototype.hasOwnProperty.call(propSchema, "default")) {
+        obj[key] = propSchema.default;
+      }
+      if (obj[key] !== void 0) {
+        applyElicitationDefaults(propSchema, obj[key]);
+      }
+    }
+  }
+  if (Array.isArray(schema.anyOf)) {
+    for (const sub of schema.anyOf) {
+      if (typeof sub !== "boolean") {
+        applyElicitationDefaults(sub, data);
+      }
+    }
+  }
+  if (Array.isArray(schema.oneOf)) {
+    for (const sub of schema.oneOf) {
+      if (typeof sub !== "boolean") {
+        applyElicitationDefaults(sub, data);
+      }
+    }
+  }
+}
+function getSupportedElicitationModes(capabilities) {
+  if (!capabilities) {
+    return { supportsFormMode: false, supportsUrlMode: false };
+  }
+  const hasFormCapability = capabilities.form !== void 0;
+  const hasUrlCapability = capabilities.url !== void 0;
+  const supportsFormMode = hasFormCapability || !hasFormCapability && !hasUrlCapability;
+  const supportsUrlMode = hasUrlCapability;
+  return { supportsFormMode, supportsUrlMode };
+}
+var Client = class extends Protocol {
+  /**
+   * Initializes this client with the given name and version information.
+   */
+  constructor(_clientInfo, options) {
+    super(options);
+    this._clientInfo = _clientInfo;
+    this._cachedToolOutputValidators = /* @__PURE__ */ new Map();
+    this._cachedKnownTaskTools = /* @__PURE__ */ new Set();
+    this._cachedRequiredTaskTools = /* @__PURE__ */ new Set();
+    this._listChangedDebounceTimers = /* @__PURE__ */ new Map();
+    this._capabilities = options?.capabilities ?? {};
+    this._jsonSchemaValidator = options?.jsonSchemaValidator ?? new AjvJsonSchemaValidator();
+    if (options?.listChanged) {
+      this._pendingListChangedConfig = options.listChanged;
+    }
+  }
+  /**
+   * Set up handlers for list changed notifications based on config and server capabilities.
+   * This should only be called after initialization when server capabilities are known.
+   * Handlers are silently skipped if the server doesn't advertise the corresponding listChanged capability.
+   * @internal
+   */
+  _setupListChangedHandlers(config2) {
+    if (config2.tools && this._serverCapabilities?.tools?.listChanged) {
+      this._setupListChangedHandler("tools", ToolListChangedNotificationSchema, config2.tools, async () => {
+        const result = await this.listTools();
+        return result.tools;
+      });
+    }
+    if (config2.prompts && this._serverCapabilities?.prompts?.listChanged) {
+      this._setupListChangedHandler("prompts", PromptListChangedNotificationSchema, config2.prompts, async () => {
+        const result = await this.listPrompts();
+        return result.prompts;
+      });
+    }
+    if (config2.resources && this._serverCapabilities?.resources?.listChanged) {
+      this._setupListChangedHandler("resources", ResourceListChangedNotificationSchema, config2.resources, async () => {
+        const result = await this.listResources();
+        return result.resources;
+      });
+    }
+  }
+  /**
+   * Access experimental features.
+   *
+   * WARNING: These APIs are experimental and may change without notice.
+   *
+   * @experimental
+   */
+  get experimental() {
+    if (!this._experimental) {
+      this._experimental = {
+        tasks: new ExperimentalClientTasks(this)
+      };
+    }
+    return this._experimental;
+  }
+  /**
+   * Registers new capabilities. This can only be called before connecting to a transport.
+   *
+   * The new capabilities will be merged with any existing capabilities previously given (e.g., at initialization).
+   */
+  registerCapabilities(capabilities) {
+    if (this.transport) {
+      throw new Error("Cannot register capabilities after connecting to transport");
+    }
+    this._capabilities = mergeCapabilities(this._capabilities, capabilities);
+  }
+  /**
+   * Override request handler registration to enforce client-side validation for elicitation.
+   */
+  setRequestHandler(requestSchema, handler) {
+    const shape = getObjectShape(requestSchema);
+    const methodSchema = shape?.method;
+    if (!methodSchema) {
+      throw new Error("Schema is missing a method literal");
+    }
+    let methodValue;
+    if (isZ4Schema(methodSchema)) {
+      const v4Schema = methodSchema;
+      const v4Def = v4Schema._zod?.def;
+      methodValue = v4Def?.value ?? v4Schema.value;
+    } else {
+      const v3Schema = methodSchema;
+      const legacyDef = v3Schema._def;
+      methodValue = legacyDef?.value ?? v3Schema.value;
+    }
+    if (typeof methodValue !== "string") {
+      throw new Error("Schema method literal must be a string");
+    }
+    const method = methodValue;
+    if (method === "elicitation/create") {
+      const wrappedHandler = async (request, extra) => {
+        const validatedRequest = safeParse2(ElicitRequestSchema, request);
+        if (!validatedRequest.success) {
+          const errorMessage = validatedRequest.error instanceof Error ? validatedRequest.error.message : String(validatedRequest.error);
+          throw new McpError(ErrorCode.InvalidParams, `Invalid elicitation request: ${errorMessage}`);
+        }
+        const { params } = validatedRequest.data;
+        params.mode = params.mode ?? "form";
+        const { supportsFormMode, supportsUrlMode } = getSupportedElicitationModes(this._capabilities.elicitation);
+        if (params.mode === "form" && !supportsFormMode) {
+          throw new McpError(ErrorCode.InvalidParams, "Client does not support form-mode elicitation requests");
+        }
+        if (params.mode === "url" && !supportsUrlMode) {
+          throw new McpError(ErrorCode.InvalidParams, "Client does not support URL-mode elicitation requests");
+        }
+        const result = await Promise.resolve(handler(request, extra));
+        if (params.task) {
+          const taskValidationResult = safeParse2(CreateTaskResultSchema, result);
+          if (!taskValidationResult.success) {
+            const errorMessage = taskValidationResult.error instanceof Error ? taskValidationResult.error.message : String(taskValidationResult.error);
+            throw new McpError(ErrorCode.InvalidParams, `Invalid task creation result: ${errorMessage}`);
+          }
+          return taskValidationResult.data;
+        }
+        const validationResult = safeParse2(ElicitResultSchema, result);
+        if (!validationResult.success) {
+          const errorMessage = validationResult.error instanceof Error ? validationResult.error.message : String(validationResult.error);
+          throw new McpError(ErrorCode.InvalidParams, `Invalid elicitation result: ${errorMessage}`);
+        }
+        const validatedResult = validationResult.data;
+        const requestedSchema = params.mode === "form" ? params.requestedSchema : void 0;
+        if (params.mode === "form" && validatedResult.action === "accept" && validatedResult.content && requestedSchema) {
+          if (this._capabilities.elicitation?.form?.applyDefaults) {
+            try {
+              applyElicitationDefaults(requestedSchema, validatedResult.content);
+            } catch {
+            }
+          }
+        }
+        return validatedResult;
+      };
+      return super.setRequestHandler(requestSchema, wrappedHandler);
+    }
+    if (method === "sampling/createMessage") {
+      const wrappedHandler = async (request, extra) => {
+        const validatedRequest = safeParse2(CreateMessageRequestSchema, request);
+        if (!validatedRequest.success) {
+          const errorMessage = validatedRequest.error instanceof Error ? validatedRequest.error.message : String(validatedRequest.error);
+          throw new McpError(ErrorCode.InvalidParams, `Invalid sampling request: ${errorMessage}`);
+        }
+        const { params } = validatedRequest.data;
+        const result = await Promise.resolve(handler(request, extra));
+        if (params.task) {
+          const taskValidationResult = safeParse2(CreateTaskResultSchema, result);
+          if (!taskValidationResult.success) {
+            const errorMessage = taskValidationResult.error instanceof Error ? taskValidationResult.error.message : String(taskValidationResult.error);
+            throw new McpError(ErrorCode.InvalidParams, `Invalid task creation result: ${errorMessage}`);
+          }
+          return taskValidationResult.data;
+        }
+        const hasTools = params.tools || params.toolChoice;
+        const resultSchema = hasTools ? CreateMessageResultWithToolsSchema : CreateMessageResultSchema;
+        const validationResult = safeParse2(resultSchema, result);
+        if (!validationResult.success) {
+          const errorMessage = validationResult.error instanceof Error ? validationResult.error.message : String(validationResult.error);
+          throw new McpError(ErrorCode.InvalidParams, `Invalid sampling result: ${errorMessage}`);
+        }
+        return validationResult.data;
+      };
+      return super.setRequestHandler(requestSchema, wrappedHandler);
+    }
+    return super.setRequestHandler(requestSchema, handler);
+  }
+  assertCapability(capability, method) {
+    if (!this._serverCapabilities?.[capability]) {
+      throw new Error(`Server does not support ${capability} (required for ${method})`);
+    }
+  }
+  async connect(transport, options) {
+    await super.connect(transport);
+    if (transport.sessionId !== void 0) {
+      return;
+    }
+    try {
+      const result = await this.request({
+        method: "initialize",
+        params: {
+          protocolVersion: LATEST_PROTOCOL_VERSION,
+          capabilities: this._capabilities,
+          clientInfo: this._clientInfo
+        }
+      }, InitializeResultSchema, options);
+      if (result === void 0) {
+        throw new Error(`Server sent invalid initialize result: ${result}`);
+      }
+      if (!SUPPORTED_PROTOCOL_VERSIONS.includes(result.protocolVersion)) {
+        throw new Error(`Server's protocol version is not supported: ${result.protocolVersion}`);
+      }
+      this._serverCapabilities = result.capabilities;
+      this._serverVersion = result.serverInfo;
+      if (transport.setProtocolVersion) {
+        transport.setProtocolVersion(result.protocolVersion);
+      }
+      this._instructions = result.instructions;
+      await this.notification({
+        method: "notifications/initialized"
+      });
+      if (this._pendingListChangedConfig) {
+        this._setupListChangedHandlers(this._pendingListChangedConfig);
+        this._pendingListChangedConfig = void 0;
+      }
+    } catch (error2) {
+      void this.close();
+      throw error2;
+    }
+  }
+  /**
+   * After initialization has completed, this will be populated with the server's reported capabilities.
+   */
+  getServerCapabilities() {
+    return this._serverCapabilities;
+  }
+  /**
+   * After initialization has completed, this will be populated with information about the server's name and version.
+   */
+  getServerVersion() {
+    return this._serverVersion;
+  }
+  /**
+   * After initialization has completed, this may be populated with information about the server's instructions.
+   */
+  getInstructions() {
+    return this._instructions;
+  }
+  assertCapabilityForMethod(method) {
+    switch (method) {
+      case "logging/setLevel":
+        if (!this._serverCapabilities?.logging) {
+          throw new Error(`Server does not support logging (required for ${method})`);
+        }
+        break;
+      case "prompts/get":
+      case "prompts/list":
+        if (!this._serverCapabilities?.prompts) {
+          throw new Error(`Server does not support prompts (required for ${method})`);
+        }
+        break;
+      case "resources/list":
+      case "resources/templates/list":
+      case "resources/read":
+      case "resources/subscribe":
+      case "resources/unsubscribe":
+        if (!this._serverCapabilities?.resources) {
+          throw new Error(`Server does not support resources (required for ${method})`);
+        }
+        if (method === "resources/subscribe" && !this._serverCapabilities.resources.subscribe) {
+          throw new Error(`Server does not support resource subscriptions (required for ${method})`);
+        }
+        break;
+      case "tools/call":
+      case "tools/list":
+        if (!this._serverCapabilities?.tools) {
+          throw new Error(`Server does not support tools (required for ${method})`);
+        }
+        break;
+      case "completion/complete":
+        if (!this._serverCapabilities?.completions) {
+          throw new Error(`Server does not support completions (required for ${method})`);
+        }
+        break;
+      case "initialize":
+        break;
+      case "ping":
+        break;
+    }
+  }
+  assertNotificationCapability(method) {
+    switch (method) {
+      case "notifications/roots/list_changed":
+        if (!this._capabilities.roots?.listChanged) {
+          throw new Error(`Client does not support roots list changed notifications (required for ${method})`);
+        }
+        break;
+      case "notifications/initialized":
+        break;
+      case "notifications/cancelled":
+        break;
+      case "notifications/progress":
+        break;
+    }
+  }
+  assertRequestHandlerCapability(method) {
+    if (!this._capabilities) {
+      return;
+    }
+    switch (method) {
+      case "sampling/createMessage":
+        if (!this._capabilities.sampling) {
+          throw new Error(`Client does not support sampling capability (required for ${method})`);
+        }
+        break;
+      case "elicitation/create":
+        if (!this._capabilities.elicitation) {
+          throw new Error(`Client does not support elicitation capability (required for ${method})`);
+        }
+        break;
+      case "roots/list":
+        if (!this._capabilities.roots) {
+          throw new Error(`Client does not support roots capability (required for ${method})`);
+        }
+        break;
+      case "tasks/get":
+      case "tasks/list":
+      case "tasks/result":
+      case "tasks/cancel":
+        if (!this._capabilities.tasks) {
+          throw new Error(`Client does not support tasks capability (required for ${method})`);
+        }
+        break;
+      case "ping":
+        break;
+    }
+  }
+  assertTaskCapability(method) {
+    assertToolsCallTaskCapability(this._serverCapabilities?.tasks?.requests, method, "Server");
+  }
+  assertTaskHandlerCapability(method) {
+    if (!this._capabilities) {
+      return;
+    }
+    assertClientRequestTaskCapability(this._capabilities.tasks?.requests, method, "Client");
+  }
+  async ping(options) {
+    return this.request({ method: "ping" }, EmptyResultSchema, options);
+  }
+  async complete(params, options) {
+    return this.request({ method: "completion/complete", params }, CompleteResultSchema, options);
+  }
+  async setLoggingLevel(level, options) {
+    return this.request({ method: "logging/setLevel", params: { level } }, EmptyResultSchema, options);
+  }
+  async getPrompt(params, options) {
+    return this.request({ method: "prompts/get", params }, GetPromptResultSchema, options);
+  }
+  async listPrompts(params, options) {
+    return this.request({ method: "prompts/list", params }, ListPromptsResultSchema, options);
+  }
+  async listResources(params, options) {
+    return this.request({ method: "resources/list", params }, ListResourcesResultSchema, options);
+  }
+  async listResourceTemplates(params, options) {
+    return this.request({ method: "resources/templates/list", params }, ListResourceTemplatesResultSchema, options);
+  }
+  async readResource(params, options) {
+    return this.request({ method: "resources/read", params }, ReadResourceResultSchema, options);
+  }
+  async subscribeResource(params, options) {
+    return this.request({ method: "resources/subscribe", params }, EmptyResultSchema, options);
+  }
+  async unsubscribeResource(params, options) {
+    return this.request({ method: "resources/unsubscribe", params }, EmptyResultSchema, options);
+  }
+  /**
+   * Calls a tool and waits for the result. Automatically validates structured output if the tool has an outputSchema.
+   *
+   * For task-based execution with streaming behavior, use client.experimental.tasks.callToolStream() instead.
+   */
+  async callTool(params, resultSchema = CallToolResultSchema, options) {
+    if (this.isToolTaskRequired(params.name)) {
+      throw new McpError(ErrorCode.InvalidRequest, `Tool "${params.name}" requires task-based execution. Use client.experimental.tasks.callToolStream() instead.`);
+    }
+    const result = await this.request({ method: "tools/call", params }, resultSchema, options);
+    const validator = this.getToolOutputValidator(params.name);
+    if (validator) {
+      if (!result.structuredContent && !result.isError) {
+        throw new McpError(ErrorCode.InvalidRequest, `Tool ${params.name} has an output schema but did not return structured content`);
+      }
+      if (result.structuredContent) {
+        try {
+          const validationResult = validator(result.structuredContent);
+          if (!validationResult.valid) {
+            throw new McpError(ErrorCode.InvalidParams, `Structured content does not match the tool's output schema: ${validationResult.errorMessage}`);
+          }
+        } catch (error2) {
+          if (error2 instanceof McpError) {
+            throw error2;
+          }
+          throw new McpError(ErrorCode.InvalidParams, `Failed to validate structured content: ${error2 instanceof Error ? error2.message : String(error2)}`);
+        }
+      }
+    }
+    return result;
+  }
+  isToolTask(toolName) {
+    if (!this._serverCapabilities?.tasks?.requests?.tools?.call) {
+      return false;
+    }
+    return this._cachedKnownTaskTools.has(toolName);
+  }
+  /**
+   * Check if a tool requires task-based execution.
+   * Unlike isToolTask which includes 'optional' tools, this only checks for 'required'.
+   */
+  isToolTaskRequired(toolName) {
+    return this._cachedRequiredTaskTools.has(toolName);
+  }
+  /**
+   * Cache validators for tool output schemas.
+   * Called after listTools() to pre-compile validators for better performance.
+   */
+  cacheToolMetadata(tools) {
+    this._cachedToolOutputValidators.clear();
+    this._cachedKnownTaskTools.clear();
+    this._cachedRequiredTaskTools.clear();
+    for (const tool of tools) {
+      if (tool.outputSchema) {
+        const toolValidator = this._jsonSchemaValidator.getValidator(tool.outputSchema);
+        this._cachedToolOutputValidators.set(tool.name, toolValidator);
+      }
+      const taskSupport = tool.execution?.taskSupport;
+      if (taskSupport === "required" || taskSupport === "optional") {
+        this._cachedKnownTaskTools.add(tool.name);
+      }
+      if (taskSupport === "required") {
+        this._cachedRequiredTaskTools.add(tool.name);
+      }
+    }
+  }
+  /**
+   * Get cached validator for a tool
+   */
+  getToolOutputValidator(toolName) {
+    return this._cachedToolOutputValidators.get(toolName);
+  }
+  async listTools(params, options) {
+    const result = await this.request({ method: "tools/list", params }, ListToolsResultSchema, options);
+    this.cacheToolMetadata(result.tools);
+    return result;
+  }
+  /**
+   * Set up a single list changed handler.
+   * @internal
+   */
+  _setupListChangedHandler(listType, notificationSchema, options, fetcher) {
+    const parseResult = ListChangedOptionsBaseSchema.safeParse(options);
+    if (!parseResult.success) {
+      throw new Error(`Invalid ${listType} listChanged options: ${parseResult.error.message}`);
+    }
+    if (typeof options.onChanged !== "function") {
+      throw new Error(`Invalid ${listType} listChanged options: onChanged must be a function`);
+    }
+    const { autoRefresh, debounceMs } = parseResult.data;
+    const { onChanged } = options;
+    const refresh = async () => {
+      if (!autoRefresh) {
+        onChanged(null, null);
+        return;
+      }
+      try {
+        const items = await fetcher();
+        onChanged(null, items);
+      } catch (e) {
+        const error2 = e instanceof Error ? e : new Error(String(e));
+        onChanged(error2, null);
+      }
+    };
+    const handler = () => {
+      if (debounceMs) {
+        const existingTimer = this._listChangedDebounceTimers.get(listType);
+        if (existingTimer) {
+          clearTimeout(existingTimer);
+        }
+        const timer = setTimeout(refresh, debounceMs);
+        this._listChangedDebounceTimers.set(listType, timer);
+      } else {
+        refresh();
+      }
+    };
+    this.setNotificationHandler(notificationSchema, handler);
+  }
+  async sendRootsListChanged() {
+    return this.notification({ method: "notifications/roots/list_changed" });
+  }
+};
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/transport.js
+function normalizeHeaders(headers) {
+  if (!headers)
+    return {};
+  if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries());
+  }
+  if (Array.isArray(headers)) {
+    return Object.fromEntries(headers);
+  }
+  return { ...headers };
+}
+function createFetchWithInit(baseFetch = fetch, baseInit) {
+  if (!baseInit) {
+    return baseFetch;
+  }
+  return async (url2, init2) => {
+    const mergedInit = {
+      ...baseInit,
+      ...init2,
+      // Headers need special handling - merge instead of replace
+      headers: init2?.headers ? { ...normalizeHeaders(baseInit.headers), ...normalizeHeaders(init2.headers) } : baseInit.headers
+    };
+    return baseFetch(url2, mergedInit);
+  };
+}
+
+// node_modules/pkce-challenge/dist/index.node.js
+var crypto;
+crypto = globalThis.crypto?.webcrypto ?? // Node.js [18-16] REPL
+globalThis.crypto ?? // Node.js >18
+import("node:crypto").then((m) => m.webcrypto);
+async function getRandomValues(size) {
+  return (await crypto).getRandomValues(new Uint8Array(size));
+}
+async function random(size) {
+  const mask = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~";
+  const evenDistCutoff = Math.pow(2, 8) - Math.pow(2, 8) % mask.length;
+  let result = "";
+  while (result.length < size) {
+    const randomBytes = await getRandomValues(size - result.length);
+    for (const randomByte of randomBytes) {
+      if (randomByte < evenDistCutoff) {
+        result += mask[randomByte % mask.length];
+      }
+    }
+  }
+  return result;
+}
+async function generateVerifier(length) {
+  return await random(length);
+}
+async function generateChallenge(code_verifier) {
+  const buffer = await (await crypto).subtle.digest("SHA-256", new TextEncoder().encode(code_verifier));
+  return btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\//g, "_").replace(/\+/g, "-").replace(/=/g, "");
+}
+async function pkceChallenge(length) {
+  if (!length)
+    length = 43;
+  if (length < 43 || length > 128) {
+    throw `Expected a length between 43 and 128. Received ${length}.`;
+  }
+  const verifier = await generateVerifier(length);
+  const challenge = await generateChallenge(verifier);
+  return {
+    code_verifier: verifier,
+    code_challenge: challenge
+  };
+}
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/auth.js
+var SafeUrlSchema = url().superRefine((val, ctx) => {
+  if (!URL.canParse(val)) {
+    ctx.addIssue({
+      code: ZodIssueCode2.custom,
+      message: "URL must be parseable",
+      fatal: true
+    });
+    return NEVER2;
+  }
+}).refine((url2) => {
+  const u = new URL(url2);
+  return u.protocol !== "javascript:" && u.protocol !== "data:" && u.protocol !== "vbscript:";
+}, { message: "URL cannot use javascript:, data:, or vbscript: scheme" });
+var OAuthProtectedResourceMetadataSchema = looseObject({
+  resource: string2().url(),
+  authorization_servers: array(SafeUrlSchema).optional(),
+  jwks_uri: string2().url().optional(),
+  scopes_supported: array(string2()).optional(),
+  bearer_methods_supported: array(string2()).optional(),
+  resource_signing_alg_values_supported: array(string2()).optional(),
+  resource_name: string2().optional(),
+  resource_documentation: string2().optional(),
+  resource_policy_uri: string2().url().optional(),
+  resource_tos_uri: string2().url().optional(),
+  tls_client_certificate_bound_access_tokens: boolean2().optional(),
+  authorization_details_types_supported: array(string2()).optional(),
+  dpop_signing_alg_values_supported: array(string2()).optional(),
+  dpop_bound_access_tokens_required: boolean2().optional()
+});
+var OAuthMetadataSchema = looseObject({
+  issuer: string2(),
+  authorization_endpoint: SafeUrlSchema,
+  token_endpoint: SafeUrlSchema,
+  registration_endpoint: SafeUrlSchema.optional(),
+  scopes_supported: array(string2()).optional(),
+  response_types_supported: array(string2()),
+  response_modes_supported: array(string2()).optional(),
+  grant_types_supported: array(string2()).optional(),
+  token_endpoint_auth_methods_supported: array(string2()).optional(),
+  token_endpoint_auth_signing_alg_values_supported: array(string2()).optional(),
+  service_documentation: SafeUrlSchema.optional(),
+  revocation_endpoint: SafeUrlSchema.optional(),
+  revocation_endpoint_auth_methods_supported: array(string2()).optional(),
+  revocation_endpoint_auth_signing_alg_values_supported: array(string2()).optional(),
+  introspection_endpoint: string2().optional(),
+  introspection_endpoint_auth_methods_supported: array(string2()).optional(),
+  introspection_endpoint_auth_signing_alg_values_supported: array(string2()).optional(),
+  code_challenge_methods_supported: array(string2()).optional(),
+  client_id_metadata_document_supported: boolean2().optional()
+});
+var OpenIdProviderMetadataSchema = looseObject({
+  issuer: string2(),
+  authorization_endpoint: SafeUrlSchema,
+  token_endpoint: SafeUrlSchema,
+  userinfo_endpoint: SafeUrlSchema.optional(),
+  jwks_uri: SafeUrlSchema,
+  registration_endpoint: SafeUrlSchema.optional(),
+  scopes_supported: array(string2()).optional(),
+  response_types_supported: array(string2()),
+  response_modes_supported: array(string2()).optional(),
+  grant_types_supported: array(string2()).optional(),
+  acr_values_supported: array(string2()).optional(),
+  subject_types_supported: array(string2()),
+  id_token_signing_alg_values_supported: array(string2()),
+  id_token_encryption_alg_values_supported: array(string2()).optional(),
+  id_token_encryption_enc_values_supported: array(string2()).optional(),
+  userinfo_signing_alg_values_supported: array(string2()).optional(),
+  userinfo_encryption_alg_values_supported: array(string2()).optional(),
+  userinfo_encryption_enc_values_supported: array(string2()).optional(),
+  request_object_signing_alg_values_supported: array(string2()).optional(),
+  request_object_encryption_alg_values_supported: array(string2()).optional(),
+  request_object_encryption_enc_values_supported: array(string2()).optional(),
+  token_endpoint_auth_methods_supported: array(string2()).optional(),
+  token_endpoint_auth_signing_alg_values_supported: array(string2()).optional(),
+  display_values_supported: array(string2()).optional(),
+  claim_types_supported: array(string2()).optional(),
+  claims_supported: array(string2()).optional(),
+  service_documentation: string2().optional(),
+  claims_locales_supported: array(string2()).optional(),
+  ui_locales_supported: array(string2()).optional(),
+  claims_parameter_supported: boolean2().optional(),
+  request_parameter_supported: boolean2().optional(),
+  request_uri_parameter_supported: boolean2().optional(),
+  require_request_uri_registration: boolean2().optional(),
+  op_policy_uri: SafeUrlSchema.optional(),
+  op_tos_uri: SafeUrlSchema.optional(),
+  client_id_metadata_document_supported: boolean2().optional()
+});
+var OpenIdProviderDiscoveryMetadataSchema = object2({
+  ...OpenIdProviderMetadataSchema.shape,
+  ...OAuthMetadataSchema.pick({
+    code_challenge_methods_supported: true
+  }).shape
+});
+var OAuthTokensSchema = object2({
+  access_token: string2(),
+  id_token: string2().optional(),
+  // Optional for OAuth 2.1, but necessary in OpenID Connect
+  token_type: string2(),
+  expires_in: coerce_exports2.number().optional(),
+  scope: string2().optional(),
+  refresh_token: string2().optional()
+}).strip();
+var OAuthErrorResponseSchema = object2({
+  error: string2(),
+  error_description: string2().optional(),
+  error_uri: string2().optional()
+});
+var OptionalSafeUrlSchema = SafeUrlSchema.optional().or(literal("").transform(() => void 0));
+var OAuthClientMetadataSchema = object2({
+  redirect_uris: array(SafeUrlSchema),
+  token_endpoint_auth_method: string2().optional(),
+  grant_types: array(string2()).optional(),
+  response_types: array(string2()).optional(),
+  client_name: string2().optional(),
+  client_uri: SafeUrlSchema.optional(),
+  logo_uri: OptionalSafeUrlSchema,
+  scope: string2().optional(),
+  contacts: array(string2()).optional(),
+  tos_uri: OptionalSafeUrlSchema,
+  policy_uri: string2().optional(),
+  jwks_uri: SafeUrlSchema.optional(),
+  jwks: any().optional(),
+  software_id: string2().optional(),
+  software_version: string2().optional(),
+  software_statement: string2().optional()
+}).strip();
+var OAuthClientInformationSchema = object2({
+  client_id: string2(),
+  client_secret: string2().optional(),
+  client_id_issued_at: number2().optional(),
+  client_secret_expires_at: number2().optional()
+}).strip();
+var OAuthClientInformationFullSchema = OAuthClientMetadataSchema.merge(OAuthClientInformationSchema);
+var OAuthClientRegistrationErrorSchema = object2({
+  error: string2(),
+  error_description: string2().optional()
+}).strip();
+var OAuthTokenRevocationRequestSchema = object2({
+  token: string2(),
+  token_type_hint: string2().optional()
+}).strip();
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/auth-utils.js
+function resourceUrlFromServerUrl(url2) {
+  const resourceURL = typeof url2 === "string" ? new URL(url2) : new URL(url2.href);
+  resourceURL.hash = "";
+  return resourceURL;
+}
+function checkResourceAllowed({ requestedResource, configuredResource }) {
+  const requested = typeof requestedResource === "string" ? new URL(requestedResource) : new URL(requestedResource.href);
+  const configured = typeof configuredResource === "string" ? new URL(configuredResource) : new URL(configuredResource.href);
+  if (requested.origin !== configured.origin) {
+    return false;
+  }
+  if (requested.pathname.length < configured.pathname.length) {
+    return false;
+  }
+  const requestedPath = requested.pathname.endsWith("/") ? requested.pathname : requested.pathname + "/";
+  const configuredPath = configured.pathname.endsWith("/") ? configured.pathname : configured.pathname + "/";
+  return requestedPath.startsWith(configuredPath);
+}
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/server/auth/errors.js
+var OAuthError = class extends Error {
+  constructor(message, errorUri) {
+    super(message);
+    this.errorUri = errorUri;
+    this.name = this.constructor.name;
+  }
+  /**
+   * Converts the error to a standard OAuth error response object
+   */
+  toResponseObject() {
+    const response = {
+      error: this.errorCode,
+      error_description: this.message
+    };
+    if (this.errorUri) {
+      response.error_uri = this.errorUri;
+    }
+    return response;
+  }
+  get errorCode() {
+    return this.constructor.errorCode;
+  }
+};
+var InvalidRequestError = class extends OAuthError {
+};
+InvalidRequestError.errorCode = "invalid_request";
+var InvalidClientError = class extends OAuthError {
+};
+InvalidClientError.errorCode = "invalid_client";
+var InvalidGrantError = class extends OAuthError {
+};
+InvalidGrantError.errorCode = "invalid_grant";
+var UnauthorizedClientError = class extends OAuthError {
+};
+UnauthorizedClientError.errorCode = "unauthorized_client";
+var UnsupportedGrantTypeError = class extends OAuthError {
+};
+UnsupportedGrantTypeError.errorCode = "unsupported_grant_type";
+var InvalidScopeError = class extends OAuthError {
+};
+InvalidScopeError.errorCode = "invalid_scope";
+var AccessDeniedError = class extends OAuthError {
+};
+AccessDeniedError.errorCode = "access_denied";
+var ServerError = class extends OAuthError {
+};
+ServerError.errorCode = "server_error";
+var TemporarilyUnavailableError = class extends OAuthError {
+};
+TemporarilyUnavailableError.errorCode = "temporarily_unavailable";
+var UnsupportedResponseTypeError = class extends OAuthError {
+};
+UnsupportedResponseTypeError.errorCode = "unsupported_response_type";
+var UnsupportedTokenTypeError = class extends OAuthError {
+};
+UnsupportedTokenTypeError.errorCode = "unsupported_token_type";
+var InvalidTokenError = class extends OAuthError {
+};
+InvalidTokenError.errorCode = "invalid_token";
+var MethodNotAllowedError = class extends OAuthError {
+};
+MethodNotAllowedError.errorCode = "method_not_allowed";
+var TooManyRequestsError = class extends OAuthError {
+};
+TooManyRequestsError.errorCode = "too_many_requests";
+var InvalidClientMetadataError = class extends OAuthError {
+};
+InvalidClientMetadataError.errorCode = "invalid_client_metadata";
+var InsufficientScopeError = class extends OAuthError {
+};
+InsufficientScopeError.errorCode = "insufficient_scope";
+var InvalidTargetError = class extends OAuthError {
+};
+InvalidTargetError.errorCode = "invalid_target";
+var OAUTH_ERRORS = {
+  [InvalidRequestError.errorCode]: InvalidRequestError,
+  [InvalidClientError.errorCode]: InvalidClientError,
+  [InvalidGrantError.errorCode]: InvalidGrantError,
+  [UnauthorizedClientError.errorCode]: UnauthorizedClientError,
+  [UnsupportedGrantTypeError.errorCode]: UnsupportedGrantTypeError,
+  [InvalidScopeError.errorCode]: InvalidScopeError,
+  [AccessDeniedError.errorCode]: AccessDeniedError,
+  [ServerError.errorCode]: ServerError,
+  [TemporarilyUnavailableError.errorCode]: TemporarilyUnavailableError,
+  [UnsupportedResponseTypeError.errorCode]: UnsupportedResponseTypeError,
+  [UnsupportedTokenTypeError.errorCode]: UnsupportedTokenTypeError,
+  [InvalidTokenError.errorCode]: InvalidTokenError,
+  [MethodNotAllowedError.errorCode]: MethodNotAllowedError,
+  [TooManyRequestsError.errorCode]: TooManyRequestsError,
+  [InvalidClientMetadataError.errorCode]: InvalidClientMetadataError,
+  [InsufficientScopeError.errorCode]: InsufficientScopeError,
+  [InvalidTargetError.errorCode]: InvalidTargetError
+};
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/client/auth.js
+var UnauthorizedError = class extends Error {
+  constructor(message) {
+    super(message ?? "Unauthorized");
+  }
+};
+function isClientAuthMethod(method) {
+  return ["client_secret_basic", "client_secret_post", "none"].includes(method);
+}
+var AUTHORIZATION_CODE_RESPONSE_TYPE = "code";
+var AUTHORIZATION_CODE_CHALLENGE_METHOD = "S256";
+function selectClientAuthMethod(clientInformation, supportedMethods) {
+  const hasClientSecret = clientInformation.client_secret !== void 0;
+  if ("token_endpoint_auth_method" in clientInformation && clientInformation.token_endpoint_auth_method && isClientAuthMethod(clientInformation.token_endpoint_auth_method) && (supportedMethods.length === 0 || supportedMethods.includes(clientInformation.token_endpoint_auth_method))) {
+    return clientInformation.token_endpoint_auth_method;
+  }
+  if (supportedMethods.length === 0) {
+    return hasClientSecret ? "client_secret_basic" : "none";
+  }
+  if (hasClientSecret && supportedMethods.includes("client_secret_basic")) {
+    return "client_secret_basic";
+  }
+  if (hasClientSecret && supportedMethods.includes("client_secret_post")) {
+    return "client_secret_post";
+  }
+  if (supportedMethods.includes("none")) {
+    return "none";
+  }
+  return hasClientSecret ? "client_secret_post" : "none";
+}
+function applyClientAuthentication(method, clientInformation, headers, params) {
+  const { client_id, client_secret } = clientInformation;
+  switch (method) {
+    case "client_secret_basic":
+      applyBasicAuth(client_id, client_secret, headers);
+      return;
+    case "client_secret_post":
+      applyPostAuth(client_id, client_secret, params);
+      return;
+    case "none":
+      applyPublicAuth(client_id, params);
+      return;
+    default:
+      throw new Error(`Unsupported client authentication method: ${method}`);
+  }
+}
+function applyBasicAuth(clientId, clientSecret, headers) {
+  if (!clientSecret) {
+    throw new Error("client_secret_basic authentication requires a client_secret");
+  }
+  const credentials = btoa(`${clientId}:${clientSecret}`);
+  headers.set("Authorization", `Basic ${credentials}`);
+}
+function applyPostAuth(clientId, clientSecret, params) {
+  params.set("client_id", clientId);
+  if (clientSecret) {
+    params.set("client_secret", clientSecret);
+  }
+}
+function applyPublicAuth(clientId, params) {
+  params.set("client_id", clientId);
+}
+async function parseErrorResponse(input) {
+  const statusCode = input instanceof Response ? input.status : void 0;
+  const body = input instanceof Response ? await input.text() : input;
+  try {
+    const result = OAuthErrorResponseSchema.parse(JSON.parse(body));
+    const { error: error2, error_description, error_uri } = result;
+    const errorClass = OAUTH_ERRORS[error2] || ServerError;
+    return new errorClass(error_description || "", error_uri);
+  } catch (error2) {
+    const errorMessage = `${statusCode ? `HTTP ${statusCode}: ` : ""}Invalid OAuth error response: ${error2}. Raw body: ${body}`;
+    return new ServerError(errorMessage);
+  }
+}
+async function auth(provider, options) {
+  try {
+    return await authInternal(provider, options);
+  } catch (error2) {
+    if (error2 instanceof InvalidClientError || error2 instanceof UnauthorizedClientError) {
+      await provider.invalidateCredentials?.("all");
+      return await authInternal(provider, options);
+    } else if (error2 instanceof InvalidGrantError) {
+      await provider.invalidateCredentials?.("tokens");
+      return await authInternal(provider, options);
+    }
+    throw error2;
+  }
+}
+async function authInternal(provider, { serverUrl, authorizationCode, scope, resourceMetadataUrl, fetchFn }) {
+  const cachedState = await provider.discoveryState?.();
+  let resourceMetadata;
+  let authorizationServerUrl;
+  let metadata;
+  let effectiveResourceMetadataUrl = resourceMetadataUrl;
+  if (!effectiveResourceMetadataUrl && cachedState?.resourceMetadataUrl) {
+    effectiveResourceMetadataUrl = new URL(cachedState.resourceMetadataUrl);
+  }
+  if (cachedState?.authorizationServerUrl) {
+    authorizationServerUrl = cachedState.authorizationServerUrl;
+    resourceMetadata = cachedState.resourceMetadata;
+    metadata = cachedState.authorizationServerMetadata ?? await discoverAuthorizationServerMetadata(authorizationServerUrl, { fetchFn });
+    if (!resourceMetadata) {
+      try {
+        resourceMetadata = await discoverOAuthProtectedResourceMetadata(serverUrl, { resourceMetadataUrl: effectiveResourceMetadataUrl }, fetchFn);
+      } catch {
+      }
+    }
+    if (metadata !== cachedState.authorizationServerMetadata || resourceMetadata !== cachedState.resourceMetadata) {
+      await provider.saveDiscoveryState?.({
+        authorizationServerUrl: String(authorizationServerUrl),
+        resourceMetadataUrl: effectiveResourceMetadataUrl?.toString(),
+        resourceMetadata,
+        authorizationServerMetadata: metadata
+      });
+    }
+  } else {
+    const serverInfo = await discoverOAuthServerInfo(serverUrl, { resourceMetadataUrl: effectiveResourceMetadataUrl, fetchFn });
+    authorizationServerUrl = serverInfo.authorizationServerUrl;
+    metadata = serverInfo.authorizationServerMetadata;
+    resourceMetadata = serverInfo.resourceMetadata;
+    await provider.saveDiscoveryState?.({
+      authorizationServerUrl: String(authorizationServerUrl),
+      resourceMetadataUrl: effectiveResourceMetadataUrl?.toString(),
+      resourceMetadata,
+      authorizationServerMetadata: metadata
+    });
+  }
+  const resource = await selectResourceURL(serverUrl, provider, resourceMetadata);
+  const resolvedScope = scope || resourceMetadata?.scopes_supported?.join(" ") || provider.clientMetadata.scope;
+  let clientInformation = await Promise.resolve(provider.clientInformation());
+  if (!clientInformation) {
+    if (authorizationCode !== void 0) {
+      throw new Error("Existing OAuth client information is required when exchanging an authorization code");
+    }
+    const supportsUrlBasedClientId = metadata?.client_id_metadata_document_supported === true;
+    const clientMetadataUrl = provider.clientMetadataUrl;
+    if (clientMetadataUrl && !isHttpsUrl(clientMetadataUrl)) {
+      throw new InvalidClientMetadataError(`clientMetadataUrl must be a valid HTTPS URL with a non-root pathname, got: ${clientMetadataUrl}`);
+    }
+    const shouldUseUrlBasedClientId = supportsUrlBasedClientId && clientMetadataUrl;
+    if (shouldUseUrlBasedClientId) {
+      clientInformation = {
+        client_id: clientMetadataUrl
+      };
+      await provider.saveClientInformation?.(clientInformation);
+    } else {
+      if (!provider.saveClientInformation) {
+        throw new Error("OAuth client information must be saveable for dynamic registration");
+      }
+      const fullInformation = await registerClient(authorizationServerUrl, {
+        metadata,
+        clientMetadata: provider.clientMetadata,
+        scope: resolvedScope,
+        fetchFn
+      });
+      await provider.saveClientInformation(fullInformation);
+      clientInformation = fullInformation;
+    }
+  }
+  const nonInteractiveFlow = !provider.redirectUrl;
+  if (authorizationCode !== void 0 || nonInteractiveFlow) {
+    const tokens2 = await fetchToken(provider, authorizationServerUrl, {
+      metadata,
+      resource,
+      authorizationCode,
+      fetchFn
+    });
+    await provider.saveTokens(tokens2);
+    return "AUTHORIZED";
+  }
+  const tokens = await provider.tokens();
+  if (tokens?.refresh_token) {
+    try {
+      const newTokens = await refreshAuthorization(authorizationServerUrl, {
+        metadata,
+        clientInformation,
+        refreshToken: tokens.refresh_token,
+        resource,
+        addClientAuthentication: provider.addClientAuthentication,
+        fetchFn
+      });
+      await provider.saveTokens(newTokens);
+      return "AUTHORIZED";
+    } catch (error2) {
+      if (!(error2 instanceof OAuthError) || error2 instanceof ServerError) {
+      } else {
+        throw error2;
+      }
+    }
+  }
+  const state = provider.state ? await provider.state() : void 0;
+  const { authorizationUrl, codeVerifier } = await startAuthorization(authorizationServerUrl, {
+    metadata,
+    clientInformation,
+    state,
+    redirectUrl: provider.redirectUrl,
+    scope: resolvedScope,
+    resource
+  });
+  await provider.saveCodeVerifier(codeVerifier);
+  await provider.redirectToAuthorization(authorizationUrl);
+  return "REDIRECT";
+}
+function isHttpsUrl(value) {
+  if (!value)
+    return false;
+  try {
+    const url2 = new URL(value);
+    return url2.protocol === "https:" && url2.pathname !== "/";
+  } catch {
+    return false;
+  }
+}
+async function selectResourceURL(serverUrl, provider, resourceMetadata) {
+  const defaultResource = resourceUrlFromServerUrl(serverUrl);
+  if (provider.validateResourceURL) {
+    return await provider.validateResourceURL(defaultResource, resourceMetadata?.resource);
+  }
+  if (!resourceMetadata) {
+    return void 0;
+  }
+  if (!checkResourceAllowed({ requestedResource: defaultResource, configuredResource: resourceMetadata.resource })) {
+    throw new Error(`Protected resource ${resourceMetadata.resource} does not match expected ${defaultResource} (or origin)`);
+  }
+  return new URL(resourceMetadata.resource);
+}
+function extractWWWAuthenticateParams(res) {
+  const authenticateHeader = res.headers.get("WWW-Authenticate");
+  if (!authenticateHeader) {
+    return {};
+  }
+  const [type, scheme] = authenticateHeader.split(" ");
+  if (type.toLowerCase() !== "bearer" || !scheme) {
+    return {};
+  }
+  const resourceMetadataMatch = extractFieldFromWwwAuth(res, "resource_metadata") || void 0;
+  let resourceMetadataUrl;
+  if (resourceMetadataMatch) {
+    try {
+      resourceMetadataUrl = new URL(resourceMetadataMatch);
+    } catch {
+    }
+  }
+  const scope = extractFieldFromWwwAuth(res, "scope") || void 0;
+  const error2 = extractFieldFromWwwAuth(res, "error") || void 0;
+  return {
+    resourceMetadataUrl,
+    scope,
+    error: error2
+  };
+}
+function extractFieldFromWwwAuth(response, fieldName) {
+  const wwwAuthHeader = response.headers.get("WWW-Authenticate");
+  if (!wwwAuthHeader) {
+    return null;
+  }
+  const pattern = new RegExp(`${fieldName}=(?:"([^"]+)"|([^\\s,]+))`);
+  const match = wwwAuthHeader.match(pattern);
+  if (match) {
+    return match[1] || match[2];
+  }
+  return null;
+}
+async function discoverOAuthProtectedResourceMetadata(serverUrl, opts, fetchFn = fetch) {
+  const response = await discoverMetadataWithFallback(serverUrl, "oauth-protected-resource", fetchFn, {
+    protocolVersion: opts?.protocolVersion,
+    metadataUrl: opts?.resourceMetadataUrl
+  });
+  if (!response || response.status === 404) {
+    await response?.body?.cancel();
+    throw new Error(`Resource server does not implement OAuth 2.0 Protected Resource Metadata.`);
+  }
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`HTTP ${response.status} trying to load well-known OAuth protected resource metadata.`);
+  }
+  return OAuthProtectedResourceMetadataSchema.parse(await response.json());
+}
+async function fetchWithCorsRetry(url2, headers, fetchFn = fetch) {
+  try {
+    return await fetchFn(url2, { headers });
+  } catch (error2) {
+    if (error2 instanceof TypeError) {
+      if (headers) {
+        return fetchWithCorsRetry(url2, void 0, fetchFn);
+      } else {
+        return void 0;
+      }
+    }
+    throw error2;
+  }
+}
+function buildWellKnownPath(wellKnownPrefix, pathname = "", options = {}) {
+  if (pathname.endsWith("/")) {
+    pathname = pathname.slice(0, -1);
+  }
+  return options.prependPathname ? `${pathname}/.well-known/${wellKnownPrefix}` : `/.well-known/${wellKnownPrefix}${pathname}`;
+}
+async function tryMetadataDiscovery(url2, protocolVersion, fetchFn = fetch) {
+  const headers = {
+    "MCP-Protocol-Version": protocolVersion
+  };
+  return await fetchWithCorsRetry(url2, headers, fetchFn);
+}
+function shouldAttemptFallback(response, pathname) {
+  return !response || response.status >= 400 && response.status < 500 && pathname !== "/";
+}
+async function discoverMetadataWithFallback(serverUrl, wellKnownType, fetchFn, opts) {
+  const issuer = new URL(serverUrl);
+  const protocolVersion = opts?.protocolVersion ?? LATEST_PROTOCOL_VERSION;
+  let url2;
+  if (opts?.metadataUrl) {
+    url2 = new URL(opts.metadataUrl);
+  } else {
+    const wellKnownPath = buildWellKnownPath(wellKnownType, issuer.pathname);
+    url2 = new URL(wellKnownPath, opts?.metadataServerUrl ?? issuer);
+    url2.search = issuer.search;
+  }
+  let response = await tryMetadataDiscovery(url2, protocolVersion, fetchFn);
+  if (!opts?.metadataUrl && shouldAttemptFallback(response, issuer.pathname)) {
+    const rootUrl = new URL(`/.well-known/${wellKnownType}`, issuer);
+    response = await tryMetadataDiscovery(rootUrl, protocolVersion, fetchFn);
+  }
+  return response;
+}
+function buildDiscoveryUrls(authorizationServerUrl) {
+  const url2 = typeof authorizationServerUrl === "string" ? new URL(authorizationServerUrl) : authorizationServerUrl;
+  const hasPath = url2.pathname !== "/";
+  const urlsToTry = [];
+  if (!hasPath) {
+    urlsToTry.push({
+      url: new URL("/.well-known/oauth-authorization-server", url2.origin),
+      type: "oauth"
+    });
+    urlsToTry.push({
+      url: new URL(`/.well-known/openid-configuration`, url2.origin),
+      type: "oidc"
+    });
+    return urlsToTry;
+  }
+  let pathname = url2.pathname;
+  if (pathname.endsWith("/")) {
+    pathname = pathname.slice(0, -1);
+  }
+  urlsToTry.push({
+    url: new URL(`/.well-known/oauth-authorization-server${pathname}`, url2.origin),
+    type: "oauth"
+  });
+  urlsToTry.push({
+    url: new URL(`/.well-known/openid-configuration${pathname}`, url2.origin),
+    type: "oidc"
+  });
+  urlsToTry.push({
+    url: new URL(`${pathname}/.well-known/openid-configuration`, url2.origin),
+    type: "oidc"
+  });
+  return urlsToTry;
+}
+async function discoverAuthorizationServerMetadata(authorizationServerUrl, { fetchFn = fetch, protocolVersion = LATEST_PROTOCOL_VERSION } = {}) {
+  const headers = {
+    "MCP-Protocol-Version": protocolVersion,
+    Accept: "application/json"
+  };
+  const urlsToTry = buildDiscoveryUrls(authorizationServerUrl);
+  for (const { url: endpointUrl, type } of urlsToTry) {
+    const response = await fetchWithCorsRetry(endpointUrl, headers, fetchFn);
+    if (!response) {
+      continue;
+    }
+    if (!response.ok) {
+      await response.body?.cancel();
+      if (response.status >= 400 && response.status < 500) {
+        continue;
+      }
+      throw new Error(`HTTP ${response.status} trying to load ${type === "oauth" ? "OAuth" : "OpenID provider"} metadata from ${endpointUrl}`);
+    }
+    if (type === "oauth") {
+      return OAuthMetadataSchema.parse(await response.json());
+    } else {
+      return OpenIdProviderDiscoveryMetadataSchema.parse(await response.json());
+    }
+  }
+  return void 0;
+}
+async function discoverOAuthServerInfo(serverUrl, opts) {
+  let resourceMetadata;
+  let authorizationServerUrl;
+  try {
+    resourceMetadata = await discoverOAuthProtectedResourceMetadata(serverUrl, { resourceMetadataUrl: opts?.resourceMetadataUrl }, opts?.fetchFn);
+    if (resourceMetadata.authorization_servers && resourceMetadata.authorization_servers.length > 0) {
+      authorizationServerUrl = resourceMetadata.authorization_servers[0];
+    }
+  } catch {
+  }
+  if (!authorizationServerUrl) {
+    authorizationServerUrl = String(new URL("/", serverUrl));
+  }
+  const authorizationServerMetadata = await discoverAuthorizationServerMetadata(authorizationServerUrl, { fetchFn: opts?.fetchFn });
+  return {
+    authorizationServerUrl,
+    authorizationServerMetadata,
+    resourceMetadata
+  };
+}
+async function startAuthorization(authorizationServerUrl, { metadata, clientInformation, redirectUrl, scope, state, resource }) {
+  let authorizationUrl;
+  if (metadata) {
+    authorizationUrl = new URL(metadata.authorization_endpoint);
+    if (!metadata.response_types_supported.includes(AUTHORIZATION_CODE_RESPONSE_TYPE)) {
+      throw new Error(`Incompatible auth server: does not support response type ${AUTHORIZATION_CODE_RESPONSE_TYPE}`);
+    }
+    if (metadata.code_challenge_methods_supported && !metadata.code_challenge_methods_supported.includes(AUTHORIZATION_CODE_CHALLENGE_METHOD)) {
+      throw new Error(`Incompatible auth server: does not support code challenge method ${AUTHORIZATION_CODE_CHALLENGE_METHOD}`);
+    }
+  } else {
+    authorizationUrl = new URL("/authorize", authorizationServerUrl);
+  }
+  const challenge = await pkceChallenge();
+  const codeVerifier = challenge.code_verifier;
+  const codeChallenge = challenge.code_challenge;
+  authorizationUrl.searchParams.set("response_type", AUTHORIZATION_CODE_RESPONSE_TYPE);
+  authorizationUrl.searchParams.set("client_id", clientInformation.client_id);
+  authorizationUrl.searchParams.set("code_challenge", codeChallenge);
+  authorizationUrl.searchParams.set("code_challenge_method", AUTHORIZATION_CODE_CHALLENGE_METHOD);
+  authorizationUrl.searchParams.set("redirect_uri", String(redirectUrl));
+  if (state) {
+    authorizationUrl.searchParams.set("state", state);
+  }
+  if (scope) {
+    authorizationUrl.searchParams.set("scope", scope);
+  }
+  if (scope?.includes("offline_access")) {
+    authorizationUrl.searchParams.append("prompt", "consent");
+  }
+  if (resource) {
+    authorizationUrl.searchParams.set("resource", resource.href);
+  }
+  return { authorizationUrl, codeVerifier };
+}
+function prepareAuthorizationCodeRequest(authorizationCode, codeVerifier, redirectUri) {
+  return new URLSearchParams({
+    grant_type: "authorization_code",
+    code: authorizationCode,
+    code_verifier: codeVerifier,
+    redirect_uri: String(redirectUri)
+  });
+}
+async function executeTokenRequest(authorizationServerUrl, { metadata, tokenRequestParams, clientInformation, addClientAuthentication, resource, fetchFn }) {
+  const tokenUrl = metadata?.token_endpoint ? new URL(metadata.token_endpoint) : new URL("/token", authorizationServerUrl);
+  const headers = new Headers({
+    "Content-Type": "application/x-www-form-urlencoded",
+    Accept: "application/json"
+  });
+  if (resource) {
+    tokenRequestParams.set("resource", resource.href);
+  }
+  if (addClientAuthentication) {
+    await addClientAuthentication(headers, tokenRequestParams, tokenUrl, metadata);
+  } else if (clientInformation) {
+    const supportedMethods = metadata?.token_endpoint_auth_methods_supported ?? [];
+    const authMethod = selectClientAuthMethod(clientInformation, supportedMethods);
+    applyClientAuthentication(authMethod, clientInformation, headers, tokenRequestParams);
+  }
+  const response = await (fetchFn ?? fetch)(tokenUrl, {
+    method: "POST",
+    headers,
+    body: tokenRequestParams
+  });
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+  return OAuthTokensSchema.parse(await response.json());
+}
+async function refreshAuthorization(authorizationServerUrl, { metadata, clientInformation, refreshToken, resource, addClientAuthentication, fetchFn }) {
+  const tokenRequestParams = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken
+  });
+  const tokens = await executeTokenRequest(authorizationServerUrl, {
+    metadata,
+    tokenRequestParams,
+    clientInformation,
+    addClientAuthentication,
+    resource,
+    fetchFn
+  });
+  return { refresh_token: refreshToken, ...tokens };
+}
+async function fetchToken(provider, authorizationServerUrl, { metadata, resource, authorizationCode, fetchFn } = {}) {
+  const scope = provider.clientMetadata.scope;
+  let tokenRequestParams;
+  if (provider.prepareTokenRequest) {
+    tokenRequestParams = await provider.prepareTokenRequest(scope);
+  }
+  if (!tokenRequestParams) {
+    if (!authorizationCode) {
+      throw new Error("Either provider.prepareTokenRequest() or authorizationCode is required");
+    }
+    if (!provider.redirectUrl) {
+      throw new Error("redirectUrl is required for authorization_code flow");
+    }
+    const codeVerifier = await provider.codeVerifier();
+    tokenRequestParams = prepareAuthorizationCodeRequest(authorizationCode, codeVerifier, provider.redirectUrl);
+  }
+  const clientInformation = await provider.clientInformation();
+  return executeTokenRequest(authorizationServerUrl, {
+    metadata,
+    tokenRequestParams,
+    clientInformation: clientInformation ?? void 0,
+    addClientAuthentication: provider.addClientAuthentication,
+    resource,
+    fetchFn
+  });
+}
+async function registerClient(authorizationServerUrl, { metadata, clientMetadata, scope, fetchFn }) {
+  let registrationUrl;
+  if (metadata) {
+    if (!metadata.registration_endpoint) {
+      throw new Error("Incompatible auth server: does not support dynamic client registration");
+    }
+    registrationUrl = new URL(metadata.registration_endpoint);
+  } else {
+    registrationUrl = new URL("/register", authorizationServerUrl);
+  }
+  const response = await (fetchFn ?? fetch)(registrationUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      ...clientMetadata,
+      ...scope !== void 0 ? { scope } : {}
+    })
+  });
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+  return OAuthClientInformationFullSchema.parse(await response.json());
+}
+
+// node_modules/eventsource-parser/dist/index.js
+var ParseError = class extends Error {
+  constructor(message, options) {
+    super(message), this.name = "ParseError", this.type = options.type, this.field = options.field, this.value = options.value, this.line = options.line;
+  }
+};
+var LF = 10;
+var CR = 13;
+var SPACE = 32;
+function noop(_arg) {
+}
+function createParser(config2) {
+  if (typeof config2 == "function")
+    throw new TypeError(
+      "`config` must be an object, got a function instead. Did you mean `createParser({onEvent: fn})`?"
+    );
+  const { onEvent = noop, onError = noop, onRetry = noop, onComment, maxBufferSize } = config2, pendingFragments = [];
+  let pendingFragmentsLength = 0, isFirstChunk = true, id, data = "", dataLines = 0, eventType, terminated = false;
+  function feed(chunk) {
+    if (terminated)
+      throw new Error(
+        "Cannot feed parser: it was terminated after exceeding the configured max buffer size. Call `reset()` to resume parsing."
+      );
+    if (isFirstChunk && (isFirstChunk = false, chunk.charCodeAt(0) === 239 && chunk.charCodeAt(1) === 187 && chunk.charCodeAt(2) === 191 && (chunk = chunk.slice(3))), pendingFragments.length === 0) {
+      const trailing2 = processLines(chunk);
+      trailing2 !== "" && (pendingFragments.push(trailing2), pendingFragmentsLength = trailing2.length), checkBufferSize();
+      return;
+    }
+    if (chunk.indexOf(`
+`) === -1 && chunk.indexOf("\r") === -1) {
+      pendingFragments.push(chunk), pendingFragmentsLength += chunk.length, checkBufferSize();
+      return;
+    }
+    pendingFragments.push(chunk);
+    const input = pendingFragments.join("");
+    pendingFragments.length = 0, pendingFragmentsLength = 0;
+    const trailing = processLines(input);
+    trailing !== "" && (pendingFragments.push(trailing), pendingFragmentsLength = trailing.length), checkBufferSize();
+  }
+  function checkBufferSize() {
+    maxBufferSize !== void 0 && (pendingFragmentsLength + data.length <= maxBufferSize || (terminated = true, pendingFragments.length = 0, pendingFragmentsLength = 0, id = void 0, data = "", dataLines = 0, eventType = void 0, onError(
+      new ParseError(`Buffered data exceeded max buffer size of ${maxBufferSize} characters`, {
+        type: "max-buffer-size-exceeded"
+      })
+    )));
+  }
+  function processLines(chunk) {
+    let searchIndex = 0;
+    if (chunk.indexOf("\r") === -1) {
+      let lfIndex = chunk.indexOf(`
+`, searchIndex);
+      for (; lfIndex !== -1; ) {
+        if (searchIndex === lfIndex) {
+          dataLines > 0 && onEvent({ id, event: eventType, data }), id = void 0, data = "", dataLines = 0, eventType = void 0, searchIndex = lfIndex + 1, lfIndex = chunk.indexOf(`
+`, searchIndex);
+          continue;
+        }
+        const firstCharCode = chunk.charCodeAt(searchIndex);
+        if (isDataPrefix(chunk, searchIndex, firstCharCode)) {
+          const valueStart = chunk.charCodeAt(searchIndex + 5) === SPACE ? searchIndex + 6 : searchIndex + 5, value = chunk.slice(valueStart, lfIndex);
+          if (dataLines === 0 && chunk.charCodeAt(lfIndex + 1) === LF) {
+            onEvent({ id, event: eventType, data: value }), id = void 0, data = "", eventType = void 0, searchIndex = lfIndex + 2, lfIndex = chunk.indexOf(`
+`, searchIndex);
+            continue;
+          }
+          data = dataLines === 0 ? value : `${data}
+${value}`, dataLines++;
+        } else isEventPrefix(chunk, searchIndex, firstCharCode) ? eventType = chunk.slice(
+          chunk.charCodeAt(searchIndex + 6) === SPACE ? searchIndex + 7 : searchIndex + 6,
+          lfIndex
+        ) || void 0 : parseLine(chunk, searchIndex, lfIndex);
+        searchIndex = lfIndex + 1, lfIndex = chunk.indexOf(`
+`, searchIndex);
+      }
+      return chunk.slice(searchIndex);
+    }
+    for (; searchIndex < chunk.length; ) {
+      const crIndex = chunk.indexOf("\r", searchIndex), lfIndex = chunk.indexOf(`
+`, searchIndex);
+      let lineEnd = -1;
+      if (crIndex !== -1 && lfIndex !== -1 ? lineEnd = crIndex < lfIndex ? crIndex : lfIndex : crIndex !== -1 ? crIndex === chunk.length - 1 ? lineEnd = -1 : lineEnd = crIndex : lfIndex !== -1 && (lineEnd = lfIndex), lineEnd === -1)
+        break;
+      parseLine(chunk, searchIndex, lineEnd), searchIndex = lineEnd + 1, chunk.charCodeAt(searchIndex - 1) === CR && chunk.charCodeAt(searchIndex) === LF && searchIndex++;
+    }
+    return chunk.slice(searchIndex);
+  }
+  function parseLine(chunk, start, end) {
+    if (start === end) {
+      dispatchEvent();
+      return;
+    }
+    const firstCharCode = chunk.charCodeAt(start);
+    if (isDataPrefix(chunk, start, firstCharCode)) {
+      const valueStart = chunk.charCodeAt(start + 5) === SPACE ? start + 6 : start + 5, value2 = chunk.slice(valueStart, end);
+      data = dataLines === 0 ? value2 : `${data}
+${value2}`, dataLines++;
+      return;
+    }
+    if (isEventPrefix(chunk, start, firstCharCode)) {
+      eventType = chunk.slice(chunk.charCodeAt(start + 6) === SPACE ? start + 7 : start + 6, end) || void 0;
+      return;
+    }
+    if (firstCharCode === 105 && chunk.charCodeAt(start + 1) === 100 && chunk.charCodeAt(start + 2) === 58) {
+      const value2 = chunk.slice(chunk.charCodeAt(start + 3) === SPACE ? start + 4 : start + 3, end);
+      id = value2.includes("\0") ? void 0 : value2;
+      return;
+    }
+    if (firstCharCode === 58) {
+      if (onComment) {
+        const line2 = chunk.slice(start, end);
+        onComment(line2.slice(chunk.charCodeAt(start + 1) === SPACE ? 2 : 1));
+      }
+      return;
+    }
+    const line = chunk.slice(start, end), fieldSeparatorIndex = line.indexOf(":");
+    if (fieldSeparatorIndex === -1) {
+      processField(line, "", line);
+      return;
+    }
+    const field = line.slice(0, fieldSeparatorIndex), offset = line.charCodeAt(fieldSeparatorIndex + 1) === SPACE ? 2 : 1, value = line.slice(fieldSeparatorIndex + offset);
+    processField(field, value, line);
+  }
+  function processField(field, value, line) {
+    switch (field) {
+      case "event":
+        eventType = value || void 0;
+        break;
+      case "data":
+        data = dataLines === 0 ? value : `${data}
+${value}`, dataLines++;
+        break;
+      case "id":
+        id = value.includes("\0") ? void 0 : value;
+        break;
+      case "retry":
+        /^\d+$/.test(value) ? onRetry(parseInt(value, 10)) : onError(
+          new ParseError(`Invalid \`retry\` value: "${value}"`, {
+            type: "invalid-retry",
+            value,
+            line
+          })
+        );
+        break;
+      default:
+        onError(
+          new ParseError(
+            `Unknown field "${field.length > 20 ? `${field.slice(0, 20)}\u2026` : field}"`,
+            { type: "unknown-field", field, value, line }
+          )
+        );
+        break;
+    }
+  }
+  function dispatchEvent() {
+    dataLines > 0 && onEvent({
+      id,
+      event: eventType,
+      data
+    }), id = void 0, data = "", dataLines = 0, eventType = void 0;
+  }
+  function reset(options = {}) {
+    if (options.consume && pendingFragments.length > 0) {
+      const incompleteLine = pendingFragments.join("");
+      parseLine(incompleteLine, 0, incompleteLine.length);
+    }
+    isFirstChunk = true, id = void 0, data = "", dataLines = 0, eventType = void 0, pendingFragments.length = 0, pendingFragmentsLength = 0, terminated = false;
+  }
+  return { feed, reset };
+}
+function isDataPrefix(chunk, i, firstCharCode) {
+  return firstCharCode === 100 && chunk.charCodeAt(i + 1) === 97 && chunk.charCodeAt(i + 2) === 116 && chunk.charCodeAt(i + 3) === 97 && chunk.charCodeAt(i + 4) === 58;
+}
+function isEventPrefix(chunk, i, firstCharCode) {
+  return firstCharCode === 101 && chunk.charCodeAt(i + 1) === 118 && chunk.charCodeAt(i + 2) === 101 && chunk.charCodeAt(i + 3) === 110 && chunk.charCodeAt(i + 4) === 116 && chunk.charCodeAt(i + 5) === 58;
+}
+
+// node_modules/eventsource-parser/dist/stream.js
+var EventSourceParserStream = class extends TransformStream {
+  constructor({ onError, onRetry, onComment, maxBufferSize } = {}) {
+    let parser;
+    super({
+      start(controller) {
+        parser = createParser({
+          onEvent: (event) => {
+            controller.enqueue(event);
+          },
+          onError(error2) {
+            typeof onError == "function" && onError(error2), (onError === "terminate" || error2.type === "max-buffer-size-exceeded") && controller.error(error2);
+          },
+          onRetry,
+          onComment,
+          maxBufferSize
+        });
+      },
+      transform(chunk) {
+        parser.feed(chunk);
+      }
+    });
+  }
+};
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/client/streamableHttp.js
+var DEFAULT_STREAMABLE_HTTP_RECONNECTION_OPTIONS = {
+  initialReconnectionDelay: 1e3,
+  maxReconnectionDelay: 3e4,
+  reconnectionDelayGrowFactor: 1.5,
+  maxRetries: 2
+};
+var StreamableHTTPError = class extends Error {
+  constructor(code, message) {
+    super(`Streamable HTTP error: ${message}`);
+    this.code = code;
+  }
+};
+var StreamableHTTPClientTransport = class {
+  constructor(url2, opts) {
+    this._hasCompletedAuthFlow = false;
+    this._url = url2;
+    this._resourceMetadataUrl = void 0;
+    this._scope = void 0;
+    this._requestInit = opts?.requestInit;
+    this._authProvider = opts?.authProvider;
+    this._fetch = opts?.fetch;
+    this._fetchWithInit = createFetchWithInit(opts?.fetch, opts?.requestInit);
+    this._sessionId = opts?.sessionId;
+    this._reconnectionOptions = opts?.reconnectionOptions ?? DEFAULT_STREAMABLE_HTTP_RECONNECTION_OPTIONS;
+  }
+  async _authThenStart() {
+    if (!this._authProvider) {
+      throw new UnauthorizedError("No auth provider");
+    }
+    let result;
+    try {
+      result = await auth(this._authProvider, {
+        serverUrl: this._url,
+        resourceMetadataUrl: this._resourceMetadataUrl,
+        scope: this._scope,
+        fetchFn: this._fetchWithInit
+      });
+    } catch (error2) {
+      this.onerror?.(error2);
+      throw error2;
+    }
+    if (result !== "AUTHORIZED") {
+      throw new UnauthorizedError();
+    }
+    return await this._startOrAuthSse({ resumptionToken: void 0 });
+  }
+  async _commonHeaders() {
+    const headers = {};
+    if (this._authProvider) {
+      const tokens = await this._authProvider.tokens();
+      if (tokens) {
+        headers["Authorization"] = `Bearer ${tokens.access_token}`;
+      }
+    }
+    if (this._sessionId) {
+      headers["mcp-session-id"] = this._sessionId;
+    }
+    if (this._protocolVersion) {
+      headers["mcp-protocol-version"] = this._protocolVersion;
+    }
+    const extraHeaders = normalizeHeaders(this._requestInit?.headers);
+    return new Headers({
+      ...headers,
+      ...extraHeaders
+    });
+  }
+  async _startOrAuthSse(options) {
+    const { resumptionToken } = options;
+    try {
+      const headers = await this._commonHeaders();
+      headers.set("Accept", "text/event-stream");
+      if (resumptionToken) {
+        headers.set("last-event-id", resumptionToken);
+      }
+      const response = await (this._fetch ?? fetch)(this._url, {
+        method: "GET",
+        headers,
+        signal: this._abortController?.signal
+      });
+      if (!response.ok) {
+        await response.body?.cancel();
+        if (response.status === 401 && this._authProvider) {
+          return await this._authThenStart();
+        }
+        if (response.status === 405) {
+          return;
+        }
+        throw new StreamableHTTPError(response.status, `Failed to open SSE stream: ${response.statusText}`);
+      }
+      this._handleSseStream(response.body, options, true);
+    } catch (error2) {
+      this.onerror?.(error2);
+      throw error2;
+    }
+  }
+  /**
+   * Calculates the next reconnection delay using  backoff algorithm
+   *
+   * @param attempt Current reconnection attempt count for the specific stream
+   * @returns Time to wait in milliseconds before next reconnection attempt
+   */
+  _getNextReconnectionDelay(attempt) {
+    if (this._serverRetryMs !== void 0) {
+      return this._serverRetryMs;
+    }
+    const initialDelay = this._reconnectionOptions.initialReconnectionDelay;
+    const growFactor = this._reconnectionOptions.reconnectionDelayGrowFactor;
+    const maxDelay = this._reconnectionOptions.maxReconnectionDelay;
+    return Math.min(initialDelay * Math.pow(growFactor, attempt), maxDelay);
+  }
+  /**
+   * Schedule a reconnection attempt using server-provided retry interval or backoff
+   *
+   * @param lastEventId The ID of the last received event for resumability
+   * @param attemptCount Current reconnection attempt count for this specific stream
+   */
+  _scheduleReconnection(options, attemptCount = 0) {
+    const maxRetries = this._reconnectionOptions.maxRetries;
+    if (attemptCount >= maxRetries) {
+      this.onerror?.(new Error(`Maximum reconnection attempts (${maxRetries}) exceeded.`));
+      return;
+    }
+    const delay = this._getNextReconnectionDelay(attemptCount);
+    this._reconnectionTimeout = setTimeout(() => {
+      this._startOrAuthSse(options).catch((error2) => {
+        this.onerror?.(new Error(`Failed to reconnect SSE stream: ${error2 instanceof Error ? error2.message : String(error2)}`));
+        this._scheduleReconnection(options, attemptCount + 1);
+      });
+    }, delay);
+  }
+  _handleSseStream(stream, options, isReconnectable) {
+    if (!stream) {
+      return;
+    }
+    const { onresumptiontoken, replayMessageId } = options;
+    let lastEventId;
+    let hasPrimingEvent = false;
+    let receivedResponse = false;
+    const processStream = async () => {
+      try {
+        const reader = stream.pipeThrough(new TextDecoderStream()).pipeThrough(new EventSourceParserStream({
+          onRetry: (retryMs) => {
+            this._serverRetryMs = retryMs;
+          }
+        })).getReader();
+        while (true) {
+          const { value: event, done } = await reader.read();
+          if (done) {
+            break;
+          }
+          if (event.id) {
+            lastEventId = event.id;
+            hasPrimingEvent = true;
+            onresumptiontoken?.(event.id);
+          }
+          if (!event.data) {
+            continue;
+          }
+          if (!event.event || event.event === "message") {
+            try {
+              const message = JSONRPCMessageSchema.parse(JSON.parse(event.data));
+              if (isJSONRPCResultResponse(message)) {
+                receivedResponse = true;
+                if (replayMessageId !== void 0) {
+                  message.id = replayMessageId;
+                }
+              }
+              this.onmessage?.(message);
+            } catch (error2) {
+              this.onerror?.(error2);
+            }
+          }
+        }
+        const canResume = isReconnectable || hasPrimingEvent;
+        const needsReconnect = canResume && !receivedResponse;
+        if (needsReconnect && this._abortController && !this._abortController.signal.aborted) {
+          this._scheduleReconnection({
+            resumptionToken: lastEventId,
+            onresumptiontoken,
+            replayMessageId
+          }, 0);
+        }
+      } catch (error2) {
+        this.onerror?.(new Error(`SSE stream disconnected: ${error2}`));
+        const canResume = isReconnectable || hasPrimingEvent;
+        const needsReconnect = canResume && !receivedResponse;
+        if (needsReconnect && this._abortController && !this._abortController.signal.aborted) {
+          try {
+            this._scheduleReconnection({
+              resumptionToken: lastEventId,
+              onresumptiontoken,
+              replayMessageId
+            }, 0);
+          } catch (error3) {
+            this.onerror?.(new Error(`Failed to reconnect: ${error3 instanceof Error ? error3.message : String(error3)}`));
+          }
+        }
+      }
+    };
+    processStream();
+  }
+  async start() {
+    if (this._abortController) {
+      throw new Error("StreamableHTTPClientTransport already started! If using Client class, note that connect() calls start() automatically.");
+    }
+    this._abortController = new AbortController();
+  }
+  /**
+   * Call this method after the user has finished authorizing via their user agent and is redirected back to the MCP client application. This will exchange the authorization code for an access token, enabling the next connection attempt to successfully auth.
+   */
+  async finishAuth(authorizationCode) {
+    if (!this._authProvider) {
+      throw new UnauthorizedError("No auth provider");
+    }
+    const result = await auth(this._authProvider, {
+      serverUrl: this._url,
+      authorizationCode,
+      resourceMetadataUrl: this._resourceMetadataUrl,
+      scope: this._scope,
+      fetchFn: this._fetchWithInit
+    });
+    if (result !== "AUTHORIZED") {
+      throw new UnauthorizedError("Failed to authorize");
+    }
+  }
+  async close() {
+    if (this._reconnectionTimeout) {
+      clearTimeout(this._reconnectionTimeout);
+      this._reconnectionTimeout = void 0;
+    }
+    this._abortController?.abort();
+    this.onclose?.();
+  }
+  async send(message, options) {
+    try {
+      const { resumptionToken, onresumptiontoken } = options || {};
+      if (resumptionToken) {
+        this._startOrAuthSse({ resumptionToken, replayMessageId: isJSONRPCRequest(message) ? message.id : void 0 }).catch((err) => this.onerror?.(err));
+        return;
+      }
+      const headers = await this._commonHeaders();
+      headers.set("content-type", "application/json");
+      headers.set("accept", "application/json, text/event-stream");
+      const init2 = {
+        ...this._requestInit,
+        method: "POST",
+        headers,
+        body: JSON.stringify(message),
+        signal: this._abortController?.signal
+      };
+      const response = await (this._fetch ?? fetch)(this._url, init2);
+      const sessionId = response.headers.get("mcp-session-id");
+      if (sessionId) {
+        this._sessionId = sessionId;
+      }
+      if (!response.ok) {
+        const text2 = await response.text().catch(() => null);
+        if (response.status === 401 && this._authProvider) {
+          if (this._hasCompletedAuthFlow) {
+            throw new StreamableHTTPError(401, "Server returned 401 after successful authentication");
+          }
+          const { resourceMetadataUrl, scope } = extractWWWAuthenticateParams(response);
+          this._resourceMetadataUrl = resourceMetadataUrl;
+          this._scope = scope;
+          const result = await auth(this._authProvider, {
+            serverUrl: this._url,
+            resourceMetadataUrl: this._resourceMetadataUrl,
+            scope: this._scope,
+            fetchFn: this._fetchWithInit
+          });
+          if (result !== "AUTHORIZED") {
+            throw new UnauthorizedError();
+          }
+          this._hasCompletedAuthFlow = true;
+          return this.send(message);
+        }
+        if (response.status === 403 && this._authProvider) {
+          const { resourceMetadataUrl, scope, error: error2 } = extractWWWAuthenticateParams(response);
+          if (error2 === "insufficient_scope") {
+            const wwwAuthHeader = response.headers.get("WWW-Authenticate");
+            if (this._lastUpscopingHeader === wwwAuthHeader) {
+              throw new StreamableHTTPError(403, "Server returned 403 after trying upscoping");
+            }
+            if (scope) {
+              this._scope = scope;
+            }
+            if (resourceMetadataUrl) {
+              this._resourceMetadataUrl = resourceMetadataUrl;
+            }
+            this._lastUpscopingHeader = wwwAuthHeader ?? void 0;
+            const result = await auth(this._authProvider, {
+              serverUrl: this._url,
+              resourceMetadataUrl: this._resourceMetadataUrl,
+              scope: this._scope,
+              fetchFn: this._fetch
+            });
+            if (result !== "AUTHORIZED") {
+              throw new UnauthorizedError();
+            }
+            return this.send(message);
+          }
+        }
+        throw new StreamableHTTPError(response.status, `Error POSTing to endpoint: ${text2}`);
+      }
+      this._hasCompletedAuthFlow = false;
+      this._lastUpscopingHeader = void 0;
+      if (response.status === 202) {
+        await response.body?.cancel();
+        if (isInitializedNotification(message)) {
+          this._startOrAuthSse({ resumptionToken: void 0 }).catch((err) => this.onerror?.(err));
+        }
+        return;
+      }
+      const messages = Array.isArray(message) ? message : [message];
+      const hasRequests = messages.filter((msg) => "method" in msg && "id" in msg && msg.id !== void 0).length > 0;
+      const contentType = response.headers.get("content-type");
+      if (hasRequests) {
+        if (contentType?.includes("text/event-stream")) {
+          this._handleSseStream(response.body, { onresumptiontoken }, false);
+        } else if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          const responseMessages = Array.isArray(data) ? data.map((msg) => JSONRPCMessageSchema.parse(msg)) : [JSONRPCMessageSchema.parse(data)];
+          for (const msg of responseMessages) {
+            this.onmessage?.(msg);
+          }
+        } else {
+          await response.body?.cancel();
+          throw new StreamableHTTPError(-1, `Unexpected content type: ${contentType}`);
+        }
+      } else {
+        await response.body?.cancel();
+      }
+    } catch (error2) {
+      this.onerror?.(error2);
+      throw error2;
+    }
+  }
+  get sessionId() {
+    return this._sessionId;
+  }
+  /**
+   * Terminates the current session by sending a DELETE request to the server.
+   *
+   * Clients that no longer need a particular session
+   * (e.g., because the user is leaving the client application) SHOULD send an
+   * HTTP DELETE to the MCP endpoint with the Mcp-Session-Id header to explicitly
+   * terminate the session.
+   *
+   * The server MAY respond with HTTP 405 Method Not Allowed, indicating that
+   * the server does not allow clients to terminate sessions.
+   */
+  async terminateSession() {
+    if (!this._sessionId) {
+      return;
+    }
+    try {
+      const headers = await this._commonHeaders();
+      const init2 = {
+        ...this._requestInit,
+        method: "DELETE",
+        headers,
+        signal: this._abortController?.signal
+      };
+      const response = await (this._fetch ?? fetch)(this._url, init2);
+      await response.body?.cancel();
+      if (!response.ok && response.status !== 405) {
+        throw new StreamableHTTPError(response.status, `Failed to terminate session: ${response.statusText}`);
+      }
+      this._sessionId = void 0;
+    } catch (error2) {
+      this.onerror?.(error2);
+      throw error2;
+    }
+  }
+  setProtocolVersion(version2) {
+    this._protocolVersion = version2;
+  }
+  get protocolVersion() {
+    return this._protocolVersion;
+  }
+  /**
+   * Resume an SSE stream from a previous event ID.
+   * Opens a GET SSE connection with Last-Event-ID header to replay missed events.
+   *
+   * @param lastEventId The event ID to resume from
+   * @param options Optional callback to receive new resumption tokens
+   */
+  async resumeStream(lastEventId, options) {
+    await this._startOrAuthSse({
+      resumptionToken: lastEventId,
+      onresumptiontoken: options?.onresumptiontoken
+    });
+  }
+};
+
+// node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js
+var import_cross_spawn = __toESM(require_cross_spawn(), 1);
+import process3 from "node:process";
+import { PassThrough } from "node:stream";
+var DEFAULT_INHERITED_ENV_VARS = process3.platform === "win32" ? [
+  "APPDATA",
+  "HOMEDRIVE",
+  "HOMEPATH",
+  "LOCALAPPDATA",
+  "PATH",
+  "PROCESSOR_ARCHITECTURE",
+  "SYSTEMDRIVE",
+  "SYSTEMROOT",
+  "TEMP",
+  "USERNAME",
+  "USERPROFILE",
+  "PROGRAMFILES"
+] : (
+  /* list inspired by the default env inheritance of sudo */
+  ["HOME", "LOGNAME", "PATH", "SHELL", "TERM", "USER"]
+);
+function getDefaultEnvironment() {
+  const env = {};
+  for (const key of DEFAULT_INHERITED_ENV_VARS) {
+    const value = process3.env[key];
+    if (value === void 0) {
+      continue;
+    }
+    if (value.startsWith("()")) {
+      continue;
+    }
+    env[key] = value;
+  }
+  return env;
+}
+var StdioClientTransport = class {
+  constructor(server) {
+    this._readBuffer = new ReadBuffer();
+    this._stderrStream = null;
+    this._serverParams = server;
+    if (server.stderr === "pipe" || server.stderr === "overlapped") {
+      this._stderrStream = new PassThrough();
+    }
+  }
+  /**
+   * Starts the server process and prepares to communicate with it.
+   */
+  async start() {
+    if (this._process) {
+      throw new Error("StdioClientTransport already started! If using Client class, note that connect() calls start() automatically.");
+    }
+    return new Promise((resolve, reject) => {
+      this._process = (0, import_cross_spawn.default)(this._serverParams.command, this._serverParams.args ?? [], {
+        // merge default env with server env because mcp server needs some env vars
+        env: {
+          ...getDefaultEnvironment(),
+          ...this._serverParams.env
+        },
+        stdio: ["pipe", "pipe", this._serverParams.stderr ?? "inherit"],
+        shell: false,
+        windowsHide: process3.platform === "win32",
+        cwd: this._serverParams.cwd
+      });
+      this._process.on("error", (error2) => {
+        reject(error2);
+        this.onerror?.(error2);
+      });
+      this._process.on("spawn", () => {
+        resolve();
+      });
+      this._process.on("close", (_code) => {
+        this._process = void 0;
+        this.onclose?.();
+      });
+      this._process.stdin?.on("error", (error2) => {
+        this.onerror?.(error2);
+      });
+      this._process.stdout?.on("data", (chunk) => {
+        this._readBuffer.append(chunk);
+        this.processReadBuffer();
+      });
+      this._process.stdout?.on("error", (error2) => {
+        this.onerror?.(error2);
+      });
+      if (this._stderrStream && this._process.stderr) {
+        this._process.stderr.pipe(this._stderrStream);
+      }
+    });
+  }
+  /**
+   * The stderr stream of the child process, if `StdioServerParameters.stderr` was set to "pipe" or "overlapped".
+   *
+   * If stderr piping was requested, a PassThrough stream is returned _immediately_, allowing callers to
+   * attach listeners before the start method is invoked. This prevents loss of any early
+   * error output emitted by the child process.
+   */
+  get stderr() {
+    if (this._stderrStream) {
+      return this._stderrStream;
+    }
+    return this._process?.stderr ?? null;
+  }
+  /**
+   * The child process pid spawned by this transport.
+   *
+   * This is only available after the transport has been started.
+   */
+  get pid() {
+    return this._process?.pid ?? null;
+  }
+  processReadBuffer() {
+    while (true) {
+      try {
+        const message = this._readBuffer.readMessage();
+        if (message === null) {
+          break;
+        }
+        this.onmessage?.(message);
+      } catch (error2) {
+        this.onerror?.(error2);
+      }
+    }
+  }
+  async close() {
+    if (this._process) {
+      const processToClose = this._process;
+      this._process = void 0;
+      const closePromise = new Promise((resolve) => {
+        processToClose.once("close", () => {
+          resolve();
+        });
+      });
+      try {
+        processToClose.stdin?.end();
+      } catch {
+      }
+      await Promise.race([closePromise, new Promise((resolve) => setTimeout(resolve, 2e3).unref())]);
+      if (processToClose.exitCode === null) {
+        try {
+          processToClose.kill("SIGTERM");
+        } catch {
+        }
+        await Promise.race([closePromise, new Promise((resolve) => setTimeout(resolve, 2e3).unref())]);
+      }
+      if (processToClose.exitCode === null) {
+        try {
+          processToClose.kill("SIGKILL");
+        } catch {
+        }
+      }
+    }
+    this._readBuffer.clear();
+  }
+  send(message) {
+    return new Promise((resolve) => {
+      if (!this._process?.stdin) {
+        throw new Error("Not connected");
+      }
+      const json = serializeMessage(message);
+      if (this._process.stdin.write(json)) {
+        resolve();
+      } else {
+        this._process.stdin.once("drain", resolve);
+      }
+    });
+  }
+};
+
+// src/bridge.ts
+import { fileURLToPath as fileURLToPath2 } from "node:url";
+
+// src/env.ts
+import fs2 from "node:fs";
+import os2 from "node:os";
+import path2 from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/policy.ts
@@ -26539,7 +29586,7 @@ stand in. Get their answer.`;
 something outside it, do as they ask \u2014 an explicit request always outranks the policy.`;
 }
 function buildServerInstructions(policy) {
-  return `oak-memory gives you persistent long-term memory about this user, held in a local database
+  return `oak-memory gives you persistent long-term memory in the selected personal or shared graph, held in the selected memory store
 that outlives every session and every project.
 
 ## When to recall
@@ -26550,7 +29597,7 @@ ${recallRule(policy)}
 
 ${scopeRule(policy)}
 
-Never store general knowledge, summaries of your own answers, or facts about anyone but this user.
+Never store general knowledge or summaries of your own answers. In a shared graph, keep the authenticated author distinct from the semantic subject and preserve original quotes; never guess actors.
 
 ## When to write
 
@@ -26563,7 +29610,7 @@ ${provenance(policy)}`;
 function loadEnvFile(filePath) {
   let content;
   try {
-    content = fs.readFileSync(filePath, "utf8");
+    content = fs2.readFileSync(filePath, "utf8");
   } catch {
     return;
   }
@@ -26585,7 +29632,7 @@ function loadEnvFile(filePath) {
 function envFileSets(filePath, name) {
   let content;
   try {
-    content = fs.readFileSync(filePath, "utf8");
+    content = fs2.readFileSync(filePath, "utf8");
   } catch {
     return false;
   }
@@ -26602,17 +29649,17 @@ function envFileSets(filePath, name) {
   }
   return false;
 }
-var moduleDir = path.dirname(fileURLToPath(import.meta.url));
-var pluginRoot = process.env.PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT ?? path.resolve(moduleDir, "..");
-var sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), ".config", "oak-memory");
-var sharedEnvFile = path.join(sharedConfigDir, "oak-memory.env");
-var legacyClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), ".claude");
-var legacyEnvFile = path.join(legacyClaudeConfigDir, "oak-memory.env");
+var moduleDir = path2.dirname(fileURLToPath(import.meta.url));
+var pluginRoot = process.env.PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT ?? path2.resolve(moduleDir, "..");
+var sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path2.join(os2.homedir(), ".config", "oak-memory");
+var sharedEnvFile = path2.join(sharedConfigDir, "oak-memory.env");
+var legacyClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path2.join(os2.homedir(), ".claude");
+var legacyEnvFile = path2.join(legacyClaudeConfigDir, "oak-memory.env");
 var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
 var fallbackUserEnvFile = process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
-var defaultPolicyFile = path.join(path.dirname(userEnvFile), "oak-memory-policy.md");
-var fallbackPolicyFile = fallbackUserEnvFile ? path.join(path.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
-loadEnvFile(path.join(pluginRoot, ".env"));
+var defaultPolicyFile = path2.join(path2.dirname(userEnvFile), "oak-memory-policy.md");
+var fallbackPolicyFile = fallbackUserEnvFile ? path2.join(path2.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
+loadEnvFile(path2.join(pluginRoot, ".env"));
 loadEnvFile(userEnvFile);
 if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
 function readEnvVar(name) {
@@ -26629,7 +29676,7 @@ function required2(name) {
     console.error(
       `[oak-memory-plugin] Missing required env var: ${name}.
   Set it in ${userEnvFile} (recommended \u2014 survives plugin updates),
-  or ${path.join(pluginRoot, ".env")}, or export it in your shell profile.`
+  or ${path2.join(pluginRoot, ".env")}, or export it in your shell profile.`
     );
     process.exit(1);
   }
@@ -26638,7 +29685,7 @@ function required2(name) {
 function resolvePolicyFile() {
   const explicit = readEnvVar("MEMORY_POLICY_FILE");
   if (explicit) return explicit;
-  if (fallbackPolicyFile && !fs.existsSync(defaultPolicyFile) && fs.existsSync(fallbackPolicyFile)) {
+  if (fallbackPolicyFile && !fs2.existsSync(defaultPolicyFile) && fs2.existsSync(fallbackPolicyFile)) {
     return fallbackPolicyFile;
   }
   return defaultPolicyFile;
@@ -26689,7 +29736,7 @@ function loadPolicy(warn = console.error) {
   const policyFile = resolvePolicyFile();
   let customText = "";
   try {
-    customText = fs.readFileSync(policyFile, "utf8").replace(/<!--[\s\S]*?-->/g, "").trim();
+    customText = fs2.readFileSync(policyFile, "utf8").replace(/<!--[\s\S]*?-->/g, "").trim();
   } catch {
   }
   if (!customText) {
@@ -26714,17 +29761,177 @@ function loadEnv() {
   };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/types.ts
+// src/bridge.ts
+var text = (value) => ({ content: [{ type: "text", text: JSON.stringify(value) }] });
+var errorResult = () => ({ ...text({ error: "Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used." }), isError: true });
+function verifiedCloudStore(context, profile) {
+  if (context.isError || !Array.isArray(context.content)) throw new Error("Context unavailable");
+  const store = JSON.parse(context.content.filter((item) => item?.type === "text" && typeof item.text === "string").map((item) => item.text).join(""));
+  if (store.storeId !== profile.graphId || !["owner", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
+  return store;
+}
+var ProfileSession = class {
+  constructor(config2, name) {
+    this.config = config2;
+    this.selection = this.resolve(name);
+  }
+  selection;
+  switchRevision = 0;
+  toolLists = /* @__PURE__ */ new Map();
+  resolve(name) {
+    const profile = this.config.profiles[name];
+    if (!profile) throw new Error("Unknown memory profile");
+    return Object.freeze({ name, profile: Object.freeze({ ...profile }) });
+  }
+  snapshot() {
+    return this.selection;
+  }
+  profiles() {
+    return Object.entries(this.config.profiles).map(([name, p]) => ({ name, backend: p.backend, graphId: p.backend === "cloud" ? p.graphId : void 0, active: name === this.selection.name }));
+  }
+  async select(name) {
+    const revision = ++this.switchRevision;
+    const next = this.resolve(name);
+    const context = await this.withClient(next, (client) => client.callTool({ name: next.profile.backend === "cloud" ? "currentMemoryStore" : "getMemoryPolicy", arguments: {} }));
+    if (context.isError) throw new Error("Memory profile verification failed");
+    if (next.profile.backend === "cloud") verifiedCloudStore(context, next.profile);
+    if (revision !== this.switchRevision) throw new Error("Memory profile switch superseded by a newer request");
+    this.selection = next;
+    return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
+  }
+  async withClient(snapshot, run) {
+    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.2.0" });
+    const profile = snapshot.profile;
+    const transport = profile.backend === "cloud" ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
+      requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, "X-Oak-Graph": profile.graphId } },
+      // Credentials must never follow redirects to another origin.
+      fetch: (url2, init2) => fetch(url2, { ...init2, redirect: "error" })
+    }) : new StdioClientTransport({
+      command: process.execPath,
+      args: [fileURLToPath2(import.meta.url)],
+      env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: "local", OAK_PROFILE: "" }).filter((entry) => typeof entry[1] === "string")),
+      stderr: "ignore"
+    });
+    try {
+      await client.connect(transport);
+      return await run(client);
+    } finally {
+      await client.close().catch(() => {
+      });
+    }
+  }
+  async listTools() {
+    const snapshot = this.snapshot();
+    try {
+      const listed = await this.withClient(snapshot, async (client) => {
+        const tools = [];
+        let cursor;
+        do {
+          const page = await client.listTools(cursor ? { cursor } : void 0);
+          tools.push(...page.tools);
+          cursor = page.nextCursor;
+        } while (cursor);
+        return { tools: tools.filter((t) => !["listMemoryProfiles", "selectMemoryProfile", "memoryConnectionStatus", ...snapshot.profile.backend === "cloud" ? ["getMemoryPolicy"] : []].includes(t.name)) };
+      });
+      this.toolLists.set(snapshot.name, listed);
+      return listed;
+    } catch (error2) {
+      const previous = this.toolLists.get(snapshot.name);
+      if (previous) return previous;
+      throw error2;
+    }
+  }
+  async callTool(name, args = {}) {
+    const snapshot = this.snapshot();
+    if (snapshot.profile.backend === "cloud" && ["createMemory", "updateMemory", "deleteMemory", "updateMemoryLink", "adjustMemoryLinkStrength"].includes(name) && loadPolicy(() => {
+    }).scope === null) {
+      return { ...text({ error: "Configure the client memory policy before storing memories." }), isError: true };
+    }
+    return this.withClient(snapshot, (client) => client.callTool({ name, arguments: args }));
+  }
+};
+async function startProfileBridge(config2, name) {
+  const session = new ProfileSession(config2, name);
+  const server = new Server({ name: "oak-memory-plugin", version: "0.2.0" }, {
+    capabilities: { tools: { listChanged: true } },
+    instructions: `${buildServerInstructions(loadPolicy())}
+
+${attributionInstructions}`
+  });
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    let remote;
+    try {
+      remote = await session.listTools();
+    } catch {
+      remote = { tools: [] };
+    }
+    return { tools: [...remote.tools, ...session.snapshot().profile.backend === "cloud" ? [{
+      name: "getMemoryPolicy",
+      description: "Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.",
+      inputSchema: { type: "object", properties: {} }
+    }] : [], {
+      name: "memoryConnectionStatus",
+      description: "Verify and show the active profile, backend, server-authorized graph, role and recording identity. Returns safe setup errors without exposing credentials or changing stores.",
+      inputSchema: { type: "object", properties: {} }
+    }, {
+      name: "listMemoryProfiles",
+      description: "List configured local/cloud profiles without revealing credentials.",
+      inputSchema: { type: "object", properties: {} }
+    }, {
+      name: "selectMemoryProfile",
+      description: "Switch the active memory profile for this session. Cloud graph keys are graph-bound; use a separate profile per graph. Verify and show identity/role afterward. Stored defaults affect future sessions only.",
+      inputSchema: { type: "object", properties: { profile: { type: "string" } }, required: ["profile"], additionalProperties: false }
+    }] };
+  });
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    try {
+      if (request.params.name === "memoryConnectionStatus") {
+        const snapshot = session.snapshot();
+        try {
+          const context = await session.withClient(snapshot, (client) => client.callTool({ name: snapshot.profile.backend === "cloud" ? "currentMemoryStore" : "getMemoryPolicy", arguments: {} }));
+          if (context.isError) throw new Error("Context unavailable");
+          if (snapshot.profile.backend === "cloud") {
+            const store = verifiedCloudStore(context, snapshot.profile);
+            return text({ profile: snapshot.name, backend: "cloud", verified: true, store });
+          }
+          return text({ profile: snapshot.name, backend: "local", verified: true, verificationScope: "local configuration only; database connectivity is not checked", context });
+        } catch {
+          return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: "Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used." }), isError: true };
+        }
+      }
+      if (request.params.name === "getMemoryPolicy" && session.snapshot().profile.backend === "cloud") {
+        return text({ policy: loadPolicy(() => {
+        }), profile: session.snapshot().name, backend: "cloud" });
+      }
+      if (request.params.name === "listMemoryProfiles") return text(session.profiles());
+      if (request.params.name === "selectMemoryProfile") {
+        const name2 = request.params.arguments?.profile;
+        if (typeof name2 !== "string") return errorResult();
+        const selected = await session.select(name2);
+        await server.notification({ method: "notifications/tools/list_changed" }).catch(() => {
+        });
+        return text(selected);
+      }
+      return await session.callTool(request.params.name, request.params.arguments);
+    } catch {
+      return errorResult();
+    }
+  });
+  await server.connect(new StdioServerTransport());
+  return server;
+}
+
+// node_modules/@openaikits/memory/src/types.ts
 function getThresholdFromMode(mode) {
   return mode;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/storage/storage-types.ts
+// node_modules/@openaikits/memory/src/storage/storage-types.ts
 function isPostgresConfig(config2) {
   return config2.type === "postgres" /* POSTGRES */;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/tuning.ts
+// node_modules/@openaikits/memory/src/tuning.ts
 var DEFAULT_MEMORY_TUNING = Object.freeze({
   dedupGateMode: "off",
   dedupSkipThreshold: 0.97,
@@ -26828,7 +30035,7 @@ function normalizeMemoryTuning(partial2) {
   return tuning;
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/storage/migrations/postgres-init.ts
+// node_modules/@openaikits/memory/src/storage/migrations/postgres-init.ts
 var MEMORY_SCHEMA_VERSION = 3;
 async function initDatabase(config2) {
   const { Pool: Pool2 } = await Promise.resolve().then(() => (init_esm(), esm_exports));
@@ -27186,7 +30393,7 @@ async function ensureTablesExistInner(client, schema) {
   `);
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/storage/adapters/postgres-adapter.ts
+// node_modules/@openaikits/memory/src/storage/adapters/postgres-adapter.ts
 var PostgresAdapter = class {
   config;
   client;
@@ -27647,7 +30854,7 @@ var PostgresAdapter = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/storage/adapter-factory.ts
+// node_modules/@openaikits/memory/src/storage/adapter-factory.ts
 function createStorageAdapter(config2) {
   switch (config2.type) {
     case "postgres" /* POSTGRES */:
@@ -27662,7 +30869,7 @@ function createStorageAdapter(config2) {
   }
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory/storage.ts
+// node_modules/@openaikits/memory/src/memory/storage.ts
 var MemoryStorage = class {
   adapter;
   embeddingService;
@@ -28010,7 +31217,7 @@ var MemoryStorage = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/vector/embedding-service.ts
+// node_modules/@openaikits/memory/src/vector/embedding-service.ts
 var EmbeddingService = class {
   adapter;
   options;
@@ -28038,8 +31245,8 @@ var EmbeddingService = class {
    *
    * @public
    */
-  async generateEmbedding(text) {
-    const normalizedText = this.normalizeText(text);
+  async generateEmbedding(text2) {
+    const normalizedText = this.normalizeText(text2);
     if (!normalizedText) {
       throw new Error("Text cannot be empty");
     }
@@ -28076,17 +31283,17 @@ var EmbeddingService = class {
   /**
    * Normalize a single text
    */
-  normalizeText(text) {
-    if (!text || typeof text !== "string") {
+  normalizeText(text2) {
+    if (!text2 || typeof text2 !== "string") {
       return "";
     }
-    return text.trim();
+    return text2.trim();
   }
   /**
    * Normalize multiple texts
    */
   normalizeTexts(texts) {
-    return texts.map((text) => this.normalizeText(text)).filter((text) => text.length > 0);
+    return texts.map((text2) => this.normalizeText(text2)).filter((text2) => text2.length > 0);
   }
   /**
    * Execute a function with retry logic
@@ -28119,11 +31326,11 @@ var EmbeddingService = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory/ranked-retrieval.ts
+// node_modules/@openaikits/memory/src/memory/ranked-retrieval.ts
 var RECENCY_SCALE_DAYS = 30;
-function daysSince(date3) {
-  if (!date3) return Number.POSITIVE_INFINITY;
-  const t = typeof date3 === "string" ? new Date(date3).getTime() : date3.getTime();
+function daysSince(date4) {
+  if (!date4) return Number.POSITIVE_INFINITY;
+  const t = typeof date4 === "string" ? new Date(date4).getTime() : date4.getTime();
   if (!Number.isFinite(t)) return Number.POSITIVE_INFINITY;
   return Math.max(0, (Date.now() - t) / 864e5);
 }
@@ -28208,7 +31415,7 @@ async function runRankedRetrieval(storage, entityId, query, tuning, limit) {
   return { memories: top.map((s) => s.memory), contributingEdgeIds };
 }
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory/connector.ts
+// node_modules/@openaikits/memory/src/memory/connector.ts
 var NODE_STRENGTH_BUMP = 0.1;
 var GRAY_ZONE_EDGE_STRENGTH = 0.8;
 var CONVERSATION_EDGE_STRENGTH = 0.7;
@@ -29067,7 +32274,7 @@ ${memoryLines.join("\n")}`;
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory/optimizer.ts
+// node_modules/@openaikits/memory/src/memory/optimizer.ts
 var COMPRESS_SYSTEM_PROMPT = `You are a memory graph optimizer. Your job is to find groups of closely related memories that can be compressed into a single, concise summary node.
 
 You are given a list of memories for an entity. Each memory has:
@@ -29649,7 +32856,7 @@ Output JSON: { "operations": [ ... ] }`
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory.ts
+// node_modules/@openaikits/memory/src/memory.ts
 var Memory3 = class {
   storage = null;
   config = null;
@@ -29771,7 +32978,7 @@ var Memory3 = class {
 };
 var memory = new Memory3();
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory/generator.ts
+// node_modules/@openaikits/memory/src/memory/generator.ts
 var DynamicMemoryGenerator = class {
   storage;
   /**
@@ -29829,7 +33036,7 @@ var DynamicMemoryGenerator = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/memory/tool-handler.ts
+// node_modules/@openaikits/memory/src/memory/tool-handler.ts
 var CONVERSATION_EDGE_STRENGTH2 = 0.7;
 var MemoryToolHandler = class {
   storage;
@@ -30154,7 +33361,7 @@ var MemoryToolHandler = class {
   }
 };
 
-// ../../../../../../Projects/oak-memory-plugin/node_modules/@openaikits/memory/src/vector/openai-adapter.ts
+// node_modules/@openaikits/memory/src/vector/openai-adapter.ts
 var OpenAIAdapter = class {
   config;
   /**
@@ -30173,8 +33380,8 @@ var OpenAIAdapter = class {
       onEmbeddingUsage: config2.onEmbeddingUsage
     };
   }
-  async generateEmbedding(text) {
-    const [embedding] = await this.generateEmbeddings([text]);
+  async generateEmbedding(text2) {
+    const [embedding] = await this.generateEmbeddings([text2]);
     return embedding;
   }
   async generateEmbeddings(texts) {
@@ -30249,8 +33456,8 @@ var LocalOllamaEmbeddingAdapter = class {
       embeddingModel
     });
   }
-  async generateEmbedding(text) {
-    return padTo(await this.inner.generateEmbedding(text), TARGET_DIMENSIONS);
+  async generateEmbedding(text2) {
+    return padTo(await this.inner.generateEmbedding(text2), TARGET_DIMENSIONS);
   }
   async generateEmbeddings(texts) {
     const embeddings = await this.inner.generateEmbeddings(texts);
@@ -30322,12 +33529,12 @@ function formatMemory(memory2) {
   const links = memory2.outgoingEdges.length > 0 ? memory2.outgoingEdges.join(", ") : "none";
   return `- [${memory2.id}] ${memory2.content} (similarity: ${similarity}, strength: ${strength}, links: [${links}])`;
 }
-function textResult(text, isError = false) {
-  return { content: [{ type: "text", text }], isError };
+function textResult(text2, isError = false) {
+  return { content: [{ type: "text", text: text2 }], isError };
 }
-function ageLabel(date3) {
-  if (!date3) return "unknown";
-  const days = Math.floor((Date.now() - new Date(date3).getTime()) / 864e5);
+function ageLabel(date4) {
+  if (!date4) return "unknown";
+  const days = Math.floor((Date.now() - new Date(date4).getTime()) / 864e5);
   if (days === 0) return "today";
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
@@ -30364,8 +33571,8 @@ conflicting version of it) already exists \u2014 if it does, use updateMemory in
 
 **Notes**:
 - Use relatedMemoryIds to link to relevant existing memories surfaced by recallMemory.
-- This is scoped to a single fixed user identity for this plugin installation \u2014 do not ask for or pass an
-  entity/user id, it is configured server-side.`;
+- This is scoped to the selected memory graph. Identity and access are configured server-side.
+  Authenticated author and semantic subject are distinct. Preserve original quotes and never guess actors.`;
 }
 function registerCreateMemory(server, env) {
   server.registerTool(
@@ -30798,7 +34005,7 @@ function registerSuggestMemoryLinks(server, env) {
         return textResult("No memories stored yet \u2014 nothing to analyse.");
       }
       const short = (id) => id.slice(0, 8);
-      const snippet = (text, n = 44) => text.length > n ? `${text.slice(0, n)}\u2026` : text;
+      const snippet = (text2, n = 44) => text2.length > n ? `${text2.slice(0, n)}\u2026` : text2;
       const byId = new Map(memories.map((m) => [m.id, m]));
       const pairKey = (a, b) => a < b ? `${a}|${b}` : `${b}|${a}`;
       const linkedPairs = /* @__PURE__ */ new Map();
@@ -30884,10 +34091,10 @@ ${lines.join("\n")}` : `${title}: ${empty}`;
 }
 
 // src/tools/openMemoryGraph.ts
-import { spawn } from "node:child_process";
-import fs2 from "node:fs";
-import os2 from "node:os";
-import path2 from "node:path";
+import { spawn as spawn2 } from "node:child_process";
+import fs3 from "node:fs";
+import os3 from "node:os";
+import path3 from "node:path";
 
 // src/tools/graphHtml.ts
 function embedJson(value) {
@@ -31400,11 +34607,11 @@ terminal", or when \`/memory-graph-web\` runs.
 **Output**: confirmation that the page was launched, the memory/link counts, and the file path as a fallback
 in case the browser did not open automatically (e.g. a headless environment).`;
 function openInBrowser(filePath) {
-  const url = `file://${filePath}`;
+  const url2 = `file://${filePath}`;
   const platform = process.platform;
-  const [command, args] = platform === "darwin" ? ["open", [url]] : platform === "win32" ? ["cmd", ["/c", "start", '""', url]] : ["xdg-open", [url]];
+  const [command, args] = platform === "darwin" ? ["open", [url2]] : platform === "win32" ? ["cmd", ["/c", "start", '""', url2]] : ["xdg-open", [url2]];
   try {
-    const child = spawn(command, args, { detached: true, stdio: "ignore" });
+    const child = spawn2(command, args, { detached: true, stdio: "ignore" });
     child.on("error", (error2) => {
       console.error(`[oak-memory-plugin] Could not launch a browser for the memory graph: ${error2.message}`);
     });
@@ -31464,8 +34671,8 @@ function registerOpenMemoryGraph(server, env) {
         entityId: env.memoryEntityId,
         generatedAt: (/* @__PURE__ */ new Date()).toLocaleString()
       });
-      const filePath = path2.join(os2.tmpdir(), "oak-memory-graph.html");
-      fs2.writeFileSync(filePath, html, "utf8");
+      const filePath = path3.join(os3.tmpdir(), "oak-memory-graph.html");
+      fs3.writeFileSync(filePath, html, "utf8");
       openInBrowser(filePath);
       const summary = `${memories.length} memor${memories.length === 1 ? "y" : "ies"}, ${uniquePairs.size} link${uniquePairs.size === 1 ? "" : "s"}.`;
       return textResult(
@@ -31570,6 +34777,11 @@ function registerAllTools(server, env) {
 
 // src/index.ts
 async function main() {
+  const selection = resolveBackend();
+  if (selection) {
+    await startProfileBridge(selection.config, selection.name);
+    return;
+  }
   const env = loadEnv();
   const server = new McpServer(
     { name: "oak-memory-plugin", version: "0.2.0" },
@@ -31586,6 +34798,6 @@ async function main() {
   process.on("SIGTERM", shutdown);
 }
 main().catch((error2) => {
-  console.error("[oak-memory-plugin] Fatal error during startup:", error2);
+  console.error("[oak-memory-plugin] Startup failed. Check backend/profile configuration and credentials.");
   process.exit(1);
 });

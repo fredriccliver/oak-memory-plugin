@@ -1,0 +1,20 @@
+{
+  "host": "Claude Code",
+  "model": "local deterministic response fixture; no live model/account validation",
+  "checks": [
+    "marketplace install to isolated user scope; installed bundle matches tested source",
+    "native profile file and starting-profile configuration; fixture keys remain environment-only",
+    "actual installed Claude tool dispatch: owner/editor/reader/private, quote/author, isolation, errors and fixture cleanup",
+    "new Claude process restores configured starting profile",
+    "installed memory-status slash command dispatch",
+    "isolated configuration/cache/log scan contains no fixture graph keys"
+  ],
+  "version": "2.1.286 (Claude Code)",
+  "bundleSha256": "49d496d701800d35e5192bf43664732844c1dbc7dd0592ce7c915b2b8678962f",
+  "cleanStartWithoutDatabase": true,
+  "fixtureKeysPersisted": false,
+  "installScope": "isolated user",
+  "localConfigurationChanged": false,
+  "testedCommit": "1709fb4e0a16f0de26ba122077f45e2d28edf09b",
+  "subsequentChanges": "Attribution-only hook/server guidance and configuration/README validation changes are covered by npm test; this host evidence records the earlier exact bundle."
+}

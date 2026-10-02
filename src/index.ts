@@ -7,12 +7,19 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { resolveBackend } from './profiles.js';
+import { startProfileBridge } from './bridge.js';
 import { loadEnv } from './env.js';
 import { registerAllTools } from './tools/register.js';
 import { closeMemoryClient } from './memoryClient.js';
 import { buildServerInstructions } from './policy.js';
 
 async function main() {
+  const selection = resolveBackend();
+  if (selection) {
+    await startProfileBridge(selection.config, selection.name);
+    return;
+  }
   const env = loadEnv();
 
   // `instructions` is the only channel that reaches the model without it having
@@ -38,6 +45,6 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('[oak-memory-plugin] Fatal error during startup:', error);
+  console.error('[oak-memory-plugin] Startup failed. Check backend/profile configuration and credentials.');
   process.exit(1);
 });

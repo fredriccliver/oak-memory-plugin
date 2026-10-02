@@ -203,7 +203,7 @@ export function buildTurnReminder(policy: MemoryPolicy): string | null {
   if (policy.scope !== null && policy.autosave) {
     duties.push(
       `### Keep what this turn reveals\n\n${scopeRule(policy)}\n\n` +
-        `Never store general knowledge, summaries of your own answers, or facts about anyone but this user.\n\n` +
+        `Never store general knowledge or summaries of your own answers. In a shared graph, keep the authenticated author distinct from the semantic subject and preserve original quotes; never guess actors.\n\n` +
         `If something fits, call \`recallMemory\` first to catch an existing or conflicting version, then ` +
         `\`createMemory\` — or \`updateMemory\` on what you found, rather than storing a near-duplicate.`,
     );
@@ -213,7 +213,7 @@ export function buildTurnReminder(policy: MemoryPolicy): string | null {
 
   return `<oak-memory-reminder>
 Automatic reminder, injected on every prompt. The user did not write this, did not ask for it, and is
-not waiting on an answer to it. You have persistent memory of this user; these are the standing duties
+not waiting on an answer to it. You have persistent memory in the selected graph; these are the standing duties
 their policy attaches to it.
 
 ${duties.join('\n\n')}
@@ -224,7 +224,7 @@ no reporting that you found nothing. If none of it applies — the common case �
 }
 
 export function buildServerInstructions(policy: MemoryPolicy): string {
-  return `oak-memory gives you persistent long-term memory about this user, held in a local database
+  return `oak-memory gives you persistent long-term memory in the selected personal or shared graph, held in the selected memory store
 that outlives every session and every project.
 
 ## When to recall
@@ -235,7 +235,7 @@ ${recallRule(policy)}
 
 ${scopeRule(policy)}
 
-Never store general knowledge, summaries of your own answers, or facts about anyone but this user.
+Never store general knowledge or summaries of your own answers. In a shared graph, keep the authenticated author distinct from the semantic subject and preserve original quotes; never guess actors.
 
 ## When to write
 

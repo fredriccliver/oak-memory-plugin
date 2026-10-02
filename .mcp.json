@@ -2,9 +2,14 @@
   "mcpServers": {
     "oak-memory": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/index.mjs"],
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/dist/index.mjs"
+      ],
       "env": {
-        "MEMORY_DATABASE_URL": "${MEMORY_DATABASE_URL}"
+        "MEMORY_DATABASE_URL": "${MEMORY_DATABASE_URL}",
+        "OAK_CONFIG_PROFILES_FILE": "${user_config.profiles_file}",
+        "OAK_CONFIG_DEFAULT_PROFILE": "${user_config.default_profile}",
+        "OAK_CONFIG_CLOUD_CREDENTIALS": "${user_config.cloud_credentials}"
       }
     }
   }
