@@ -13,10 +13,11 @@
     "build:hook": "esbuild src/hook.ts --bundle --platform=node --format=esm --outfile=dist/hook.mjs",
     "build:codex": "node scripts/build-codex-package.mjs",
     "dev": "npm run build && node dist/index.mjs",
-    "test": "npm run typecheck && npm run build && npm run test:env-fallback",
+    "test": "npm run typecheck && npm run build && npm run test:env-fallback && npm run test:cloud-profiles",
     "test:env-fallback": "node scripts/env-fallback-smoke.mjs",
     "typecheck": "tsc --noEmit",
-    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs"
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs",
+    "test:cloud-profiles": "node scripts/cloud-profile-smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

@@ -45,7 +45,7 @@ ${recallRule(policy)}`);
 
 ${scopeRule(policy)}
 
-Never store general knowledge, summaries of your own answers, or facts about anyone but this user.
+Never store general knowledge or summaries of your own answers. In a shared graph, keep the authenticated author distinct from the semantic subject and preserve original quotes; never guess actors.
 
 If something fits, call \`recallMemory\` first to catch an existing or conflicting version, then \`createMemory\` \u2014 or \`updateMemory\` on what you found, rather than storing a near-duplicate.`
     );
@@ -53,7 +53,7 @@ If something fits, call \`recallMemory\` first to catch an existing or conflicti
   if (duties.length === 0) return null;
   return `<oak-memory-reminder>
 Automatic reminder, injected on every prompt. The user did not write this, did not ask for it, and is
-not waiting on an answer to it. You have persistent memory of this user; these are the standing duties
+not waiting on an answer to it. You have persistent memory in the selected graph; these are the standing duties
 their policy attaches to it.
 
 ${duties.join("\n\n")}
@@ -194,6 +194,9 @@ function loadPolicy(warn = console.error) {
   return { scope, autosave, recall, customText };
 }
 
+// src/profiles.ts
+var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using currentMemoryStore. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
+
 // src/hook.ts
 async function readStdin() {
   const chunks = [];
@@ -210,7 +213,9 @@ async function main() {
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "UserPromptSubmit",
-        additionalContext: reminder
+        additionalContext: `${reminder}
+
+${attributionInstructions}`
       }
     })
   );

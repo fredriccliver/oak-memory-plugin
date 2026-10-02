@@ -16,7 +16,15 @@ is the **entity-specific associative network**: associations differ per individu
 from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
 infrastructure; the engine itself knows nothing about the AI client using it.
 
-## Requirements
+## Cloud profiles and graph selection
+
+Cloud mode needs Node and a personal graph-bound API key. It does not require Docker,
+Ollama, or `MEMORY_DATABASE_URL`. See [cloud profile setup](docs/cloud-profiles.md)
+for the approval handoff and configuration. Local and cloud stores stay separate;
+there is no migration or synchronization. Existing installations without profiles
+keep their current local configuration.
+
+## Local requirements
 
 This plugin is **not zero-install**, and installing it does **not** provision anything on its own — there is
 no auto-setup on install. It runs a real database and a local embedding model, which you stand up **once**
@@ -47,7 +55,7 @@ alternatives are in [Setup](#setup).
 
 This is deliberately **not** a replacement for project-scoped `AGENTS.md`, `CLAUDE.md`, or file-based
 project memory. Those own "facts about this project." This plugin owns "facts about *you*" — your preferences,
-experiences, and decisions — as a single flat identity shared across all your machines and projects. If you
+experiences, and decisions — in the selected personal or shared memory graph. If you
 ever need to split that (e.g. a work identity vs. a personal identity), see [Entity scoping](#entity-scoping).
 
 ## Architecture

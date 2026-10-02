@@ -33,6 +33,7 @@
  */
 
 import { loadPolicy } from './env.js';
+import { attributionInstructions } from './profiles.js';
 import { buildTurnReminder } from './policy.js';
 
 async function readStdin(): Promise<string> {
@@ -60,7 +61,7 @@ async function main(): Promise<void> {
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'UserPromptSubmit',
-        additionalContext: reminder,
+        additionalContext: `${reminder}\n\n${attributionInstructions}`,
       },
     }),
   );

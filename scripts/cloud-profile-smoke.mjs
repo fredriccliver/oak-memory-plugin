@@ -1,0 +1,93 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { build } from 'esbuild';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+const temp = mkdtempSync(path.join(os.tmpdir(), 'oak-profiles-test-'));
+const a = '11111111-1111-4111-8111-111111111111';
+const b = '22222222-2222-4222-8222-222222222222';
+const keyA = 'oak_' + 'a'.repeat(64), keyB = 'oak_' + 'b'.repeat(64);
+process.env.TEST_OAK_A = keyA; process.env.TEST_OAK_B = keyB;
+process.env.OAK_CONFIG_DIR = temp; process.env.PLUGIN_ROOT = temp;
+process.env.MEMORY_POLICY_SCOPE = 'important';
+let revoked = false;
+const requests = [];
+const http = createServer(async (req, res) => {
+  const graph = req.headers['x-oak-graph'];
+  const valid = !revoked && ((graph === a && req.headers.authorization === `Bearer ${keyA}`) || (graph === b && req.headers.authorization === `Bearer ${keyB}`));
+  if (!valid) { res.writeHead(401).end(); return; }
+  requests.push(graph);
+  const server = new McpServer({ name: 'mock-oak', version: '1' });
+  const result = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
+  server.registerTool('currentMemoryStore', { inputSchema: {} }, async () => result({ storeId: graph, name: graph === a ? 'Personal' : 'Team', role: graph === a ? 'owner' : 'reader', authorUserId: 'person-1', authorDisplayName: 'Person' }));
+  server.registerTool('listMemoryStores', { inputSchema: {} }, async () => result({ graphs: [a, b] }));
+  server.registerTool('recallMemory', { inputSchema: {} }, async () => {
+    await new Promise(resolve => setTimeout(resolve, 50)); return result({ graphId: graph });
+  });
+  server.registerTool('createMemory', { inputSchema: {} }, async () => graph === b ? { ...result({ error: 'reader cannot write' }), isError: true } : result({ graphId: graph }));
+  const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+  res.on('close', () => { void transport.close(); void server.close(); });
+  await server.connect(transport);
+  await transport.handleRequest(req, res);
+});
+await new Promise(resolve => http.listen(0, '127.0.0.1', resolve));
+const endpoint = `http://127.0.0.1:${http.address().port}/api/mcp`;
+const config = { defaultProfile: 'personal', profiles: {
+  personal: { backend: 'cloud', endpoint, graphId: a, credentialEnv: 'TEST_OAK_A' },
+  team: { backend: 'cloud', endpoint, graphId: b, credentialEnv: 'TEST_OAK_B' },
+  wrong: { backend: 'cloud', endpoint, graphId: b, credentialEnv: 'TEST_OAK_A' },
+  local: { backend: 'local' },
+} };
+try {
+  await build({ entryPoints: ['src/bridge.ts'], bundle: true, platform: 'node', format: 'esm', banner: { js: "import {createRequire} from 'node:module'; const require = createRequire(import.meta.url);" }, outfile: path.join(temp, 'bridge.mjs') });
+  await build({ entryPoints: ['src/profiles.ts'], bundle: true, platform: 'node', format: 'esm', outfile: path.join(temp, 'profiles.mjs') });
+  const { ProfileSession } = await import(pathToFileURL(path.join(temp, 'bridge.mjs')));
+  const { resolveBackend, credential } = await import(pathToFileURL(path.join(temp, 'profiles.mjs')));
+  process.env.OAK_BACKEND = 'cloud';
+  assert.equal(resolveBackend(config).profile.backend, 'cloud');
+  assert.equal(process.env.MEMORY_DATABASE_URL, undefined);
+  assert.throws(() => credential({ ...config.profiles.personal, credentialEnv: 'MISSING_KEY' }), /personal graph-bound/);
+  const session = new ProfileSession(config, 'personal');
+  assert.ok((await session.listTools()).tools.some(t => t.name === 'currentMemoryStore'));
+  const pending = session.callTool('recallMemory');
+  await session.select('team');
+  assert.equal(JSON.parse((await pending).content[0].text).graphId, a, 'in-flight call stays on original graph');
+  assert.equal(JSON.parse((await session.callTool('recallMemory')).content[0].text).graphId, b);
+  assert.equal((await session.callTool('createMemory')).isError, true, 'reader writes denied by server');
+  await assert.rejects(session.select('wrong'));
+  assert.equal(session.snapshot().name, 'team', 'failed switch keeps existing session');
+  revoked = true;
+  await assert.rejects(session.callTool('recallMemory'));
+  assert.equal(session.snapshot().name, 'team', 'revocation does not fall back');
+  revoked = false;
+  const file = path.join(temp, 'profiles.json'); writeFileSync(file, JSON.stringify(config));
+  const client = new Client({ name: 'smoke', version: '1' });
+  const transport = new StdioClientTransport({ command: process.execPath, args: [path.resolve('dist/index.mjs')], env: { ...process.env, OAK_PROFILES_FILE: file, OAK_PROFILE: 'personal', MEMORY_DATABASE_URL: '', TEST_OAK_A: keyA, TEST_OAK_B: keyB }, stderr: 'pipe' });
+  let stderr = ''; transport.stderr?.on('data', chunk => { stderr += chunk; });
+  try {
+    await client.connect(transport);
+    assert.ok((await client.listTools()).tools.some(t => t.name === 'selectMemoryProfile'));
+    const identity = JSON.parse((await client.callTool({ name: 'currentMemoryStore', arguments: {} })).content[0].text);
+    assert.equal(identity.storeId, a); assert.equal(identity.authorUserId, 'person-1'); assert.equal(identity.role, 'owner');
+    assert.equal(JSON.parse((await client.callTool({ name: 'getMemoryPolicy', arguments: {} })).content[0].text).policy.scope, 'important');
+    assert.equal((await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'team' } })).isError, undefined);
+    writeFileSync(file, JSON.stringify({ ...config, defaultProfile: 'personal' }));
+    assert.equal(JSON.parse((await client.callTool({ name: 'currentMemoryStore', arguments: {} })).content[0].text).storeId, b, 'stored defaults cannot change active session');
+    writeFileSync(path.join(temp, 'oak-memory.env'), 'MEMORY_DATABASE_URL=postgresql://test:test@127.0.0.1:1/mock_only\n');
+    const localSwitch = await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'local' } });
+    assert.equal(localSwitch.isError, undefined, 'local profile verification does not connect to DB');
+    assert.ok((await client.listTools()).tools.some(t => t.name === 'getMemoryPolicy'));
+    await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'team' } });
+    revoked = true;
+    assert.equal((await client.callTool({ name: 'recallMemory', arguments: {} })).isError, true);
+    assert.ok(!stderr.includes(keyA) && !stderr.includes(keyB), 'no credentials in diagnostics');
+  } finally { await client.close(); }
+  assert.ok(requests.includes(a) && requests.includes(b));
+  console.log('Cloud profiles: SDK transport, no DB startup, identity, isolation, reader denial, revocation, in-flight snapshot and defaults verified.');
+} finally { http.closeAllConnections(); await new Promise(resolve => http.close(resolve)); rmSync(temp, { recursive: true, force: true }); }

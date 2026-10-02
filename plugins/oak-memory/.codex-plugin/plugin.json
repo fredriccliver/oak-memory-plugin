@@ -9,16 +9,26 @@
   "homepage": "https://www.openaikits.com/",
   "repository": "https://github.com/fredriccliver/oak-memory-plugin",
   "license": "PolyForm-Shield-1.0.0",
-  "keywords": ["memory", "vector-search", "graph", "postgres", "pgvector", "mcp"],
+  "keywords": [
+    "memory",
+    "vector-search",
+    "graph",
+    "postgres",
+    "pgvector",
+    "mcp"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "OAK.memory",
     "shortDescription": "Persistent memory across Codex tasks",
-    "longDescription": "Recall, store, update, inspect, and curate user-specific memories through a local vector and graph memory engine.",
+    "longDescription": "Recall, store, update, inspect, and curate memories in a selected personal or shared graph through local or cloud profiles.",
     "developerName": "OpenAIKits",
     "category": "Productivity",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
     "websiteURL": "https://www.openaikits.com/",
     "privacyPolicyURL": "https://www.openaikits.com/privacy",
     "termsOfServiceURL": "https://www.openaikits.com/terms",
