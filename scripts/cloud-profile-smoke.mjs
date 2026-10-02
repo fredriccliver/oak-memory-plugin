@@ -18,6 +18,12 @@ process.env.TEST_OAK_A = keyA; process.env.TEST_OAK_B = keyB;
 process.env.OAK_CONFIG_DIR = temp; process.env.PLUGIN_ROOT = temp;
 process.env.MEMORY_POLICY_SCOPE = 'important';
 let revoked = false;
+let delayedContext;
+const deferred = () => {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+};
 const requests = [];
 const http = createServer(async (req, res) => {
   const graph = req.headers['x-oak-graph'];
@@ -26,7 +32,14 @@ const http = createServer(async (req, res) => {
   requests.push(graph);
   const server = new McpServer({ name: 'mock-oak', version: '1' });
   const result = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
-  server.registerTool('currentMemoryStore', { inputSchema: {} }, async () => result({ storeId: graph, name: graph === a ? 'Personal' : 'Team', role: graph === a ? 'owner' : 'reader', authorUserId: 'person-1', authorDisplayName: 'Person' }));
+  server.registerTool('currentMemoryStore', { inputSchema: {} }, async () => {
+    const gate = delayedContext;
+    if (gate && gate.graph === graph) {
+      gate.entered.resolve();
+      await gate.release.promise;
+    }
+    return result({ storeId: graph, name: graph === a ? 'Personal' : 'Team', role: graph === a ? 'owner' : 'reader', authorUserId: 'person-1', authorDisplayName: 'Person' });
+  });
   server.registerTool('listMemoryStores', { inputSchema: {} }, async () => result({ graphs: [a, b] }));
   server.registerTool('recallMemory', { inputSchema: {} }, async () => {
     await new Promise(resolve => setTimeout(resolve, 50)); return result({ graphId: graph });
@@ -54,6 +67,32 @@ try {
   assert.equal(resolveBackend(config).profile.backend, 'cloud');
   assert.equal(process.env.MEMORY_DATABASE_URL, undefined);
   assert.throws(() => credential({ ...config.profiles.personal, credentialEnv: 'MISSING_KEY' }), /personal graph-bound/);
+  // Gate the actual mock server context response: no timing assumptions.
+  for (const newer of ['team', 'wrong', 'unknown-profile']) {
+    const racing = new ProfileSession(config, 'local');
+    const gate = { graph: a, entered: deferred(), release: deferred() };
+    delayedContext = gate;
+    const slowSwitch = racing.select('personal');
+    const superseded = assert.rejects(slowSwitch, /superseded/);
+    try {
+      await gate.entered.promise;
+      assert.equal(racing.snapshot().name, 'local', 'validation cannot commit early');
+      if (newer === 'team') {
+        await racing.select(newer);
+        assert.equal(racing.snapshot().name, 'team', 'newer fast switch commits');
+      } else {
+        await assert.rejects(racing.select(newer));
+        assert.equal(racing.snapshot().name, 'local', 'failed newer switch keeps last committed profile');
+      }
+      gate.release.resolve();
+      await superseded;
+      assert.equal(racing.snapshot().name, newer === 'team' ? 'team' : 'local', 'late older validation cannot overwrite or revive a switch');
+    } finally {
+      gate.release.resolve();
+      delayedContext = undefined;
+      await superseded;
+    }
+  }
   const session = new ProfileSession(config, 'personal');
   assert.ok((await session.listTools()).tools.some(t => t.name === 'currentMemoryStore'));
   const pending = session.callTool('recallMemory');
@@ -103,5 +142,5 @@ try {
   assert.ok(runnerOutput.includes('PASS local backend SDK/stdio integration'));
   assert.ok(!runnerOutput.includes(keyA) && !runnerOutput.includes(keyB) && !runnerErrors.includes(keyA) && !runnerErrors.includes(keyB));
   assert.ok(requests.includes(a) && requests.includes(b));
-  console.log('Cloud profiles: SDK transport, no DB startup, identity, isolation, reader denial, revocation, in-flight snapshot and defaults verified.');
+  console.log('Cloud profiles: SDK transport, no DB startup, identity, isolation, reader denial, revocation, in-flight snapshot, overlapping switch ordering, failed newer switch retention and defaults verified.');
 } finally { http.closeAllConnections(); await new Promise(resolve => http.close(resolve)); rmSync(temp, { recursive: true, force: true }); }

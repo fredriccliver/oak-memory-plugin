@@ -15,6 +15,7 @@ const errorResult = () => ({ ...text({ error: 'Selected memory store request fai
 
 export class ProfileSession {
   private selection: Selection;
+  private switchRevision = 0;
   constructor(private config: Profiles, name: string) {
     this.selection = this.resolve(name);
   }
@@ -26,10 +27,14 @@ export class ProfileSession {
   snapshot(): Selection { return this.selection; }
   profiles() { return Object.entries(this.config.profiles).map(([name, p]) => ({ name, backend: p.backend, graphId: p.backend === 'cloud' ? p.graphId : undefined, active: name === this.selection.name })); }
   async select(name: string) {
+    // A newer attempt supersedes pending validations even when it fails. Keep
+    // the last committed selection rather than letting an older attempt revive.
+    const revision = ++this.switchRevision;
     const next = this.resolve(name);
     // Do not commit a switch until the server has verified this key and graph.
     const context = await this.withClient(next, client => client.callTool({ name: next.profile.backend === 'cloud' ? 'currentMemoryStore' : 'getMemoryPolicy', arguments: {} }));
     if (context.isError) throw new Error('Memory profile verification failed');
+    if (revision !== this.switchRevision) throw new Error('Memory profile switch superseded by a newer request');
     this.selection = next;
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
   }

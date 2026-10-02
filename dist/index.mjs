@@ -29752,6 +29752,7 @@ var ProfileSession = class {
     this.selection = this.resolve(name);
   }
   selection;
+  switchRevision = 0;
   resolve(name) {
     const profile = this.config.profiles[name];
     if (!profile) throw new Error("Unknown memory profile");
@@ -29764,9 +29765,11 @@ var ProfileSession = class {
     return Object.entries(this.config.profiles).map(([name, p]) => ({ name, backend: p.backend, graphId: p.backend === "cloud" ? p.graphId : void 0, active: name === this.selection.name }));
   }
   async select(name) {
+    const revision = ++this.switchRevision;
     const next = this.resolve(name);
     const context = await this.withClient(next, (client) => client.callTool({ name: next.profile.backend === "cloud" ? "currentMemoryStore" : "getMemoryPolicy", arguments: {} }));
     if (context.isError) throw new Error("Memory profile verification failed");
+    if (revision !== this.switchRevision) throw new Error("Memory profile switch superseded by a newer request");
     this.selection = next;
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
   }

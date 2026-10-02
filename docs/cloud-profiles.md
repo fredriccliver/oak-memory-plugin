@@ -62,7 +62,9 @@ approval; a network/authentication failure never selects another store.
 
 Call `listMemoryProfiles`, then `selectMemoryProfile({"profile":"shared-team"})`.
 Switches affect this MCP session only. The bridge verifies the candidate context
-before changing selection; failures keep the prior selection. Display active
+before changing selection; failures keep the prior selection. A newer switch attempt
+supersedes pending older validations, even if the newer attempt fails: late older
+responses never replace the last committed selection. Display active
 graph name/ID, role, and authenticated identity from `currentMemoryStore` after
 connecting or switching. `listMemoryStores` discovers authorized member graphs,
 but does not grant a credential for them. A graph-bound key cannot be reused for
