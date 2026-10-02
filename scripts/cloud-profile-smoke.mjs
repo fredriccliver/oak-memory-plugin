@@ -18,6 +18,7 @@ process.env.TEST_OAK_A = keyA; process.env.TEST_OAK_B = keyB;
 process.env.OAK_CONFIG_DIR = temp; process.env.PLUGIN_ROOT = temp;
 process.env.MEMORY_POLICY_SCOPE = 'important';
 let revoked = false;
+let mismatchedContext = false;
 let delayedContext;
 const deferred = () => {
   let resolve;
@@ -38,7 +39,7 @@ const http = createServer(async (req, res) => {
       gate.entered.resolve();
       await gate.release.promise;
     }
-    return result({ storeId: graph, name: graph === a ? 'Personal' : 'Team', role: graph === a ? 'owner' : 'reader', authorUserId: 'person-1', authorDisplayName: 'Person' });
+    return result({ storeId: mismatchedContext ? 'wrong-graph' : graph, name: graph === a ? 'Personal' : 'Team', role: graph === a ? 'owner' : 'reader', authorUserId: 'person-1', authorDisplayName: 'Person' });
   });
   server.registerTool('listMemoryStores', { inputSchema: {} }, async () => result({ graphs: [a, b] }));
   server.registerTool('recallMemory', { inputSchema: {} }, async () => {
@@ -122,6 +123,10 @@ try {
   assert.equal(JSON.parse((await pending).content[0].text).graphId, a, 'in-flight call stays on original graph');
   assert.equal(JSON.parse((await session.callTool('recallMemory')).content[0].text).graphId, b);
   assert.equal((await session.callTool('createMemory')).isError, true, 'reader writes denied by server');
+  mismatchedContext = true;
+  await assert.rejects(session.select('personal'), /Context mismatch/);
+  assert.equal(session.snapshot().name, 'team', 'mismatched successful server context must not commit a switch');
+  mismatchedContext = false;
   await assert.rejects(session.select('wrong'));
   assert.equal(session.snapshot().name, 'team', 'failed switch keeps existing session');
   await session.listTools();

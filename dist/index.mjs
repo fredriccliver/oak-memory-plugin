@@ -29764,6 +29764,12 @@ function loadEnv() {
 // src/bridge.ts
 var text = (value) => ({ content: [{ type: "text", text: JSON.stringify(value) }] });
 var errorResult = () => ({ ...text({ error: "Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used." }), isError: true });
+function verifiedCloudStore(context, profile) {
+  if (context.isError || !Array.isArray(context.content)) throw new Error("Context unavailable");
+  const store = JSON.parse(context.content.filter((item) => item?.type === "text" && typeof item.text === "string").map((item) => item.text).join(""));
+  if (store.storeId !== profile.graphId || !["owner", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
+  return store;
+}
 var ProfileSession = class {
   constructor(config2, name) {
     this.config = config2;
@@ -29788,6 +29794,7 @@ var ProfileSession = class {
     const next = this.resolve(name);
     const context = await this.withClient(next, (client) => client.callTool({ name: next.profile.backend === "cloud" ? "currentMemoryStore" : "getMemoryPolicy", arguments: {} }));
     if (context.isError) throw new Error("Memory profile verification failed");
+    if (next.profile.backend === "cloud") verifiedCloudStore(context, next.profile);
     if (revision !== this.switchRevision) throw new Error("Memory profile switch superseded by a newer request");
     this.selection = next;
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
@@ -29884,9 +29891,7 @@ ${attributionInstructions}`
           const context = await session.withClient(snapshot, (client) => client.callTool({ name: snapshot.profile.backend === "cloud" ? "currentMemoryStore" : "getMemoryPolicy", arguments: {} }));
           if (context.isError) throw new Error("Context unavailable");
           if (snapshot.profile.backend === "cloud") {
-            if (!Array.isArray(context.content)) throw new Error("Context unavailable");
-            const store = JSON.parse(context.content.filter((item) => item?.type === "text" && typeof item.text === "string").map((item) => item.text).join(""));
-            if (store.storeId !== snapshot.profile.graphId || !["owner", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
+            const store = verifiedCloudStore(context, snapshot.profile);
             return text({ profile: snapshot.name, backend: "cloud", verified: true, store });
           }
           return text({ profile: snapshot.name, backend: "local", verified: true, verificationScope: "local configuration only; database connectivity is not checked", context });
