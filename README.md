@@ -100,6 +100,9 @@ maps those requests to the same MCP tools.
 | `updateMemoryLink` | Add/remove a link between two memories so they're more likely to surface together later. |
 | `adjustMemoryLinkStrength` | Set an existing link's strength (0–1, both directions) — the tuning knob `updateMemoryLink` doesn't expose (it fixes new links at 0.7). Stronger links co-surface harder in recall. |
 | `deleteMemory` | Delete a memory. Irreversible — used sparingly. |
+| `listMemoryProfiles` / `selectMemoryProfile` | Show configured profiles or switch this session after verification. |
+| `memoryConnectionStatus` | Verify the active backend, graph, role and authenticated recording identity. |
+| `currentMemoryStore` / `listMemoryStores` | Cloud graph context and membership discovery; discovery grants no key. |
 | `getMemoryPolicy` | Report the policy the server actually resolved at startup. Reads no memories. Reports the *effective* policy, which isn't always what the config says — see [Memory policy](#memory-policy). |
 
 Local tools use the configured local identity (`MEMORY_ENTITY_ID`). Cloud tools use the selected server-authorized personal or shared graph — the
@@ -109,6 +112,9 @@ model never supplies or sees an entity/user id.
 
 | Command | Purpose |
 |---|---|
+| `/oak-memory:memory-connect` | Connect a cloud graph using native masked configuration. |
+| `/oak-memory:memory-status` | Verify connection, graph, role and identity. |
+| `/oak-memory:memory-profile` | Show or switch the active session profile. |
 | `/memory-recall <query>` | Explicitly recall memories relevant to a query. |
 | `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
 | `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |

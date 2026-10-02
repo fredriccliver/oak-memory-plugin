@@ -195,7 +195,7 @@ function loadPolicy(warn = console.error) {
 }
 
 // src/profiles.ts
-var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using currentMemoryStore. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
+var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using memoryConnectionStatus when available, otherwise cloud currentMemoryStore or local getMemoryPolicy. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
 
 // src/hook.ts
 async function readStdin() {
@@ -208,14 +208,11 @@ async function main() {
   const policy = loadPolicy(() => {
   });
   const reminder = buildTurnReminder(policy);
-  if (reminder === null) return;
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "UserPromptSubmit",
-        additionalContext: `${reminder}
-
-${attributionInstructions}`
+        additionalContext: [reminder, attributionInstructions].filter(Boolean).join("\n\n")
       }
     })
   );

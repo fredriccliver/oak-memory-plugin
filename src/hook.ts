@@ -55,13 +55,12 @@ async function main(): Promise<void> {
   const policy = loadPolicy(() => {});
 
   const reminder = buildTurnReminder(policy);
-  if (reminder === null) return;
 
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'UserPromptSubmit',
-        additionalContext: `${reminder}\n\n${attributionInstructions}`,
+        additionalContext: [reminder, attributionInstructions].filter(Boolean).join('\n\n'),
       },
     }),
   );

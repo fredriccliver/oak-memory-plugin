@@ -27162,7 +27162,7 @@ var StdioServerTransport = class {
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using currentMemoryStore. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
+var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using memoryConnectionStatus when available, otherwise cloud currentMemoryStore or local getMemoryPolicy. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
 function optionalEnv(name) {
   const value = process.env[name]?.trim();
   return !value || /^\$\{.*\}$/.test(value) ? void 0 : value;
@@ -27170,7 +27170,7 @@ function optionalEnv(name) {
 function readProfiles() {
   const file = optionalEnv("OAK_PROFILES_FILE") ?? optionalEnv("OAK_CONFIG_PROFILES_FILE") ?? path.join(process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), ".config", "oak-memory"), "profiles.json");
   if (!fs.existsSync(file)) {
-    if (optionalEnv("OAK_PROFILE") || optionalEnv("OAK_PROFILES_FILE") || optionalEnv("OAK_CONFIG_PROFILES_FILE")) throw new Error("Oak profiles file is missing");
+    if (optionalEnv("OAK_PROFILE") || optionalEnv("OAK_CONFIG_DEFAULT_PROFILE") || optionalEnv("OAK_PROFILES_FILE") || optionalEnv("OAK_CONFIG_PROFILES_FILE")) throw new Error("Oak profiles file is missing");
     return void 0;
   }
   try {
@@ -27184,6 +27184,7 @@ function readProfiles() {
         if (url2.username || url2.password || url2.search || url2.hash || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(profile.graphId) || !/^[A-Z_][A-Z0-9_]*$/.test(profile.credentialEnv)) throw new Error();
       }
     }
+    if (!Object.hasOwn(value.profiles, value.defaultProfile)) throw new Error();
     return value;
   } catch {
     throw new Error("Invalid Oak profiles configuration");

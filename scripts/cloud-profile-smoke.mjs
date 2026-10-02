@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -62,6 +62,11 @@ try {
   await build({ entryPoints: ['src/bridge.ts'], bundle: true, platform: 'node', format: 'esm', banner: { js: "import {createRequire} from 'node:module'; const require = createRequire(import.meta.url);" }, outfile: path.join(temp, 'bridge.mjs') });
   await build({ entryPoints: ['src/profiles.ts'], bundle: true, platform: 'node', format: 'esm', outfile: path.join(temp, 'profiles.mjs') });
   const { ProfileSession } = await import(pathToFileURL(path.join(temp, 'bridge.mjs')));
+  const hook = spawnSync(process.execPath, ['dist/hook.mjs'], { input: '{}', encoding: 'utf8', env: { ...process.env, MEMORY_POLICY_RECALL: 'minimal', MEMORY_POLICY_AUTOSAVE: 'false' } });
+  assert.equal(hook.status, 0);
+  const attribution = JSON.parse(hook.stdout).hookSpecificOutput.additionalContext;
+  assert.match(attribution, /semantic subject/);
+  assert.match(attribution, /local getMemoryPolicy/);
   const { resolveBackend, credential } = await import(pathToFileURL(path.join(temp, 'profiles.mjs')));
   process.env.OAK_BACKEND = 'cloud';
   assert.equal(resolveBackend(config).profile.backend, 'cloud');

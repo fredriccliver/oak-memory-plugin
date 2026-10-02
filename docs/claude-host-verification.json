@@ -14,5 +14,7 @@
   "cleanStartWithoutDatabase": true,
   "fixtureKeysPersisted": false,
   "installScope": "isolated user",
-  "localConfigurationChanged": false
+  "localConfigurationChanged": false,
+  "testedCommit": "1709fb4e0a16f0de26ba122077f45e2d28edf09b",
+  "subsequentChanges": "Attribution-only hook/server guidance and configuration/README validation changes are covered by npm test; this host evidence records the earlier exact bundle."
 }
