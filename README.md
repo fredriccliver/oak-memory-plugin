@@ -34,7 +34,7 @@ with `npm run setup` before the plugin works:
   holds your memories.
 - **[Ollama](https://ollama.com/download)** — generates embeddings locally (`bge-m3`, ~270 MB, pulled for
   you). No API key; nothing leaves your machine.
-- **Node.js 18+** and a **local checkout of this repo** — `npm run setup` lives here and is where the one-time
+- **Node.js 22+** and a **local checkout of this repo** — `npm run setup` lives here and is where the one-time
   provisioning runs. A marketplace install only copies the packaged plugin; it does not clone a development
   checkout from which setup can run.
 
@@ -102,7 +102,7 @@ maps those requests to the same MCP tools.
 | `deleteMemory` | Delete a memory. Irreversible — used sparingly. |
 | `getMemoryPolicy` | Report the policy the server actually resolved at startup. Reads no memories. Reports the *effective* policy, which isn't always what the config says — see [Memory policy](#memory-policy). |
 
-All tools are scoped to a single fixed identity (`MEMORY_ENTITY_ID`, see below) configured server-side — the
+Local tools use the configured local identity (`MEMORY_ENTITY_ID`). Cloud tools use the selected server-authorized personal or shared graph — the
 model never supplies or sees an entity/user id.
 
 ## Slash commands
@@ -343,7 +343,7 @@ This is also why `/memory-graph` is a genuinely useful view rather than a debug 
 
 ## Install
 
-Run [`npm run setup`](#setup) first — it provisions the database and writes the config.
+Choose [cloud connection](docs/claude-cloud-onboarding.md) or local setup. Cloud mode skips Docker/Ollama/database provisioning. For local mode, run [`npm run setup`](#setup) first.
 
 ### Codex
 

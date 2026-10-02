@@ -24,6 +24,29 @@
     "./commands/memory-graph-web.md",
     "./commands/memory-organise.md",
     "./commands/memory-config.md",
-    "./commands/memory-profile.md"
-  ]
+    "./commands/memory-profile.md",
+    "./commands/memory-connect.md",
+    "./commands/memory-status.md"
+  ],
+  "userConfig": {
+    "profiles_file": {
+      "type": "string",
+      "title": "Memory profiles file",
+      "description": "Absolute path to the nonsecret profiles.json downloaded from the Memory dashboard. Leave empty to preserve existing local configuration.",
+      "default": ""
+    },
+    "default_profile": {
+      "type": "string",
+      "title": "Starting memory profile",
+      "description": "Optional profile name for new sessions. Leave empty to use the profiles file default. Switching inside a session does not change this value.",
+      "default": ""
+    },
+    "cloud_credentials": {
+      "type": "string",
+      "title": "Personal graph keys (secure)",
+      "description": "JSON object mapping each profile credentialEnv reference to its matching personal graph-bound key. Enter only here after approving access; never paste keys into chat or profile downloads. Stored in Claude secure storage. Leave empty for local mode or injected environment credentials.",
+      "sensitive": true,
+      "default": ""
+    }
+  }
 }

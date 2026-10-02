@@ -67,6 +67,23 @@ try {
   assert.equal(resolveBackend(config).profile.backend, 'cloud');
   assert.equal(process.env.MEMORY_DATABASE_URL, undefined);
   assert.throws(() => credential({ ...config.profiles.personal, credentialEnv: 'MISSING_KEY' }), /personal graph-bound/);
+  process.env.OAK_CONFIG_DEFAULT_PROFILE = 'team';
+  assert.equal(resolveBackend(config).name, 'team', 'native starting profile applies to new sessions');
+  process.env.OAK_PROFILE = 'personal';
+  assert.equal(resolveBackend(config).name, 'personal', 'explicit environment profile overrides native default');
+  process.env.OAK_PROFILE = '${user_config.default_profile}';
+  assert.equal(resolveBackend(config).name, 'team', 'unexpanded optional field is unset');
+  delete process.env.OAK_PROFILE; delete process.env.OAK_CONFIG_DEFAULT_PROFILE;
+  process.env.OAK_CONFIG_CLOUD_CREDENTIALS = JSON.stringify({ TEST_OAK_A: keyA, TEST_OAK_B: keyB });
+  delete process.env.TEST_OAK_A;
+  assert.equal(credential(config.profiles.personal), keyA, 'secure native per-graph key map resolves reference');
+  process.env.TEST_OAK_A = keyA;
+  process.env.OAK_CONFIG_CLOUD_CREDENTIALS = '{malformed';
+  assert.equal(credential(config.profiles.personal), keyA, 'injected per-graph credential takes precedence');
+  delete process.env.TEST_OAK_A;
+  assert.throws(() => credential(config.profiles.personal), /Invalid secure cloud credential configuration/);
+  process.env.TEST_OAK_A = keyA; delete process.env.OAK_CONFIG_CLOUD_CREDENTIALS;
+
   // Gate the actual mock server context response: no timing assumptions.
   for (const newer of ['team', 'wrong', 'unknown-profile']) {
     const racing = new ProfileSession(config, 'local');
@@ -114,6 +131,8 @@ try {
     await client.connect(transport);
     assert.ok((await client.listTools()).tools.some(t => t.name === 'selectMemoryProfile'));
     const identity = JSON.parse((await client.callTool({ name: 'currentMemoryStore', arguments: {} })).content[0].text);
+    const connected = JSON.parse((await client.callTool({ name: 'memoryConnectionStatus', arguments: {} })).content[0].text);
+    assert.equal(connected.verified, true); assert.equal(connected.store.storeId, a); assert.equal(connected.store.role, 'owner');
     assert.equal(identity.storeId, a); assert.equal(identity.authorUserId, 'person-1'); assert.equal(identity.role, 'owner');
     assert.equal(JSON.parse((await client.callTool({ name: 'getMemoryPolicy', arguments: {} })).content[0].text).policy.scope, 'important');
     assert.equal((await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'team' } })).isError, undefined);
@@ -126,6 +145,11 @@ try {
     await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'team' } });
     revoked = true;
     assert.equal((await client.callTool({ name: 'recallMemory', arguments: {} })).isError, true);
+    assert.ok((await client.listTools()).tools.some(t => t.name === 'memoryConnectionStatus'), 'status remains discoverable during authentication failure');
+    const disconnected = await client.callTool({ name: 'memoryConnectionStatus', arguments: {} });
+    assert.equal(disconnected.isError, true);
+    assert.equal(JSON.parse(disconnected.content[0].text).profile, 'team');
+    assert.equal(JSON.parse(disconnected.content[0].text).verified, false);
     assert.ok(!stderr.includes(keyA) && !stderr.includes(keyB), 'no credentials in diagnostics');
   } finally { await client.close(); }
   revoked = false;

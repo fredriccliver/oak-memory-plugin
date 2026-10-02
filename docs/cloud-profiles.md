@@ -7,6 +7,9 @@ synchronizes, or changes existing local memories.
 
 ## Configuration and credential handoff
 
+See [Claude Code connection guide](claude-cloud-onboarding.md) for the native
+masked configuration menu and preview/released installation distinction.
+
 Persistent access requires a user-approved action. Ask the user to sign in with
 email at the service, select a graph, and approve issuing a named personal key.
 The website issues it through `POST /api/memory/keys` with

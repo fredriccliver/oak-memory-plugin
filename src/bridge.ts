@@ -61,7 +61,7 @@ export class ProfileSession {
       const tools = [];
       let cursor: string | undefined;
       do { const page = await client.listTools(cursor ? { cursor } : undefined); tools.push(...page.tools); cursor = page.nextCursor; } while (cursor);
-      return { tools: tools.filter(t => !['listMemoryProfiles', 'selectMemoryProfile', ...(snapshot.profile.backend === 'cloud' ? ['getMemoryPolicy'] : [])].includes(t.name)) };
+      return { tools: tools.filter(t => !['listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus', ...(snapshot.profile.backend === 'cloud' ? ['getMemoryPolicy'] : [])].includes(t.name)) };
     });
   }
   async callTool(name: string, args: Record<string, unknown> = {}) {
@@ -82,10 +82,12 @@ export async function startProfileBridge(config: Profiles, name: string) {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let remote;
     try { remote = await session.listTools(); }
-    catch { throw new Error('Selected memory store is unavailable; check its profile, authentication and connectivity. No fallback was used.'); }
+    catch { remote = { tools: [] }; } // Keep setup/status tools discoverable when cloud access fails.
     return { tools: [...remote.tools, ...(session.snapshot().profile.backend === 'cloud' ? [{
       name: 'getMemoryPolicy', description: 'Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.', inputSchema: { type: 'object' as const, properties: {} },
     }] : []), {
+      name: 'memoryConnectionStatus', description: 'Verify and show the active profile, backend, server-authorized graph, role and recording identity. Returns safe setup errors without exposing credentials or changing stores.', inputSchema: { type: 'object', properties: {} },
+    }, {
       name: 'listMemoryProfiles', description: 'List configured local/cloud profiles without revealing credentials.', inputSchema: { type: 'object', properties: {} },
     }, {
       name: 'selectMemoryProfile', description: 'Switch the active memory profile for this session. Cloud graph keys are graph-bound; use a separate profile per graph. Verify and show identity/role afterward. Stored defaults affect future sessions only.',
@@ -94,6 +96,22 @@ export async function startProfileBridge(config: Profiles, name: string) {
   });
   server.setRequestHandler(CallToolRequestSchema, async request => {
     try {
+      if (request.params.name === 'memoryConnectionStatus') {
+        const snapshot = session.snapshot();
+        try {
+          const context = await session.withClient(snapshot, client => client.callTool({ name: snapshot.profile.backend === 'cloud' ? 'currentMemoryStore' : 'getMemoryPolicy', arguments: {} }));
+          if (context.isError) throw new Error('Context unavailable');
+          if (snapshot.profile.backend === 'cloud') {
+            if (!Array.isArray(context.content)) throw new Error('Context unavailable');
+            const store = JSON.parse(context.content.filter(item => item?.type === 'text' && typeof item.text === 'string').map(item => item.text).join(''));
+            if (store.storeId !== snapshot.profile.graphId || !['owner', 'editor', 'reader'].includes(store.role) || typeof store.authorUserId !== 'string') throw new Error('Context mismatch');
+            return text({ profile: snapshot.name, backend: 'cloud', verified: true, store });
+          }
+          return text({ profile: snapshot.name, backend: 'local', verified: true, context });
+        } catch {
+          return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: 'Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used.' }), isError: true };
+        }
+      }
       if (request.params.name === 'getMemoryPolicy' && session.snapshot().profile.backend === 'cloud') {
         return text({ policy: loadPolicy(() => {}), profile: session.snapshot().name, backend: 'cloud' });
       }

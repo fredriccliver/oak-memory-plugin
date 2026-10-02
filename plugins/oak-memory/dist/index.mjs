@@ -27163,10 +27163,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 var attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using currentMemoryStore. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
+function optionalEnv(name) {
+  const value = process.env[name]?.trim();
+  return !value || /^\$\{.*\}$/.test(value) ? void 0 : value;
+}
 function readProfiles() {
-  const file = process.env.OAK_PROFILES_FILE ?? path.join(process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), ".config", "oak-memory"), "profiles.json");
+  const file = optionalEnv("OAK_PROFILES_FILE") ?? optionalEnv("OAK_CONFIG_PROFILES_FILE") ?? path.join(process.env.OAK_CONFIG_DIR ?? path.join(os.homedir(), ".config", "oak-memory"), "profiles.json");
   if (!fs.existsSync(file)) {
-    if (process.env.OAK_PROFILE || process.env.OAK_PROFILES_FILE) throw new Error("Oak profiles file is missing");
+    if (optionalEnv("OAK_PROFILE") || optionalEnv("OAK_PROFILES_FILE") || optionalEnv("OAK_CONFIG_PROFILES_FILE")) throw new Error("Oak profiles file is missing");
     return void 0;
   }
   try {
@@ -27186,11 +27190,11 @@ function readProfiles() {
   }
 }
 function resolveBackend(config2) {
-  const backend = process.env.OAK_BACKEND;
+  const backend = optionalEnv("OAK_BACKEND");
   if (backend && !["local", "cloud"].includes(backend)) throw new Error("Unknown OAK_BACKEND");
   if (backend === "local") return void 0;
   config2 ??= readProfiles();
-  const name = process.env.OAK_PROFILE ?? config2?.defaultProfile;
+  const name = optionalEnv("OAK_PROFILE") ?? optionalEnv("OAK_CONFIG_DEFAULT_PROFILE") ?? config2?.defaultProfile;
   if (!name) {
     if (backend === "cloud") throw new Error("Cloud mode requires an explicit configured profile");
     return void 0;
@@ -27202,7 +27206,20 @@ function resolveBackend(config2) {
 }
 function credential(profile) {
   if (profile.backend !== "cloud") throw new Error("Cloud credential requested for local profile");
-  const key = process.env[profile.credentialEnv]?.trim();
+  let key = optionalEnv(profile.credentialEnv);
+  if (!key) {
+    const raw = optionalEnv("OAK_CLOUD_CREDENTIALS") ?? optionalEnv("OAK_CONFIG_CLOUD_CREDENTIALS");
+    if (raw) {
+      try {
+        const values = JSON.parse(raw);
+        if (!values || typeof values !== "object" || Array.isArray(values)) throw new Error();
+        const selected = values[profile.credentialEnv];
+        if (typeof selected === "string") key = selected.trim();
+      } catch {
+        throw new Error("Invalid secure cloud credential configuration");
+      }
+    }
+  }
   if (!key || !/^oak_[0-9a-f]{64}$/.test(key)) throw new Error("Cloud profile needs a personal graph-bound key; use the approved credential handoff");
   return key;
 }
@@ -29804,7 +29821,7 @@ var ProfileSession = class {
         tools.push(...page.tools);
         cursor = page.nextCursor;
       } while (cursor);
-      return { tools: tools.filter((t) => !["listMemoryProfiles", "selectMemoryProfile", ...snapshot.profile.backend === "cloud" ? ["getMemoryPolicy"] : []].includes(t.name)) };
+      return { tools: tools.filter((t) => !["listMemoryProfiles", "selectMemoryProfile", "memoryConnectionStatus", ...snapshot.profile.backend === "cloud" ? ["getMemoryPolicy"] : []].includes(t.name)) };
     });
   }
   async callTool(name, args = {}) {
@@ -29829,13 +29846,17 @@ ${attributionInstructions}`
     try {
       remote = await session.listTools();
     } catch {
-      throw new Error("Selected memory store is unavailable; check its profile, authentication and connectivity. No fallback was used.");
+      remote = { tools: [] };
     }
     return { tools: [...remote.tools, ...session.snapshot().profile.backend === "cloud" ? [{
       name: "getMemoryPolicy",
       description: "Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.",
       inputSchema: { type: "object", properties: {} }
     }] : [], {
+      name: "memoryConnectionStatus",
+      description: "Verify and show the active profile, backend, server-authorized graph, role and recording identity. Returns safe setup errors without exposing credentials or changing stores.",
+      inputSchema: { type: "object", properties: {} }
+    }, {
       name: "listMemoryProfiles",
       description: "List configured local/cloud profiles without revealing credentials.",
       inputSchema: { type: "object", properties: {} }
@@ -29847,6 +29868,22 @@ ${attributionInstructions}`
   });
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
+      if (request.params.name === "memoryConnectionStatus") {
+        const snapshot = session.snapshot();
+        try {
+          const context = await session.withClient(snapshot, (client) => client.callTool({ name: snapshot.profile.backend === "cloud" ? "currentMemoryStore" : "getMemoryPolicy", arguments: {} }));
+          if (context.isError) throw new Error("Context unavailable");
+          if (snapshot.profile.backend === "cloud") {
+            if (!Array.isArray(context.content)) throw new Error("Context unavailable");
+            const store = JSON.parse(context.content.filter((item) => item?.type === "text" && typeof item.text === "string").map((item) => item.text).join(""));
+            if (store.storeId !== snapshot.profile.graphId || !["owner", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
+            return text({ profile: snapshot.name, backend: "cloud", verified: true, store });
+          }
+          return text({ profile: snapshot.name, backend: "local", verified: true, context });
+        } catch {
+          return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: "Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used." }), isError: true };
+        }
+      }
       if (request.params.name === "getMemoryPolicy" && session.snapshot().profile.backend === "cloud") {
         return text({ policy: loadPolicy(() => {
         }), profile: session.snapshot().name, backend: "cloud" });
