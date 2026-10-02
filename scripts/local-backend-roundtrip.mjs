@@ -57,6 +57,7 @@ try {
   const available = await client.listTools();
   for (const name of ['currentMemoryStore', 'listMemoryStores', 'selectMemoryProfile', 'listMemoryProfiles', 'getMemoryPolicy']) assert.ok(available.tools.some(tool => tool.name === name), 'Required integration tool missing');
   const created = [];
+  let primaryFailureStage;
   try {
     for (const profile of fixture.profiles) {
       stage = `profile context ${profile.name}`;
@@ -67,6 +68,7 @@ try {
       expectSuccess(await client.callTool({ name: 'listMemoryStores', arguments: {} }));
       console.log(`PASS context and discovery: ${profile.name} (${profile.role})`);
       if (fixture.allowWrites === true) {
+        stage = `cross-graph isolation ${profile.name}`;
         const isolated = await client.callTool({ name: 'listMemories', arguments: {} }); expectSuccess(isolated);
         for (const memory of created) {
           if (profiles[memory.profile].graphId !== profile.graphId) assert.ok(!resultText(isolated).includes(memory.memoryId), 'Other graph fixture memory leaked');
@@ -80,9 +82,13 @@ try {
         expectSuccess(create);
         const memoryId = resultText(create).match(/\[([0-9a-f-]{36})\]/i)?.[1];
         assert.ok(memoryId, 'Created fixture memory UUID missing'); created.push({ profile: profile.name, memoryId });
+        stage = `fixture list ${profile.name}`;
         const list = await client.callTool({ name: 'listMemories', arguments: {} }); expectSuccess(list);
+        stage = `fixture list author provenance ${profile.name}`;
         assert.ok(resultText(list).includes(profile.authorUserId), 'Recording author provenance missing');
+        stage = `fixture list quote preservation ${profile.name}`;
         assert.ok(resultText(list).includes(memoryId) && resultText(list).includes('Alice said "I prefer tea"'), 'Fixture memory or original quote missing');
+        stage = `fixture recall ${profile.name}`;
         const recall = await client.callTool({ name: 'recallMemory', arguments: { query: content } }); expectSuccess(recall);
         assert.ok(resultText(recall).includes(memoryId), 'Fixture memory recall missing');
         console.log(`PASS create/list/recall and preserved quote: ${profile.name}`);
@@ -94,13 +100,20 @@ try {
     assert.equal(unchanged.storeId, fixture.profiles.at(-1).graphId);
     assert.ok(!secretLogged, 'Fixture credential found in plugin diagnostics');
     console.log('PASS failed credential switch retains active profile; no credential diagnostics');
+  } catch {
+    primaryFailureStage = stage;
+    throw new Error('Fixture validation failed');
   } finally {
-    for (const memory of created) {
-      stage = 'disposable fixture cleanup';
-      expectSuccess(await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: memory.profile } }));
-      expectSuccess(await client.callTool({ name: 'deleteMemory', arguments: { memoryId: memory.memoryId } }));
+    try {
+      for (const memory of created) {
+        stage = 'disposable fixture cleanup';
+        expectSuccess(await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: memory.profile } }));
+        expectSuccess(await client.callTool({ name: 'deleteMemory', arguments: { memoryId: memory.memoryId } }));
+      }
+      if (created.length) console.log(`PASS cleanup: ${created.length} disposable fixture memories deleted`);
+    } finally {
+      if (primaryFailureStage) stage = primaryFailureStage;
     }
-    if (created.length) console.log(`PASS cleanup: ${created.length} disposable fixture memories deleted`);
   }
   console.log('PASS local backend SDK/stdio integration');
 } catch {
