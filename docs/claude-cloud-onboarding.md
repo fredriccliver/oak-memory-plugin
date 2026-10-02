@@ -3,14 +3,15 @@
 Cloud memory needs Node.js 22 or later and a personal graph-bound key. It needs
 no Docker, Ollama, or database URL. Local and cloud graphs are separate stores.
 
-## Preview versus released plugin
+## Install a verified checkout
 
-Cloud profiles and this onboarding are currently in **draft PR #4**, on
-`feat/cloud-profiles-graph-selection`. The released/default branch does not yet
-provide this cloud workflow. Do not install the default GitHub marketplace and
-assume these features are released. No public release or merge is implied.
+Cloud profiles were introduced in PR #4 on
+`feat/cloud-profiles-graph-selection`. The repository default branch is `master`.
+Before PR #4 is merged, use its branch checkout below. After the PR is merged,
+use `--branch master` instead. A repository merge does not imply an npm package
+release.
 
-To review the preview on your own machine, use the published branch checkout:
+The published feature checkout workflow was verified on Claude Code 2.1.286:
 
 ```sh
 git clone --branch feat/cloud-profiles-graph-selection https://github.com/fredriccliver/oak-memory-plugin.git oak-memory-preview
