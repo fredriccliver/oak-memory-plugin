@@ -90,7 +90,7 @@ try {
     assert.ok(!stderr.includes(keyA) && !stderr.includes(keyB), 'no credentials in diagnostics');
   } finally { await client.close(); }
   revoked = false;
-  const runner = spawn(process.execPath, ['scripts/local-backend-roundtrip.mjs'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  const runner = spawn(process.execPath, [path.resolve('scripts/local-backend-roundtrip.mjs')], { cwd: temp, stdio: ['pipe', 'pipe', 'pipe'] });
   let runnerOutput = ''; let runnerErrors = '';
   runner.stdout.on('data', data => { runnerOutput += data; });
   runner.stderr.on('data', data => { runnerErrors += data; });
