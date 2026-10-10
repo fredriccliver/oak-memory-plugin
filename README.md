@@ -16,6 +16,8 @@ is the **entity-specific associative network**: associations differ per individu
 from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
 infrastructure; the engine itself knows nothing about the AI client using it.
 
+> Enable only one of `oak-memory-cloud` and the local `oak-memory` plugin in a host session. Both register the `oak-memory` MCP server name. Disable the other entry before connecting, then verify `currentMemoryStore` to confirm the intended store.
+
 ## OAuth cloud plugin (ChatGPT and Claude)
 
 For hosted OAK.memory, use **OAK.memory Cloud**. It connects directly to

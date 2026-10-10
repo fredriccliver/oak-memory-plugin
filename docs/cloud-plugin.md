@@ -12,7 +12,9 @@ Claude Desktop 또는 claude.ai에서 Customize → Plugins → Add → Add mark
 `https://github.com/fredriccliver/oak-memory-plugin`을 입력하고 동기화한다. 목록의
 `oak-memory-cloud`(OAK.memory Cloud)를 선택한다. 기존 `oak-memory`는 로컬 Node
 플러그인이므로 원격 OAuth 연결용으로 선택하지 않는다. 플러그인을 활성화한 뒤
-OAK 로그인·저장소 동의를 완료하고 새 대화에서 사용한다.
+OAK 로그인·저장소 동의를 완료하고 새 대화에서 사용한다. 두 플러그인은 같은
+`oak-memory` MCP 이름을 등록하므로 한 세션에서 하나만 활성화한다. 다른 플러그인을
+비활성화한 뒤 `currentMemoryStore`로 의도한 저장소인지 확인한다.
 
 MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없다. 직접 원격
 커넥터를 등록할 때는 Customize → Connectors를 사용한다. Team·Enterprise의 조직
