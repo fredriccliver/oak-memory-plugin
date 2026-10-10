@@ -26,6 +26,7 @@ const entity = `merge-fixture-${randomUUID()}`;
 const call = (name,arguments_) => client.callTool({name,arguments:arguments_});
 const ok = async (name,args) => { const r=await call(name,args); assert.ok(!r.isError,JSON.stringify(r)); return r; };
 try {
+  await db.query('create extension if not exists vector');
   await db.query('drop schema if exists memory cascade');
   gateway.listen(0,'127.0.0.1'); await once(gateway,'listening');
   const transport = new StdioClientTransport({command:process.execPath,args:[new URL('../dist/index.mjs',import.meta.url).pathname],env:{PATH:process.env.PATH??'',HOME:home,OAK_CONFIG_DIR:home,PLUGIN_ROOT:home,MEMORY_DATABASE_URL:connectionString,MEMORY_ENTITY_ID:entity,MEMORY_POLICY_SCOPE:'important',OLLAMA_BASE_URL:`http://127.0.0.1:${gateway.address().port}/v1`,OLLAMA_EMBEDDING_MODEL:'fixture'},stderr:'pipe'});
