@@ -494,7 +494,7 @@ Do this standalone, before wiring the plugin into Codex or Claude Code:
    unresolvable, and the failure only appeared on the first DB call.
 1. `node dist/index.mjs` with real env vars set — it should block on stdio without crashing (confirms env
    validation and the DB connection both succeeded).
-2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 10 registered
+2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 11 registered
    tools, inspect their schemas, and invoke them manually while watching raw JSON-RPC responses.
 3. Functional sequence via the inspector:
    - `createMemory({content: "Lives in Seoul and works as a software engineer"})` → expect success + a UUID.
