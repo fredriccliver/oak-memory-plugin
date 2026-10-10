@@ -1,5 +1,6 @@
 import type { Env } from '../env.js';
 import { registerCreateMemory } from './createMemory.js';
+import { registerMergeMemories } from './mergeMemories.js';
 import { registerUpdateMemory } from './updateMemory.js';
 import { registerUpdateMemoryLink } from './updateMemoryLink.js';
 import { registerAdjustMemoryLinkStrength } from './adjustMemoryLinkStrength.js';
@@ -18,6 +19,7 @@ export function registerAllTools(server: any, env: Env): void {
   registerGetMemoryPolicy(server, env);
   registerCreateMemory(server, env);
   registerUpdateMemory(server, env);
+  registerMergeMemories(server, env);
   registerUpdateMemoryLink(server, env);
   registerAdjustMemoryLinkStrength(server, env);
   registerDeleteMemory(server, env);

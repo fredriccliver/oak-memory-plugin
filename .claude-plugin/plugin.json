@@ -1,7 +1,7 @@
 {
   "name": "oak-memory",
   "description": "Persistent personal and shared vector+graph memory through local or cloud profiles.",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": {
     "name": "Fredric Cliver",
     "url": "https://github.com/fredriccliver"

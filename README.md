@@ -125,6 +125,7 @@ maps those requests to the same MCP tools.
 | `openMemoryGraph` | Render the same graph as an interactive, force-directed HTML page and open it in the default browser. Backs `/memory-graph-web`. |
 | `suggestMemoryLinks` | Read-only structural analysis: all-pairs embedding similarity surfacing orphans, link candidates (near-duplicates flagged), each edge's stored strength vs. actual similarity, and oversized split candidates. Evidence for a curation pass; writes nothing. Backs `/memory-organise`. |
 | `createMemory` | Store a new fact/preference/experience about you. |
+| `mergeMemories` | Atomically merge duplicates into one retained UUID; redirects typed links and checks exact originals. Local pre-merge snapshots are stored in `memory.merge_history`. |
 | `updateMemory` | Update an existing memory (by UUID) when info has changed. |
 | `updateMemoryLink` | Add/remove a link between two memories so they're more likely to surface together later. |
 | `adjustMemoryLinkStrength` | Set an existing link's strength (0–1, both directions) — the tuning knob `updateMemoryLink` doesn't expose (it fixes new links at 0.7). Stronger links co-surface harder in recall. |
@@ -493,7 +494,7 @@ Do this standalone, before wiring the plugin into Codex or Claude Code:
    unresolvable, and the failure only appeared on the first DB call.
 1. `node dist/index.mjs` with real env vars set — it should block on stdio without crashing (confirms env
    validation and the DB connection both succeeded).
-2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 10 registered
+2. `npx @modelcontextprotocol/inspector node dist/index.mjs` — opens a local web UI to list the 11 registered
    tools, inspect their schemas, and invoke them manually while watching raw JSON-RPC responses.
 3. Functional sequence via the inspector:
    - `createMemory({content: "Lives in Seoul and works as a software engineer"})` → expect success + a UUID.
@@ -505,7 +506,7 @@ Do this standalone, before wiring the plugin into Codex or Claude Code:
    install.
 
 For Codex, install the local package as described above, start a fresh task, approve the bundled
-`UserPromptSubmit` hook, and verify the OAK.memory skill plus all 10 MCP tools are present. Exercise
+`UserPromptSubmit` hook, and verify the OAK.memory skill plus all 11 MCP tools are present. Exercise
 `getMemoryPolicy` and one real database-backed read from the installed `plugins/oak-memory/dist` package;
 the root bundle passing does not by itself prove the packaged path is wired correctly.
 
@@ -523,7 +524,7 @@ MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
   claude --plugin-dir ~/Projects/oak-memory-plugin
 ```
 Then in the session, ask something like *"what MCP tools do you have with 'Memory' in the name?"* to confirm
-all 10 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
+all 11 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
 
 For a scripted one-shot test (`-p`), MCP tool calls need explicit permission since there's no TTY to approve
 them interactively — pass `--allowedTools` with the exact tool names:
@@ -574,3 +575,31 @@ claude plugin install oak-memory
 Free to use for any purpose **except** building a product that competes with OAK.memory /
 [`@openaikits/memory`](https://github.com/fredriccliver/Memory). Personal use, internal tooling, and
 non-competing products are all fine; a competing memory product or service is not.
+
+### Atomic duplicate merges
+
+Local PostgreSQL/Ollama and cloud profiles expose `mergeMemories` with the same
+`targetMemoryId`, `sourceMemoryIds` (1–15), complete `content` (4,000 characters /
+4,096 tokens), and `expectedContents` (exact full text for every target/source,
+up to 16,000 characters per original). Read all originals and write the final text
+yourself. A changed or foreign-entity record refuses the entire merge. Incoming
+and outgoing directed typed links move to the retained UUID; collisions keep the
+strongest signal, and internal self-links disappear, including links between absorbed sources or between a source and the retained target.
+
+A local merge requires a configured policy scope, embeds once through local
+Ollama, and commits record/link changes together. Before deletion, it archives
+all selected records and incident links in `memory.merge_history` in that same
+transaction. The table is created on the first successful merge. Archives have
+no foreign key to source records and survive deletion; there is no automatic
+restore action. Local stores have no cloud author/membership/credit system and
+incur no cloud operation credit. Cloud profiles forward the tool unchanged to
+the hosted server, which applies its own authorization, revisions and credits.
+Rebuild or update the plugin and restart the MCP client to discover the new tool.
+
+The survivor keeps its existing creation/retrieval metadata, including strength,
+retrieval count and decay anchors, matching the cloud merge behavior. Source
+statistics are archived rather than summed or used to reset the survivor's age.
+Choose the target UUID with that retained identity/state in mind. Local history
+has no automatic expiry; storage retention is managed by the local DB owner.
+`npm test` covers transport/policy regressions; the real DB merge suite requires
+the dedicated fixture URL and runs as `npm run test:merge-stdio` in CI.

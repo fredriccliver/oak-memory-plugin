@@ -48,7 +48,7 @@ export class ProfileSession {
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
   }
   async withClient<T>(snapshot: Selection, run: (client: Client) => Promise<T>): Promise<T> {
-    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.2.1' });
+    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.3.0' });
     const profile = snapshot.profile;
     const transport = profile.backend === 'cloud'
       ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
@@ -84,8 +84,8 @@ export class ProfileSession {
   }
   async callTool(name: string, args: Record<string, unknown> = {}) {
     const snapshot = this.snapshot(); // capture before the first await
-    if (snapshot.profile.backend === 'cloud' && ['createMemory', 'updateMemory', 'deleteMemory', 'updateMemoryLink', 'adjustMemoryLinkStrength'].includes(name) && loadPolicy(() => {}).scope === null) {
-      return { ...text({ error: 'Configure the client memory policy before storing memories.' }), isError: true };
+    if (snapshot.profile.backend === 'cloud' && ['createMemory', 'updateMemory', 'mergeMemories', 'deleteMemory', 'updateMemoryLink', 'adjustMemoryLinkStrength'].includes(name) && loadPolicy(() => {}).scope === null) {
+      return { ...text({ error: 'Configure the client memory policy before changing memories.' }), isError: true };
     }
     return this.withClient(snapshot, client => client.callTool({ name, arguments: args }));
   }
@@ -93,7 +93,7 @@ export class ProfileSession {
 
 export async function startProfileBridge(config: Profiles, name: string) {
   const session = new ProfileSession(config, name);
-  const server = new Server({ name: 'oak-memory-plugin', version: '0.2.1' }, {
+  const server = new Server({ name: 'oak-memory-plugin', version: '0.3.0' }, {
     capabilities: { tools: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}`,
   });

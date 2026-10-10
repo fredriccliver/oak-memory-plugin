@@ -119,3 +119,18 @@ status verifies configuration/policy only, not database or embedding connectivit
 After successful discovery, transient discovery failures retain that profile's
 last tool schema; each invocation still authenticates against the selected server.
 A profile that has never connected exposes setup/status tools until configured.
+
+## Atomic merge compatibility
+
+Version 0.3.0 exposes `mergeMemories` in local stdio and forwards the same tool in
+cloud profiles. Both use `targetMemoryId`, 1–15 `sourceMemoryIds`, complete
+client-written `content`, and exact `expectedContents` snapshots. Original changes
+reject the whole merge. Incoming/outgoing typed links move to the retained UUID
+in the same transaction as source deletion. A configured client policy scope is
+required for either backend.
+
+Local PostgreSQL/Ollama archives the selected records and incident links in
+`memory.merge_history`; the table is created in the first merge transaction.
+Local archives provide no automatic restore action and no cloud author, membership
+or billing model. Cloud profiles retain the hosted server's revision, permission
+and credit rules; the bridge does not run a second local merge or embedding.

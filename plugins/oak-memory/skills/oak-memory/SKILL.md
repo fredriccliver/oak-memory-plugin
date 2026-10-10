@@ -34,6 +34,7 @@ Use the `oak-memory` MCP tools as the persistent memory layer for the selected p
 - Resolve real UUIDs with `recallMemory` or `listMemories`; never invent IDs or substitute display indexes.
 - Prefer `updateMemory` when a fact changed. Use `deleteMemory` only when the user explicitly wants the fact forgotten or it is clearly invalid and has no useful replacement.
 - For graph cleanup, begin with `listMemories` and `suggestMemoryLinks`. Add or remove links only when the relationship is clear; use `adjustMemoryLinkStrength` to tune an existing link.
+- To merge duplicates authorized by the user, read every full original, write the complete merged text, and call `mergeMemories` with `targetMemoryId`, `sourceMemoryIds`, `content`, and exact `expectedContents`. The target UUID and typed links survive; source records are deleted atomically. Local snapshots are archived in `memory.merge_history`; there is no automatic restore action. If originals changed, reread and reconsider before retrying.
 - Use `openMemoryGraph` when the user asks for a visual graph.
 
 Report mutations briefly and precisely: what was created, updated, linked, or deleted. If a tool fails, state that nothing changed and give the actionable reason.

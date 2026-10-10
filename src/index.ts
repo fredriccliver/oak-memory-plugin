@@ -27,7 +27,7 @@ async function main() {
   // session start. That is what turns this from a set of tools the model might
   // notice into a policy it follows.
   const server = new McpServer(
-    { name: 'oak-memory-plugin', version: '0.2.1' },
+    { name: 'oak-memory-plugin', version: '0.3.0' },
     { instructions: buildServerInstructions(env.policy) },
   );
 

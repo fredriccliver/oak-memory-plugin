@@ -51,7 +51,7 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
           ? [
               REASON_HEADLINES[policy.reason ?? 'unset'],
               '',
-              '**Nothing new is being stored.** `createMemory`, content updates, new links, and link-strength',
+              '**Memory creation and changes are restricted.** `createMemory`, `mergeMemories`, content updates, new links, and link-strength',
               'changes are refused. Memories already stored remain readable; deletion and link removal stay',
               'available for cleanup. No default scope has been substituted: the user has to choose one.',
             ]

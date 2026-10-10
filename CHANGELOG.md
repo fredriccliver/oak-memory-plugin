@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 local plugin
+
+- Add atomic `mergeMemories` with the cloud input contract, exact original checks, typed link remapping and local pre-merge history.
+- Keep survivor retrieval/creation metadata; archive absorbed records and incident relationships.
+- Include merge in client policy guards and local curation guidance; preserve the shared OAuth cloud workflow and SDK 1.32.1 security update.
+- Verify actual stdio/PostgreSQL success, rollback, concurrent content/link writes, input limits, store isolation and synchronized Claude/Codex bundles.
+
 ## 0.1.4 cloud preparation
 
 - Align shared organisation skill and OpenAI review cases with the hosted atomic mergeMemories contract.
