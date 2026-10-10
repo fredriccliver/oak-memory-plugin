@@ -39,7 +39,7 @@ Docker, Ollama or API key. The shared skills and host manifests live in
   owner to register them before members can connect.
 
 Check `currentMemoryStore` and `listMemories` in a fresh conversation. A tool list or
-successful sign-in alone does not prove a working connection. Initial access is read-only;
+successful sign-in alone does not prove a working connection. The cloud organisation workflow prefers the exposed atomic `mergeMemories` tool, requires exact originals and verifies results; source deletion, revision history and sequential fallback limits are documented in the shared skill. Initial access is read-only;
 writing requires separate OAK OAuth consent, an eligible store role, credits and host approval.
 
 The following sections describe the existing **local Node plugin**, including its

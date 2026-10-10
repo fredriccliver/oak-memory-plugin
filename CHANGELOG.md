@@ -1,12 +1,17 @@
 # Changelog
 
-## 0.3.0 local plugin / 0.1.4 cloud preparation
+## 0.3.0 local plugin
 
-- Align the cloud organisation skill and prepared packages with the hosted atomic merge; keep split/manual edits sequential.
 - Add atomic `mergeMemories` with the cloud input contract, exact original checks, typed link remapping and local pre-merge history.
 - Keep survivor retrieval/creation metadata; archive absorbed records and incident relationships.
-- Include merge in client policy guards and curation guidance; preserve the shared OAuth cloud package and MCP SDK 1.32.1 security update.
+- Include merge in client policy guards and local curation guidance; preserve the shared OAuth cloud workflow and SDK 1.32.1 security update.
 - Verify actual stdio/PostgreSQL success, rollback, concurrent content/link writes, input limits, store isolation and synchronized Claude/Codex bundles.
+
+## 0.1.4 cloud preparation
+
+- Align shared organisation skill and OpenAI review cases with the hosted atomic mergeMemories contract.
+- Require exact source snapshots and explicit deletion scope; document revision, edge collision and sequential fallback boundaries.
+- Existing OpenAI portal review is unchanged; prepared package updates require separate installation/publication.
 
 ## 0.2.1 local plugin / 0.1.3 cloud preparation
 

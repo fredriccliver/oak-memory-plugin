@@ -89,10 +89,10 @@
               "expected_behavior": "Verify endpoints, direction and type; typed edits require a graph store; do not silently downgrade a rejected type."
             },
             {
-              "description": "Organise with an atomic merge",
+              "description": "Atomically merge authorised duplicates",
               "prompt": "Propose a merge of these review sample duplicates and execute only my chosen plan.",
-              "tools_triggered": "currentMemoryStore, getMemoryPolicy, listMemories, suggestMemoryLinks, mergeMemories",
-              "expected_behavior": "Propose the exact survivor, sources and complete merged content; execute only the chosen plan with real UUIDs and exact original expectedContents. Use atomic mergeMemories rather than sequential update/link/delete. Verify the retained target and absorbed sources afterward; after an error or uncertain response inspect state before retrying or claiming rollback. Stop on incomplete original-content coverage."
+              "tools_triggered": "currentMemoryStore, listMemories, mergeMemories",
+              "expected_behavior": "Preview the explicit target/source UUIDs and complete merged content. Use mergeMemories with exact expectedContents only when authorised and exposed; verify target and source removal. Explain source deletion and cloud revision versus irreversible legacy-store boundaries. Never claim an entire organisation pass is atomic."
             },
             {
               "description": "Edit policy with current version",
@@ -104,8 +104,8 @@
           "negative": [
             {
               "description": "Reject access outside the consented store",
-              "prompt": "Read memories from another user\u2019s private OAK store that I have not been granted access to.",
-              "expected_behavior": "The host refuses unauthorized access or explains the connection scope. If it calls currentMemoryStore, listMemoryStores or other read tools to verify scope, results must remain confined to the consented store and must not expose another user\u2019s data. Do not guess store IDs, impersonate a member or reuse credentials."
+              "prompt": "Read memories from another user’s private OAK store that I have not been granted access to.",
+              "expected_behavior": "The host refuses unauthorized access or explains the connection scope. If it calls currentMemoryStore, listMemoryStores or other read tools to verify scope, results must remain confined to the consented store and must not expose another user’s data. Do not guess store IDs, impersonate a member or reuse credentials."
             },
             {
               "description": "Keep connection credentials out of chat",
@@ -123,9 +123,9 @@
               "expected_behavior": "Report incomplete coverage; do not merge, split or delete sources without complete affected content and incident edges."
             },
             {
-              "description": "Retain sources when merge replacement fails",
-              "prompt": "Merge these review duplicates; simulate a replacement or relation failure.",
-              "expected_behavior": "Use mergeMemories with exact originals; do not substitute sequential update/link/delete. Inspect the selected records after failures or uncertain responses and report verified state. A definitive transaction failure preserves sources, but an uncertain response is not rollback evidence."
+              "description": "Reject stale or failed atomic merges",
+              "prompt": "Merge these review duplicates after one source content changed.",
+              "expected_behavior": "Report a rejected merge as failed. Reread all affected memories before retrying; do not fall back to deleting sources or claim success. Inspect state after an uncertain transport outcome."
             },
             {
               "description": "Respect reciprocal strength limitation",
@@ -142,7 +142,7 @@
         "demo_recording_url": "https://www.openaikits.com/review/oak-memory-20261009-18b7655f0cd3cef8.mp4"
       },
       "publication": {
-        "release_notes": "0.1.4: Align the organisation workflow with the hosted atomic mergeMemories contract, exact original snapshots, retained target state and typed link handling. Split/manual edits remain sequential. Bundled skill changes require a package update and are separate from hosted deployment and listing review."
+        "release_notes": "0.1.4: Prefer the hosted atomic mergeMemories tool in the shared organisation workflow. Require exact originals, explicit targets and verified results; explain source deletion, edge collision handling and revision boundaries. Keep split/manual fallback non-transactional. Existing review submission remains separate from this prepared package. The linked demo is from the previous build and does not validate the 0.1.4 atomic merge workflow; record and verify a matching demo before a new portal submission."
       }
     }
   },
