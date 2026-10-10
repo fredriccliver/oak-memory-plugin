@@ -7,7 +7,7 @@ import { getMemoryClient } from './memoryClient.js';
 import { LocalOllamaEmbeddingAdapter } from './localEmbeddingAdapter.js';
 
 export const mergeMemoriesSchema = z.object({
-  targetMemoryId: z.string().uuid().toLowerCase().describe('UUID to retain, including its recording author.'),
+  targetMemoryId: z.string().uuid().toLowerCase().describe('UUID to retain, including its local creation and retrieval metadata.'),
   sourceMemoryIds: z.array(z.string().uuid().toLowerCase()).min(1).max(15).describe('Other UUIDs to absorb and delete.'),
   content: z.string().trim().min(1).max(4000).describe('Complete merged text written by you. Preserve subjects, facts and quotations; the server does not summarize.'),
   expectedContents: z.array(z.object({ memoryId: z.string().uuid().toLowerCase(), content: z.string().max(16000) })).min(2).max(16)

@@ -34031,7 +34031,7 @@ var cl100k_base_default = { "pat_str": "('s|'S|'t|'T|'re|'rE|'Re|'RE|'ve|'vE|'Ve
 
 // src/mergeMemories.ts
 var mergeMemoriesSchema = external_exports.object({
-  targetMemoryId: external_exports.string().uuid().toLowerCase().describe("UUID to retain, including its recording author."),
+  targetMemoryId: external_exports.string().uuid().toLowerCase().describe("UUID to retain, including its local creation and retrieval metadata."),
   sourceMemoryIds: external_exports.array(external_exports.string().uuid().toLowerCase()).min(1).max(15).describe("Other UUIDs to absorb and delete."),
   content: external_exports.string().trim().min(1).max(4e3).describe("Complete merged text written by you. Preserve subjects, facts and quotations; the server does not summarize."),
   expectedContents: external_exports.array(external_exports.object({ memoryId: external_exports.string().uuid().toLowerCase(), content: external_exports.string().max(16e3) })).min(2).max(16).describe("Exact content just read for target and every source. Concurrent content changes reject the entire merge; reread before retrying.")
@@ -34128,7 +34128,7 @@ async function mergeMemories(env, raw) {
 function registerMergeMemories(server, env) {
   server.registerTool("mergeMemories", {
     title: "Merge memories",
-    description: `Merge duplicate memories atomically. Read full originals first. Supply targetMemoryId to retain, 1\u201315 distinct sourceMemoryIds, your complete merged content (up to 4,000 characters/4,096 tokens), and exactly one expectedContents snapshot per target/source UUID. The client judges and writes the text; preserve subjects, facts and quotations. Keeps the target UUID and redirects incoming/outgoing typed links, retaining the strongest colliding link. Deletes absorbed source records. Local pre-merge records and links are archived in memory.merge_history; no restore tool is provided. If an original changed, reread before retrying. Requires a configured memory policy scope. Local merges use Ollama and have no cloud credit charge.`,
+    description: `Merge duplicate memories atomically. Read full originals first. Supply targetMemoryId to retain, 1\u201315 distinct sourceMemoryIds, your complete merged content (up to 4,000 characters/4,096 tokens), and exactly one expectedContents snapshot per target/source UUID. The client judges and writes the text; preserve subjects, facts and quotations. Keeps target creation/retrieval metadata (strength, retrieval count and decay anchors); source statistics are archived, not combined. Choose the survivor accordingly. Keeps the target UUID and redirects incoming/outgoing typed links, retaining the strongest colliding link. Deletes absorbed source records. Local pre-merge records and links are archived in memory.merge_history; no restore tool is provided. If an original changed, reread before retrying. Requires a configured memory policy scope. Local merges use Ollama and have no cloud credit charge.`,
     inputSchema: mergeMemoriesSchema.innerType().shape,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
   }, async (input) => {
@@ -35252,7 +35252,7 @@ function registerGetMemoryPolicy(server, env) {
         ...unset ? [
           REASON_HEADLINES[policy.reason ?? "unset"],
           "",
-          "**Nothing new is being stored.** `createMemory`, content updates, new links, and link-strength",
+          "**Nothing new is being stored.** `createMemory`, `mergeMemories`, content updates, new links, and link-strength",
           "changes are refused. Memories already stored remain readable; deletion and link removal stay",
           "available for cleanup. No default scope has been substituted: the user has to choose one."
         ] : [

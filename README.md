@@ -495,7 +495,7 @@ MEMORY_DATABASE_URL="postgresql://postgres:postgres@localhost:55432/postgres" \
   claude --plugin-dir ~/Projects/oak-memory-plugin
 ```
 Then in the session, ask something like *"what MCP tools do you have with 'Memory' in the name?"* to confirm
-all 10 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
+all 11 registered (they show up as `mcp__plugin_oak-memory_oak-memory__<toolName>`).
 
 For a scripted one-shot test (`-p`), MCP tool calls need explicit permission since there's no TTY to approve
 them interactively — pass `--allowedTools` with the exact tool names:
@@ -566,3 +566,11 @@ restore action. Local stores have no cloud author/membership/credit system and
 incur no cloud operation credit. Cloud profiles forward the tool unchanged to
 the hosted server, which applies its own authorization, revisions and credits.
 Rebuild or update the plugin and restart the MCP client to discover the new tool.
+
+The survivor keeps its existing creation/retrieval metadata, including strength,
+retrieval count and decay anchors, matching the cloud merge behavior. Source
+statistics are archived rather than summed or used to reset the survivor's age.
+Choose the target UUID with that retained identity/state in mind. Local history
+has no automatic expiry; storage retention is managed by the local DB owner.
+`npm test` covers transport/policy regressions; the real DB merge suite requires
+the dedicated fixture URL and runs as `npm run test:merge-stdio` in CI.

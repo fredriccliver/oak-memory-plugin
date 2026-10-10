@@ -36,6 +36,8 @@ try {
   const create = async content => { await ok('createMemory',{content}); return (await db.query('select id from memory.memories where entity_id=$1 and content=$2',[entity,content])).rows[0].id; };
   const a=await create('A'),b=await create('B'),c=await create('C');
   await ok('updateMemory',{memoryId:b,content:'B updated'});
+  await db.query('update memory.memories set strength=.25,retrieval_count=2 where id=$1',[a]);
+  await db.query('update memory.memories set strength=.95,retrieval_count=9 where id=$1',[b]);
   const foreign=randomUUID();await db.query("insert into memory.memories(id,entity_id,content) values($1,'foreign','Untouched')",[foreign]);
   for(const [from,to,type,strength] of [[a,c,'related',0.4],[b,c,'related',0.9],[b,c,'supports',0.5],[c,b,'contradicts',0.8],[b,a,'related',0.7]]) await db.query("insert into memory.edges(entity_id,from_id,to_id,type,origin,strength) values($1,$2,$3,$4,'conversation',$5)",[entity,from,to,type,strength]);
   const input={targetMemoryId:a,sourceMemoryIds:[b],content:'A and B updated <|endoftext|>',expectedContents:[{memoryId:a,content:'A'},{memoryId:b,content:'B updated'}]};
@@ -59,8 +61,10 @@ try {
   const edges=(await db.query('select from_id,to_id,type,strength from memory.edges where entity_id=$1',[entity])).rows;
   assert.equal(edges.length,3);assert.ok(edges.some(e=>e.from_id===a&&e.to_id===c&&e.type==='related'&&Math.abs(e.strength-.9)<.001));assert.ok(edges.some(e=>e.from_id===c&&e.to_id===a&&e.type==='contradicts'));assert.ok(edges.every(e=>e.from_id!==b&&e.to_id!==b&&e.from_id!==e.to_id));
   assert.deepEqual((await db.query('select outgoing_edges from memory.memories where id=$1',[c])).rows[0].outgoing_edges,[a]);
+  const retainedState=(await db.query('select strength,retrieval_count from memory.memories where id=$1',[a])).rows[0];
+  assert.equal(retainedState.strength,.25);assert.equal(retainedState.retrieval_count,2);
   const archive=(await db.query('select snapshot from memory.merge_history where entity_id=$1',[entity])).rows[0].snapshot;
-  assert.ok(archive.memories.some(m=>m.id===b&&m.content==='B updated'));assert.equal(archive.edges.length,5);
+  assert.ok(archive.memories.some(m=>m.id===b&&m.content==='B updated'&&m.retrieval_count===9));assert.equal(archive.edges.length,5);
   assert.equal((await db.query('select content from memory.memories where id=$1',[foreign])).rows[0].content,'Untouched');
   const after=await snapshot();assert.equal((await call('mergeMemories',input)).isError,true);assert.deepEqual(await snapshot(),after);
   console.log('PASS real stdio merge: schema, input limits, stale/foreign rejection, provider/transaction rollback, typed links, snapshots and replay');
