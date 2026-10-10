@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { Pool, type PoolClient } from 'pg';
-import { getEncoding } from 'js-tiktoken';
+import { Tiktoken } from 'js-tiktoken/lite';
+import cl100k from 'js-tiktoken/ranks/cl100k_base';
 import type { Env } from './env.js';
 import { getMemoryClient } from './memoryClient.js';
 import { LocalOllamaEmbeddingAdapter } from './localEmbeddingAdapter.js';
@@ -59,11 +60,11 @@ export async function mergeMemoryRows(db: PoolClient, entityId: string, input: M
 }
 
 
-const tokens = getEncoding('cl100k_base');
+const tokens = new Tiktoken(cl100k);
 export async function mergeMemories(env: Env, raw: MergeMemoriesInput) {
   const input = mergeMemoriesSchema.parse(raw);
   if (env.policy.scope === null) throw new Error('Memory policy scope is not configured');
-  if (tokens.encode(input.content).length > 4096) throw new Error('Embedding input limit exceeded');
+  if (tokens.encode(input.content, [], []).length > 4096) throw new Error('Embedding input limit exceeded');
   await getMemoryClient(env); // Prepare the same local engine schema as other tools.
   const pool = new Pool({ connectionString: env.memoryDatabaseUrl, max: 1 });
   const db = await pool.connect().catch(async error => { await pool.end(); throw error; });

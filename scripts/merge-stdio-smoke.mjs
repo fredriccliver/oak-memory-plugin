@@ -37,7 +37,7 @@ try {
   await ok('updateMemory',{memoryId:b,content:'B updated'});
   const foreign=randomUUID();await db.query("insert into memory.memories(id,entity_id,content) values($1,'foreign','Untouched')",[foreign]);
   for(const [from,to,type,strength] of [[a,c,'related',0.4],[b,c,'related',0.9],[b,c,'supports',0.5],[c,b,'contradicts',0.8],[b,a,'related',0.7]]) await db.query("insert into memory.edges(entity_id,from_id,to_id,type,origin,strength) values($1,$2,$3,$4,'conversation',$5)",[entity,from,to,type,strength]);
-  const input={targetMemoryId:a,sourceMemoryIds:[b],content:'A and B updated',expectedContents:[{memoryId:a,content:'A'},{memoryId:b,content:'B updated'}]};
+  const input={targetMemoryId:a,sourceMemoryIds:[b],content:'A and B updated <|endoftext|>',expectedContents:[{memoryId:a,content:'A'},{memoryId:b,content:'B updated'}]};
   const snapshot=async()=> (await db.query('select id,content,outgoing_edges from memory.memories order by id')).rows;
   const before=await snapshot(), start=calls;
   for(const invalid of [{...input,sourceMemoryIds:[a]},{...input,expectedContents:[input.expectedContents[0],input.expectedContents[0]]},{...input,content:'𓀀'.repeat(1300)},{...input,expectedContents:input.expectedContents.map(x=>({...x,content:'stale'}))},{...input,sourceMemoryIds:[foreign],expectedContents:[input.expectedContents[0],{memoryId:foreign,content:'Untouched'}]}]) assert.equal((await call('mergeMemories',invalid)).isError,true);
@@ -48,7 +48,7 @@ try {
   assert.equal((await db.query('select content from memory.memories where id=$1',[b])).rows[0].content,'Concurrent update');
   await db.query('update memory.memories set content=$1 where id=$2',['B updated',b]);assert.deepEqual(await snapshot(),before);
   fail=true;assert.equal((await call('mergeMemories',input)).isError,true);fail=false;assert.deepEqual(await snapshot(),before);
-  await db.query(`create function memory.reject_merge() returns trigger language plpgsql as $$ begin if new.content='A and B updated' then raise exception 'fixture failure'; end if; return new; end $$; create trigger reject_merge before update on memory.memories for each row execute function memory.reject_merge()`);
+  await db.query(`create function memory.reject_merge() returns trigger language plpgsql as $$ begin if new.content='A and B updated <|endoftext|>' then raise exception 'fixture failure'; end if; return new; end $$; create trigger reject_merge before update on memory.memories for each row execute function memory.reject_merge()`);
   assert.equal((await call('mergeMemories',input)).isError,true);assert.deepEqual(await snapshot(),before);
   assert.equal((await db.query("select to_regclass('memory.merge_history') name")).rows[0].name,null);
   await db.query('drop trigger reject_merge on memory.memories');
