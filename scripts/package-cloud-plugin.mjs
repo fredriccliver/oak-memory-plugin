@@ -15,8 +15,10 @@ const endpoint = 'https://www.openaikits.com/api/mcp';
 assert.equal(portable.name, 'oak-memory'); // Preserve the existing OpenAI listing identity.
 assert.equal(claude.name, 'oak-memory-cloud'); // Keep the local Claude plugin separate.
 assert.equal(portable.version, claude.version);
-assert.deepEqual(json('mcp.json').mcpServers, { 'oak-memory': { type: 'streamable-http', url: endpoint } });
-assert.deepEqual(json('.mcp.json'), { mcpServers: { 'oak-memory': { type: 'http', url: endpoint } } });
+assert.deepEqual(json('mcp.json').mcpServers, { 'oak-memory-cloud': { type: 'streamable-http', url: endpoint } });
+assert.deepEqual(json('.mcp.json'), { mcpServers: { 'oak-memory-cloud': { type: 'http', url: endpoint } } });
+const localServers = JSON.parse(readFileSync(path.join(root, '.mcp.json'), 'utf8')).mcpServers;
+assert(!Object.hasOwn(localServers, 'oak-memory-cloud'), 'Cloud server must not collide with local server names');
 const marketplace = JSON.parse(readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8'));
 assert.equal(new Set(marketplace.plugins.map(p => p.name)).size, marketplace.plugins.length);
 const entry = marketplace.plugins.find(p => p.name === claude.name);

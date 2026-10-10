@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "oak-memory": {
+    "oak-memory-cloud": {
       "type": "http",
       "url": "https://www.openaikits.com/api/mcp"
     }
