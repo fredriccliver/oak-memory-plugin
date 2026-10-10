@@ -89,7 +89,7 @@
               "expected_behavior": "Verify endpoints, direction and type; typed edits require a graph store; do not silently downgrade a rejected type."
             },
             {
-              "description": "Organise with source preservation",
+              "description": "Atomically merge authorised duplicates",
               "prompt": "Propose a merge of these review sample duplicates and execute only my chosen plan.",
               "tools_triggered": "currentMemoryStore, listMemories, mergeMemories",
               "expected_behavior": "Preview the explicit target/source UUIDs and complete merged content. Use mergeMemories with exact expectedContents only when authorised and exposed; verify target and source removal. Explain source deletion and cloud revision versus irreversible legacy-store boundaries. Never claim an entire organisation pass is atomic."
@@ -142,7 +142,7 @@
         "demo_recording_url": "https://www.openaikits.com/review/oak-memory-20261009-18b7655f0cd3cef8.mp4"
       },
       "publication": {
-        "release_notes": "0.1.4: Prefer the hosted atomic mergeMemories tool in the shared organisation workflow. Require exact originals, explicit targets and verified results; explain source deletion, edge collision handling and revision boundaries. Keep split/manual fallback non-transactional. Existing review submission remains separate from this prepared package."
+        "release_notes": "0.1.4: Prefer the hosted atomic mergeMemories tool in the shared organisation workflow. Require exact originals, explicit targets and verified results; explain source deletion, edge collision handling and revision boundaries. Keep split/manual fallback non-transactional. Existing review submission remains separate from this prepared package. The linked demo is from the previous build and does not validate the 0.1.4 atomic merge workflow; record and verify a matching demo before a new portal submission."
       }
     }
   },
