@@ -27,3 +27,14 @@ jobs:
         run: |
           cmp dist/index.mjs plugins/oak-memory/dist/index.mjs
           cmp dist/hook.mjs plugins/oak-memory/dist/hook.mjs
+      - uses: ./.github/actions/test-postgres
+        with:
+          port: '55437'
+          password: oak-disposable-test
+      - name: Verify local merge through real stdio
+        env:
+          PGPASSWORD: oak-disposable-test
+          OAK_MERGE_TEST_DATABASE_URL: postgresql://postgres:oak-disposable-test@127.0.0.1:55437/oak_stdio_merge_test
+        run: |
+          createdb -h 127.0.0.1 -p 55437 -U postgres oak_stdio_merge_test
+          npm run test:merge-stdio

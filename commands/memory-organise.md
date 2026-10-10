@@ -47,8 +47,9 @@ merging", "only fix links, don't touch content") and stay within it.
   undirected; one `add` per pair is enough.
 - **Tune strength** → `adjustMemoryLinkStrength`. Reflect the relationship: ~0.85 for tightly-coupled/
   near-synonymous, ~0.7 for clearly related, ~0.4 for loosely associative. (New links land at 0.7 by default.)
-- **Merge** duplicates → `updateMemory` on the survivor to fold in anything unique from the other, re-`add`
-  any links the other carried, then `deleteMemory` the redundant one. (Confirmed in step 3.)
+- **Merge** duplicates → `mergeMemories` with the survivor `targetMemoryId`, absorbed `sourceMemoryIds`,
+  complete merged `content`, and exact `expectedContents` for every original just read. Links move atomically.
+  If an original changed, reread and reconsider before retrying. (Confirmed in step 3.)
 - **Split** an overloaded node → `createMemory` one focused memory per distinct fact (link them with
   `relatedMemoryIds`), then either `updateMemory` the original down to a single remaining fact or
   `deleteMemory` it if fully superseded. (Confirmed in step 3.)

@@ -1,0 +1,39 @@
+name: Test PostgreSQL
+description: Prepare an isolated PostgreSQL 16 test database without Docker Hub pulls.
+inputs:
+  port:
+    description: Local test database port
+    required: true
+  password:
+    description: Disposable test role password
+    required: true
+  secondary-port:
+    description: Optional separate port for guarded security fixtures
+    required: false
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        TEST_PG_PORT: ${{ inputs.port }}
+        TEST_PG_SECONDARY_PORT: ${{ inputs.secondary-port }}
+        TEST_PG_PASSWORD: ${{ inputs.password }}
+      run: |
+        set -euo pipefail
+        sudo apt-get update -qq
+        sudo apt-get install -y postgresql-16 postgresql-16-pgvector
+        sudo pg_ctlcluster 16 main stop || true
+        sudo pg_conftool 16 main set port "$TEST_PG_PORT"
+        sudo pg_ctlcluster 16 main start
+        test_ports=("$TEST_PG_PORT")
+        if [[ -n "$TEST_PG_SECONDARY_PORT" ]]; then
+          sudo pg_createcluster 16 oaksecurity --port "$TEST_PG_SECONDARY_PORT" --start
+          test_ports+=("$TEST_PG_SECONDARY_PORT")
+        fi
+        for test_port in "${test_ports[@]}"; do
+          sudo -u postgres psql -p "$test_port" -v ON_ERROR_STOP=1 -v test_password="$TEST_PG_PASSWORD" <<'SQL'
+        ALTER USER postgres WITH PASSWORD :'test_password';
+        CREATE EXTENSION IF NOT EXISTS vector;
+        SQL
+          pg_isready -h 127.0.0.1 -p "$test_port" -U postgres
+        done

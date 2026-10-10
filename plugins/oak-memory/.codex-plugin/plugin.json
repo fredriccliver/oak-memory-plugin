@@ -1,6 +1,6 @@
 {
   "name": "oak-memory",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Persistent vector and graph memory for Codex, shared across projects and sessions.",
   "author": {
     "name": "Fredric Cliver",

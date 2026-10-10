@@ -44,6 +44,8 @@ const transport = new StdioClientTransport({
 const client = new Client({ name: 'oak-env-fallback-smoke', version: '1.0.0' });
 try {
   await client.connect(transport);
+  const merge = (await client.listTools()).tools.find(tool => tool.name === 'mergeMemories');
+  if (!merge || merge.annotations?.destructiveHint !== true) throw new Error('Merge tool missing');
   const result = await client.callTool({ name: 'getMemoryPolicy', arguments: {} });
   const text = result.content?.find((item) => item.type === 'text')?.text ?? '';
   for (const expected of [
@@ -76,6 +78,8 @@ const unconfiguredTransport = new StdioClientTransport({
 const unconfiguredClient = new Client({ name: 'oak-unconfigured-write-smoke', version: '1.0.0' });
 try {
   await unconfiguredClient.connect(unconfiguredTransport);
+  const deniedMerge = await unconfiguredClient.callTool({name: 'mergeMemories', arguments: {targetMemoryId: '00000000-0000-4000-8000-000000000001', sourceMemoryIds: ['00000000-0000-4000-8000-000000000002'], content: 'Merged', expectedContents: [{memoryId: '00000000-0000-4000-8000-000000000001', content: 'A'}, {memoryId: '00000000-0000-4000-8000-000000000002', content: 'B'}]}});
+  if (!deniedMerge.isError || !deniedMerge.content[0].text.includes('no memory policy scope')) throw new Error('Unconfigured merge was not refused');
   const result = await unconfiguredClient.callTool({
     name: 'updateMemory',
     arguments: { memoryId: '00000000-0000-0000-0000-000000000000', content: 'must not write' },

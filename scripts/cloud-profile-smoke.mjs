@@ -45,6 +45,7 @@ const http = createServer(async (req, res) => {
   server.registerTool('recallMemory', { inputSchema: {} }, async () => {
     await new Promise(resolve => setTimeout(resolve, 50)); return result({ graphId: graph });
   });
+  server.registerTool('mergeMemories', { inputSchema: {}, annotations: { destructiveHint: true } }, async () => graph === b ? { ...result({ error: 'reader cannot write' }), isError: true } : result({ graphId: graph, merged: true }));
   server.registerTool('createMemory', { inputSchema: {} }, async () => graph === b ? { ...result({ error: 'reader cannot write' }), isError: true } : result({ graphId: graph }));
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   res.on('close', () => { void transport.close(); void server.close(); });
@@ -142,12 +143,15 @@ try {
   try {
     await client.connect(transport);
     assert.ok((await client.listTools()).tools.some(t => t.name === 'selectMemoryProfile'));
+    assert.equal((await client.listTools()).tools.find(t => t.name === 'mergeMemories').annotations.destructiveHint, true);
+    assert.equal(JSON.parse((await client.callTool({ name: 'mergeMemories', arguments: {} })).content[0].text).merged, true);
     const identity = JSON.parse((await client.callTool({ name: 'currentMemoryStore', arguments: {} })).content[0].text);
     const connected = JSON.parse((await client.callTool({ name: 'memoryConnectionStatus', arguments: {} })).content[0].text);
     assert.equal(connected.verified, true); assert.equal(connected.store.storeId, a); assert.equal(connected.store.role, 'owner');
     assert.equal(identity.storeId, a); assert.equal(identity.authorUserId, 'person-1'); assert.equal(identity.role, 'owner');
     assert.equal(JSON.parse((await client.callTool({ name: 'getMemoryPolicy', arguments: {} })).content[0].text).policy.scope, 'important');
     assert.equal((await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'team' } })).isError, undefined);
+    assert.equal((await client.callTool({ name: 'mergeMemories', arguments: {} })).isError, true, 'cloud reader merge denied');
     writeFileSync(file, JSON.stringify({ ...config, defaultProfile: 'personal' }));
     assert.equal(JSON.parse((await client.callTool({ name: 'currentMemoryStore', arguments: {} })).content[0].text).storeId, b, 'stored defaults cannot change active session');
     writeFileSync(path.join(temp, 'oak-memory.env'), 'MEMORY_DATABASE_URL=postgresql://test:test@127.0.0.1:1/mock_only\n');

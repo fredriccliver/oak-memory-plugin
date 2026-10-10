@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { once } from 'node:events';
+import { randomUUID } from 'node:crypto';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { Pool } from 'pg';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+const connectionString = process.env.OAK_MERGE_TEST_DATABASE_URL;
+assert.ok(connectionString, 'Use the disposable merge test database');
+const url = new URL(connectionString);
+assert.ok(['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '55437' && url.pathname === '/oak_stdio_merge_test');
+const db = new Pool({connectionString});
+const home = mkdtempSync(`${tmpdir()}/oak-merge-stdio-`);
+let calls = 0, fail = false, duringEmbedding;
+const gateway = createServer(async (req,res) => {
+  for await (const _ of req) { /* consume request */ }
+  calls++;
+  if (duringEmbedding) await duringEmbedding();
+  res.writeHead(fail ? 503 : 200, {'content-type':'application/json'});
+  res.end(JSON.stringify(fail ? {error:{message:'fixture failure'}} : {data:[{embedding:Array(1536).fill(0.1)}]}));
+});
+let client;
+const entity = `merge-fixture-${randomUUID()}`;
+const call = (name,arguments_) => client.callTool({name,arguments:arguments_});
+const ok = async (name,args) => { const r=await call(name,args); assert.ok(!r.isError,JSON.stringify(r)); return r; };
+try {
+  await db.query('drop schema if exists memory cascade');
+  gateway.listen(0,'127.0.0.1'); await once(gateway,'listening');
+  const transport = new StdioClientTransport({command:process.execPath,args:[new URL('../dist/index.mjs',import.meta.url).pathname],env:{PATH:process.env.PATH??'',HOME:home,OAK_CONFIG_DIR:home,PLUGIN_ROOT:home,MEMORY_DATABASE_URL:connectionString,MEMORY_ENTITY_ID:entity,MEMORY_POLICY_SCOPE:'important',OLLAMA_BASE_URL:`http://127.0.0.1:${gateway.address().port}/v1`,OLLAMA_EMBEDDING_MODEL:'fixture'},stderr:'pipe'});
+  client = new Client({name:'merge-stdio-integration',version:'1'}); await client.connect(transport);
+  const advertised=(await client.listTools()).tools.find(t=>t.name==='mergeMemories');
+  assert.ok(advertised);assert.equal(advertised.annotations.destructiveHint,true);assert.equal(advertised.inputSchema.properties.sourceMemoryIds.maxItems,15);assert.ok(advertised.inputSchema.required.includes('expectedContents'));
+  const create = async content => { await ok('createMemory',{content}); return (await db.query('select id from memory.memories where entity_id=$1 and content=$2',[entity,content])).rows[0].id; };
+  const a=await create('A'),b=await create('B'),c=await create('C');
+  await ok('updateMemory',{memoryId:b,content:'B updated'});
+  const foreign=randomUUID();await db.query("insert into memory.memories(id,entity_id,content) values($1,'foreign','Untouched')",[foreign]);
+  for(const [from,to,type,strength] of [[a,c,'related',0.4],[b,c,'related',0.9],[b,c,'supports',0.5],[c,b,'contradicts',0.8],[b,a,'related',0.7]]) await db.query("insert into memory.edges(entity_id,from_id,to_id,type,origin,strength) values($1,$2,$3,$4,'conversation',$5)",[entity,from,to,type,strength]);
+  const input={targetMemoryId:a,sourceMemoryIds:[b],content:'A and B updated',expectedContents:[{memoryId:a,content:'A'},{memoryId:b,content:'B updated'}]};
+  const snapshot=async()=> (await db.query('select id,content,outgoing_edges from memory.memories order by id')).rows;
+  const before=await snapshot(), start=calls;
+  for(const invalid of [{...input,sourceMemoryIds:[a]},{...input,expectedContents:[input.expectedContents[0],input.expectedContents[0]]},{...input,content:'𓀀'.repeat(1300)},{...input,expectedContents:input.expectedContents.map(x=>({...x,content:'stale'}))},{...input,sourceMemoryIds:[foreign],expectedContents:[input.expectedContents[0],{memoryId:foreign,content:'Untouched'}]}]) assert.equal((await call('mergeMemories',invalid)).isError,true);
+  assert.equal(calls,start);assert.deepEqual(await snapshot(),before);
+  duringEmbedding=async()=>{duringEmbedding=undefined;await db.query('update memory.memories set content=$1 where id=$2',['Concurrent update',b]);};
+  assert.equal((await call('mergeMemories',input)).isError,true);
+  assert.equal((await db.query('select content from memory.memories where id=$1',[a])).rows[0].content,'A');
+  assert.equal((await db.query('select content from memory.memories where id=$1',[b])).rows[0].content,'Concurrent update');
+  await db.query('update memory.memories set content=$1 where id=$2',['B updated',b]);assert.deepEqual(await snapshot(),before);
+  fail=true;assert.equal((await call('mergeMemories',input)).isError,true);fail=false;assert.deepEqual(await snapshot(),before);
+  await db.query(`create function memory.reject_merge() returns trigger language plpgsql as $$ begin if new.content='A and B updated' then raise exception 'fixture failure'; end if; return new; end $$; create trigger reject_merge before update on memory.memories for each row execute function memory.reject_merge()`);
+  assert.equal((await call('mergeMemories',input)).isError,true);assert.deepEqual(await snapshot(),before);
+  assert.equal((await db.query("select to_regclass('memory.merge_history') name")).rows[0].name,null);
+  await db.query('drop trigger reject_merge on memory.memories');
+  await ok('mergeMemories',input);
+  assert.equal((await db.query('select content from memory.memories where id=$1',[a])).rows[0].content,input.content);
+  assert.equal((await db.query('select id from memory.memories where id=$1',[b])).rowCount,0);
+  const edges=(await db.query('select from_id,to_id,type,strength from memory.edges where entity_id=$1',[entity])).rows;
+  assert.equal(edges.length,3);assert.ok(edges.some(e=>e.from_id===a&&e.to_id===c&&e.type==='related'&&Math.abs(e.strength-.9)<.001));assert.ok(edges.some(e=>e.from_id===c&&e.to_id===a&&e.type==='contradicts'));assert.ok(edges.every(e=>e.from_id!==b&&e.to_id!==b&&e.from_id!==e.to_id));
+  assert.deepEqual((await db.query('select outgoing_edges from memory.memories where id=$1',[c])).rows[0].outgoing_edges,[a]);
+  const archive=(await db.query('select snapshot from memory.merge_history where entity_id=$1',[entity])).rows[0].snapshot;
+  assert.ok(archive.memories.some(m=>m.id===b&&m.content==='B updated'));assert.equal(archive.edges.length,5);
+  assert.equal((await db.query('select content from memory.memories where id=$1',[foreign])).rows[0].content,'Untouched');
+  const after=await snapshot();assert.equal((await call('mergeMemories',input)).isError,true);assert.deepEqual(await snapshot(),after);
+  console.log('PASS real stdio merge: schema, input limits, stale/foreign rejection, provider/transaction rollback, typed links, snapshots and replay');
+} finally {
+  await client?.close();await db.end();gateway.close();if(gateway.listening)await once(gateway,'close');rmSync(home,{recursive:true,force:true});
+}
