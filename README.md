@@ -1,6 +1,6 @@
 # oak-memory-plugin
 
-An OAK.memory plugin for **Codex and Claude Code** that provides persistent, cross-project long-term memory
+OAK.memory packages for **ChatGPT, Claude Desktop, Claude web, Cowork, Codex and Claude Code** that provides persistent, cross-project long-term memory
 about you, backed by a real vector+graph database rather than flat markdown notes.
 
 Claude Code's built-in memory is a folder of markdown notes. That's fine for lightweight preferences, but it
@@ -15,6 +15,35 @@ providers already are — general-purpose and domain-independent, not re-invente
 is the **entity-specific associative network**: associations differ per individual, so personalization comes
 from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
 infrastructure; the engine itself knows nothing about the AI client using it.
+
+> Enable only one of `oak-memory-cloud` and the local `oak-memory` plugin in a host session. The cloud package registers `oak-memory-cloud`; the local package registers `oak-memory`. Disable the other entry before connecting, then verify `currentMemoryStore` to confirm the intended store.
+
+## OAuth cloud plugin (ChatGPT and Claude)
+
+For hosted OAK.memory, use **OAK.memory Cloud**. It connects directly to
+`https://www.openaikits.com/api/mcp` with OAuth and uses no local process, database,
+Docker, Ollama or API key. The shared skills and host manifests live in
+[`plugins/oak-memory-cloud`](plugins/oak-memory-cloud).
+
+- **Claude Desktop / claude.ai / Cowork:** Customize → Plugins → Add → Add marketplace.
+  Enter `https://github.com/fredriccliver/oak-memory-plugin`, sync, then select
+  **OAK.memory Cloud** (`oak-memory-cloud`). The existing `oak-memory` plugin is
+  the local Node package. Complete the cloud plugin's OAK sign-in, select a store,
+  and enable it for the conversation. Organization policy may restrict marketplaces
+  or remote connectors; an installation does not override that policy.
+- **ChatGPT / Codex:** use the OpenAI portable ZIP built from the same source.
+  Public ChatGPT distribution requires OpenAI review and publication; a GitHub merge
+  does not publish or update that listing. See [cloud packaging and validation](docs/cloud-plugin.md).
+- **Direct remote connector:** use the same MCP URL in Customize → Connectors, not
+  in Add marketplace. Team/Enterprise organization connectors require an eligible
+  owner to register them before members can connect.
+
+Check `currentMemoryStore` and `listMemories` in a fresh conversation. A tool list or
+successful sign-in alone does not prove a working connection. Initial access is read-only;
+writing requires separate OAK OAuth consent, an eligible store role, credits and host approval.
+
+The following sections describe the existing **local Node plugin**, including its
+API-key cloud profiles. They are separate from the OAuth cloud plugin above.
 
 ## Cloud profiles and graph selection
 

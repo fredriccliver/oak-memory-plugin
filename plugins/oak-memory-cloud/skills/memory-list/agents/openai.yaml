@@ -1,0 +1,4 @@
+interface:
+  display_name: "List Memories"
+  short_description: "Browse saved memories in OAK.memory"
+  default_prompt: "Use $memory-list to browse saved memories."

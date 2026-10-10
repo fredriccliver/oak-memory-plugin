@@ -1,0 +1,4 @@
+interface:
+  display_name: "Memory Policy"
+  short_description: "View or edit the store policy"
+  default_prompt: "Use $memory-policy to view or edit the store policy."

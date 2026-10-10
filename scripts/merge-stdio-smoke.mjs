@@ -55,7 +55,34 @@ try {
   assert.equal((await call('mergeMemories',input)).isError,true);assert.deepEqual(await snapshot(),before);
   assert.equal((await db.query("select to_regclass('memory.merge_history') name")).rows[0].name,null);
   await db.query('drop trigger reject_merge on memory.memories');
-  await ok('mergeMemories',input);
+  // Hold the final target update open while another connection tries to link
+  // to the absorbed node. Its FK key-share lock must wait, then reject after
+  // the merge commits: no successfully committed link may disappear silently.
+  const gate=await db.connect(), edgeWriter=await db.connect();
+  let pendingMerge, pendingEdge;
+  const waitFor = async (sql, params=[]) => {
+    for(let i=0;i<100;i++) { if((await db.query(sql,params)).rowCount) return; await new Promise(resolve=>setTimeout(resolve,50)); }
+    throw new Error('Concurrency fixture did not reach expected lock boundary');
+  };
+  try {
+    await gate.query('select pg_advisory_lock(7916500)');
+    await db.query(`create function memory.pause_merge() returns trigger language plpgsql as $$ begin if new.content='A and B updated <|endoftext|>' then perform pg_advisory_xact_lock(7916500); end if; return new; end $$; create trigger pause_merge before update on memory.memories for each row execute function memory.pause_merge()`);
+    pendingMerge=call('mergeMemories',input);
+    await waitFor("select 1 from pg_locks where locktype='advisory' and objid=7916500 and not granted");
+    const pid=(await edgeWriter.query('select pg_backend_pid() pid')).rows[0].pid;
+    pendingEdge=edgeWriter.query("insert into memory.edges(entity_id,from_id,to_id,type,origin,strength) values($1,$2,$3,'supports','conversation',.8)",[entity,c,b]).then(()=>({created:true}),error=>({code:error.code}));
+    await waitFor("select 1 from pg_stat_activity where pid=$1 and wait_event_type='Lock'",[pid]);
+    await gate.query('select pg_advisory_unlock(7916500)');
+    assert.ok(!(await pendingMerge).isError);
+    assert.equal((await pendingEdge).code,'23503');
+  } finally {
+    await gate.query('select pg_advisory_unlock_all()');
+    if(pendingMerge) await pendingMerge;
+    if(pendingEdge) await pendingEdge;
+    gate.release();edgeWriter.release();
+    await db.query('drop trigger if exists pause_merge on memory.memories');
+  }
+  console.log('PASS concurrent source-link insertion waits for merge and fails safely after source deletion');
   assert.equal((await db.query('select content from memory.memories where id=$1',[a])).rows[0].content,input.content);
   assert.equal((await db.query('select id from memory.memories where id=$1',[b])).rowCount,0);
   const edges=(await db.query('select from_id,to_id,type,strength from memory.edges where entity_id=$1',[entity])).rows;

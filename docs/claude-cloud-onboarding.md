@@ -1,20 +1,36 @@
 # Use OAK.memory in Claude Code
 
+## Choose OAuth or a local Node profile
+
+For hosted OAK.memory with OAuth, install **oak-memory-cloud** from this repository's
+marketplace. It connects directly to the hosted server and needs no Node setup,
+API key, profile file or local database. See [OAuth cloud setup](cloud-plugin.md)
+for Desktop/company policy, consent and real tool verification.
+
+```sh
+claude plugin marketplace add https://github.com/fredriccliver/oak-memory-plugin
+claude plugin install oak-memory-cloud@oak-memory --scope user
+```
+
+Complete the host's OAuth sign-in, select your store and verify it with
+`currentMemoryStore` and `listMemories`. Installation alone does not prove access.
+
+The rest of this page documents the separate **oak-memory** local Node plugin's
+API-key cloud profiles. Choose that package only for local execution or explicit
+profile/API-key use. The two packages do not migrate or synchronize stored memories.
+
 Cloud memory needs Node.js 22 or later and a personal graph-bound key. It needs
 no Docker, Ollama, or database URL. Local and cloud graphs are separate stores.
 
 ## Install a verified checkout
 
-Cloud profiles were introduced in PR #4 on
-`feat/cloud-profiles-graph-selection`. The repository default branch is `master`.
-Before PR #4 is merged, use its branch checkout below. After the PR is merged,
-use `--branch master` instead. A repository merge does not imply an npm package
-release.
+Cloud profiles from PR #4 are merged. The repository default branch is `master`.
+A repository merge does not imply an npm package release.
 
-The published feature checkout workflow was verified on Claude Code 2.1.286:
+For the local Node package, use the current default branch:
 
 ```sh
-git clone --branch feat/cloud-profiles-graph-selection https://github.com/fredriccliver/oak-memory-plugin.git oak-memory-preview
+git clone --branch master https://github.com/fredriccliver/oak-memory-plugin.git oak-memory-preview
 cd oak-memory-preview
 npm ci
 claude plugin validate .claude-plugin/plugin.json

@@ -84,6 +84,10 @@ export async function mergeMemories(env: Env, raw: MergeMemoriesInput) {
     await db.query('select pg_advisory_xact_lock(hashtext($1))', [`merge:${env.memoryEntityId}`]);
     await db.query('select id from memory.memories where entity_id=$1 and id=any($2::uuid[]) order by id for update', [env.memoryEntityId, ids]);
     await checkOriginals();
+    // Serialize edits to existing incident links. New links require FK key-share
+    // locks on these memory rows, so inserts into absorbed nodes cannot slip
+    // between remapping and deletion.
+    await db.query('select id from memory.edges where entity_id=$1 and (from_id=any($2::uuid[]) or to_id=any($2::uuid[])) order by id for update', [env.memoryEntityId, ids]);
     // Local stores have no cloud provenance tables. Keep a complete pre-merge
     // snapshot, including source UUIDs/metadata and directed typed relationships.
     await db.query(`create table if not exists memory.merge_history (

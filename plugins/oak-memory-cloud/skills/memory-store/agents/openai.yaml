@@ -1,0 +1,4 @@
+interface:
+  display_name: "Switch Memory Store"
+  short_description: "Check or change the selected memory store"
+  default_prompt: "Use $memory-store to check or change the selected memory store."

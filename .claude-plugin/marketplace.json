@@ -1,6 +1,6 @@
 {
   "name": "oak-memory",
-  "description": "Persistent vector+graph long-term memory for Claude Code, backed by Postgres+pgvector.",
+  "description": "OAK.memory local and OAuth cloud plugins for Claude.",
   "owner": {
     "name": "Fredric Cliver",
     "url": "https://github.com/fredriccliver"
@@ -11,6 +11,12 @@
       "source": "./",
       "description": "Persistent vector+graph long-term memory for Claude Code, backed by Postgres+pgvector.",
       "version": "0.3.0"
+    },
+    {
+      "name": "oak-memory-cloud",
+      "source": "./plugins/oak-memory-cloud",
+      "description": "Connect your private OAK.memory cloud store with OAuth. List, search, save and organise memories in Claude chat, Desktop, Cowork and Claude Code.",
+      "version": "0.1.3"
     }
   ]
 }
