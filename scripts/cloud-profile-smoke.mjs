@@ -118,6 +118,11 @@ try {
     }
   }
   const session = new ProfileSession(config, 'personal');
+  delete process.env.MEMORY_POLICY_SCOPE;
+  const requestsBeforePolicy = requests.length;
+  assert.equal((await session.callTool('mergeMemories')).isError, true, 'unconfigured client policy blocks cloud merges');
+  assert.equal(requests.length, requestsBeforePolicy, 'policy denial must not contact cloud');
+  process.env.MEMORY_POLICY_SCOPE = 'important';
   assert.ok((await session.listTools()).tools.some(t => t.name === 'currentMemoryStore'));
   const pending = session.callTool('recallMemory');
   await session.select('team');

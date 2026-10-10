@@ -74,11 +74,13 @@ export async function mergeMemories(env: Env, raw: MergeMemoriesInput) {
     if (rows.rowCount !== ids.length) throw new Error('Memory not found');
     if (rows.rows.some(row => !input.expectedContents.some(item => item.memoryId === row.id && item.content === row.content))) throw new Error('Memory content changed; reread before merging');
   };
+  let inTransaction = false;
   try {
     await checkOriginals(); // Reject stale/foreign records before Ollama.
     const embedding = await new LocalOllamaEmbeddingAdapter(env.ollamaBaseUrl, env.ollamaEmbeddingModel).generateEmbedding(input.content);
     if (embedding.length !== 1536 || embedding.some(value => !Number.isFinite(value))) throw new Error('Invalid embedding vector');
     await db.query('begin');
+    inTransaction = true;
     await db.query('select pg_advisory_xact_lock(hashtext($1))', [`merge:${env.memoryEntityId}`]);
     await db.query('select id from memory.memories where entity_id=$1 and id=any($2::uuid[]) order by id for update', [env.memoryEntityId, ids]);
     await checkOriginals();
@@ -92,7 +94,8 @@ export async function mergeMemories(env: Env, raw: MergeMemoriesInput) {
         'edges',coalesce((select jsonb_agg(to_jsonb(e)) from memory.edges e where entity_id=$1 and (from_id=any($3::uuid[]) or to_id=any($3::uuid[]))),'[]'::jsonb))`, [env.memoryEntityId,input.targetMemoryId,ids]);
     await mergeMemoryRows(db, env.memoryEntityId, input, embedding);
     await db.query('commit');
+    inTransaction = false;
     return { targetMemoryId: input.targetMemoryId, removedMemoryIds: input.sourceMemoryIds };
-  } catch (error) { await db.query('rollback'); throw error; }
+  } catch (error) { if (inTransaction) await db.query('rollback').catch(() => {}); throw error; }
   finally { db.release(); await pool.end(); }
 }

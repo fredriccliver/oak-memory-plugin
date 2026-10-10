@@ -30062,7 +30062,7 @@ var ProfileSession = class {
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
   }
   async withClient(snapshot, run) {
-    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.2.0" });
+    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.3.0" });
     const profile = snapshot.profile;
     const transport = profile.backend === "cloud" ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
       requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, "X-Oak-Graph": profile.graphId } },
@@ -30105,7 +30105,7 @@ var ProfileSession = class {
   }
   async callTool(name, args = {}) {
     const snapshot = this.snapshot();
-    if (snapshot.profile.backend === "cloud" && ["createMemory", "updateMemory", "deleteMemory", "updateMemoryLink", "adjustMemoryLinkStrength"].includes(name) && loadPolicy(() => {
+    if (snapshot.profile.backend === "cloud" && ["createMemory", "updateMemory", "mergeMemories", "deleteMemory", "updateMemoryLink", "adjustMemoryLinkStrength"].includes(name) && loadPolicy(() => {
     }).scope === null) {
       return { ...text({ error: "Configure the client memory policy before storing memories." }), isError: true };
     }
@@ -30114,7 +30114,7 @@ var ProfileSession = class {
 };
 async function startProfileBridge(config2, name) {
   const session = new ProfileSession(config2, name);
-  const server = new Server({ name: "oak-memory-plugin", version: "0.2.0" }, {
+  const server = new Server({ name: "oak-memory-plugin", version: "0.3.0" }, {
     capabilities: { tools: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}
 
@@ -34094,11 +34094,13 @@ async function mergeMemories(env, raw) {
     if (rows.rowCount !== ids.length) throw new Error("Memory not found");
     if (rows.rows.some((row) => !input.expectedContents.some((item) => item.memoryId === row.id && item.content === row.content))) throw new Error("Memory content changed; reread before merging");
   };
+  let inTransaction = false;
   try {
     await checkOriginals();
     const embedding = await new LocalOllamaEmbeddingAdapter(env.ollamaBaseUrl, env.ollamaEmbeddingModel).generateEmbedding(input.content);
     if (embedding.length !== 1536 || embedding.some((value) => !Number.isFinite(value))) throw new Error("Invalid embedding vector");
     await db.query("begin");
+    inTransaction = true;
     await db.query("select pg_advisory_xact_lock(hashtext($1))", [`merge:${env.memoryEntityId}`]);
     await db.query("select id from memory.memories where entity_id=$1 and id=any($2::uuid[]) order by id for update", [env.memoryEntityId, ids]);
     await checkOriginals();
@@ -34110,9 +34112,11 @@ async function mergeMemories(env, raw) {
         'edges',coalesce((select jsonb_agg(to_jsonb(e)) from memory.edges e where entity_id=$1 and (from_id=any($3::uuid[]) or to_id=any($3::uuid[]))),'[]'::jsonb))`, [env.memoryEntityId, input.targetMemoryId, ids]);
     await mergeMemoryRows(db, env.memoryEntityId, input, embedding);
     await db.query("commit");
+    inTransaction = false;
     return { targetMemoryId: input.targetMemoryId, removedMemoryIds: input.sourceMemoryIds };
   } catch (error2) {
-    await db.query("rollback");
+    if (inTransaction) await db.query("rollback").catch(() => {
+    });
     throw error2;
   } finally {
     db.release();
