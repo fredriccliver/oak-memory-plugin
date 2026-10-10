@@ -48,7 +48,7 @@ export class ProfileSession {
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
   }
   async withClient<T>(snapshot: Selection, run: (client: Client) => Promise<T>): Promise<T> {
-    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.2.0' });
+    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.2.1' });
     const profile = snapshot.profile;
     const transport = profile.backend === 'cloud'
       ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
@@ -93,7 +93,7 @@ export class ProfileSession {
 
 export async function startProfileBridge(config: Profiles, name: string) {
   const session = new ProfileSession(config, name);
-  const server = new Server({ name: 'oak-memory-plugin', version: '0.2.0' }, {
+  const server = new Server({ name: 'oak-memory-plugin', version: '0.2.1' }, {
     capabilities: { tools: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}`,
   });

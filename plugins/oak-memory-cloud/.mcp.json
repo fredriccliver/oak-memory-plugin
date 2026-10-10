@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "oak-memory": {
+      "type": "http",
+      "url": "https://www.openaikits.com/api/mcp"
+    }
+  }
+}

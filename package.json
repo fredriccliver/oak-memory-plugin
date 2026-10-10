@@ -1,6 +1,6 @@
 {
   "name": "oak-memory-plugin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Claude Code and Codex plugin exposing @openaikits/memory as an MCP server for persistent, cross-project long-term memory.",
   "type": "module",
   "private": true,
@@ -19,17 +19,20 @@
     "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs",
     "test:cloud-profiles": "node scripts/cloud-profile-smoke.mjs",
     "test:local-backend": "node scripts/local-backend-roundtrip.mjs",
-    "test:claude-host": "node scripts/claude-host-fixture.mjs"
+    "test:claude-host": "node scripts/claude-host-fixture.mjs",
+    "check:cloud-plugin": "node scripts/package-cloud-plugin.mjs --check",
+    "package:cloud:openai": "node scripts/package-cloud-plugin.mjs openai",
+    "package:cloud:claude": "node scripts/package-cloud-plugin.mjs claude"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@openaikits/memory": "https://codeload.github.com/fredriccliver/Memory/tar.gz/961829f092caacf0e1960734f7d3c5a6a1d72da9",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.10.9",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.2",
     "typescript": "^5.6.0"
   }
 }

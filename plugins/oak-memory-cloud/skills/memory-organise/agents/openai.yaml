@@ -1,0 +1,4 @@
+interface:
+  display_name: "Organise Memories"
+  short_description: "Organise the selected memory graph"
+  default_prompt: "Use $memory-organise to organise the selected memory graph."

@@ -3,3 +3,5 @@ dist-ts/
 .env
 *.log
 .DS_Store
+
+artifacts/

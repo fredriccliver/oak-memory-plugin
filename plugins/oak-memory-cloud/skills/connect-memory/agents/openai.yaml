@@ -1,0 +1,4 @@
+interface:
+  display_name: "Connect Memory"
+  short_description: "Connect and verify your OAK.memory store"
+  default_prompt: "Use $connect-memory to connect OAK.memory and verify the selected store."

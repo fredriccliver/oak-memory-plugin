@@ -11,11 +11,20 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
   if (typeof require !== "undefined") return require.apply(this, arguments);
   throw Error('Dynamic require of "' + x + '" is not supported');
 });
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+var __esm = (fn, res, err) => function __init() {
+  if (err) throw err[0];
+  try {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  } catch (e) {
+    throw err = [e], e;
+  }
 };
 var __commonJS = (cb, mod) => function __require2() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 var __export = (target, all) => {
   for (var name in all)
@@ -3114,9 +3123,28 @@ var require_utils = __commonJS({
     "use strict";
     var isUUID = RegExp.prototype.test.bind(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu);
     var isIPv4 = RegExp.prototype.test.bind(/^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u);
+    var isPort = RegExp.prototype.test.bind(/^\d*$/u);
     var isHexPair = RegExp.prototype.test.bind(/^[\da-f]{2}$/iu);
     var isUnreserved = RegExp.prototype.test.bind(/^[\da-z\-._~]$/iu);
-    var isPathCharacter = RegExp.prototype.test.bind(/^[\da-z\-._~!$&'()*+,;=:@/]$/iu);
+    var isPathCharacter = RegExp.prototype.test.bind(/^[A-Za-z0-9\-._~!$&'()*+,;=:@/]$/u);
+    var isQueryFragmentCharacter = RegExp.prototype.test.bind(/^[A-Za-z0-9\-._~!$&'()*+,;=:@/?]$/u);
+    var isUserinfoCharacter = RegExp.prototype.test.bind(/^[A-Za-z0-9\-._~!$&'()*+,;=:]$/u);
+    var BYTE_HEX = new Array(256);
+    {
+      const HEX_DIGITS = "0123456789ABCDEF";
+      for (let i = 0; i < 256; i++) {
+        BYTE_HEX[i] = "%" + HEX_DIGITS[i >> 4] + HEX_DIGITS[i & 15];
+      }
+    }
+    function percentEncodeNonAscii(cp) {
+      if (cp < 2048) {
+        return BYTE_HEX[192 | cp >> 6] + BYTE_HEX[128 | cp & 63];
+      }
+      if (cp < 65536) {
+        return BYTE_HEX[224 | cp >> 12] + BYTE_HEX[128 | cp >> 6 & 63] + BYTE_HEX[128 | cp & 63];
+      }
+      return BYTE_HEX[240 | cp >> 18] + BYTE_HEX[128 | cp >> 12 & 63] + BYTE_HEX[128 | cp >> 6 & 63] + BYTE_HEX[128 | cp & 63];
+    }
     function stringArrayToHexStripped(input) {
       let acc = "";
       let code = 0;
@@ -3141,91 +3169,105 @@ var require_utils = __commonJS({
       }
       return acc;
     }
+    var isHextet = RegExp.prototype.test.bind(/^[\dA-Fa-f]{1,4}$/);
+    var isIPvFuture = RegExp.prototype.test.bind(/^[vV][\dA-Fa-f]+\.[A-Za-z\d\-._~!$&'()*+,;=:]+$/);
+    var isZoneCharacter = RegExp.prototype.test.bind(/^[A-Za-z\d\-._~]$/);
     var nonSimpleDomain = RegExp.prototype.test.bind(/[^!"$&'()*+,\-.;=_`a-z{}~]/u);
-    function consumeIsZone(buffer) {
-      buffer.length = 0;
-      return true;
-    }
-    function consumeHextets(buffer, address, output) {
-      if (buffer.length) {
-        const hex = stringArrayToHexStripped(buffer);
-        if (hex !== "") {
-          address.push(hex);
-        } else {
-          output.error = true;
-          return false;
+    function isZoneIdentifier(zone) {
+      if (zone.length === 0) return false;
+      for (let i = 0; i < zone.length; i++) {
+        if (isZoneCharacter(zone[i])) continue;
+        if (zone[i] === "%" && i + 2 < zone.length && isHexPair(zone.slice(i + 1, i + 3))) {
+          i += 2;
+          continue;
         }
-        buffer.length = 0;
+        return false;
       }
       return true;
     }
-    function getIPV6(input) {
-      let tokenCount = 0;
-      const output = { error: false, address: "", zone: "" };
-      const address = [];
-      const buffer = [];
-      let endipv6Encountered = false;
-      let endIpv6 = false;
-      let consume = consumeHextets;
-      for (let i = 0; i < input.length; i++) {
-        const cursor = input[i];
-        if (cursor === "[" || cursor === "]") {
-          continue;
-        }
-        if (cursor === ":") {
-          if (endipv6Encountered === true) {
-            endIpv6 = true;
+    function compressIPv6ZeroRun(hextets) {
+      let bestStart = -1;
+      let bestLength = 0;
+      let runStart = -1;
+      let runLength = 0;
+      for (let i = 0; i < hextets.length; i++) {
+        if (hextets[i] === "0") {
+          if (runStart === -1) runStart = i;
+          runLength++;
+          if (runLength > bestLength) {
+            bestLength = runLength;
+            bestStart = runStart;
           }
-          if (!consume(buffer, address, output)) {
-            break;
-          }
-          if (++tokenCount > 7) {
-            output.error = true;
-            break;
-          }
-          if (i > 0 && input[i - 1] === ":") {
-            endipv6Encountered = true;
-          }
-          address.push(":");
-          continue;
-        } else if (cursor === "%") {
-          if (!consume(buffer, address, output)) {
-            break;
-          }
-          consume = consumeIsZone;
         } else {
-          buffer.push(cursor);
-          continue;
+          runStart = -1;
+          runLength = 0;
         }
       }
-      if (buffer.length) {
-        if (consume === consumeIsZone) {
-          output.zone = buffer.join("");
-        } else if (endIpv6) {
-          address.push(buffer.join(""));
-        } else {
-          address.push(stringArrayToHexStripped(buffer));
-        }
+      if (bestLength < 2) return hextets.join(":");
+      const head = hextets.slice(0, bestStart).join(":");
+      const tail = hextets.slice(bestStart + bestLength).join(":");
+      return head + "::" + tail;
+    }
+    function normalizeIPv6Address(input) {
+      const compression = input.indexOf("::");
+      if (compression !== -1 && input.indexOf("::", compression + 1) !== -1) return void 0;
+      const left = compression === -1 ? input.split(":") : input.slice(0, compression).split(":");
+      const right = compression === -1 ? [] : input.slice(compression + 2).split(":");
+      if (compression !== -1) {
+        if (left.length === 1 && left[0] === "") left.length = 0;
+        if (right.length === 1 && right[0] === "") right.length = 0;
       }
-      output.address = address.join("");
-      return output;
+      const parts = left.concat(right);
+      let hextetCount = 0;
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (part === "") return void 0;
+        if (part.indexOf(".") !== -1) {
+          if (i !== parts.length - 1 || compression !== -1 && right.length === 0 || !isIPv4(part)) return void 0;
+          hextetCount += 2;
+          continue;
+        }
+        if (!isHextet(part)) return void 0;
+        parts[i] = parseInt(part, 16).toString(16);
+        hextetCount++;
+      }
+      if (compression === -1) {
+        if (hextetCount !== 8) return void 0;
+        return compressIPv6ZeroRun(parts);
+      }
+      if (hextetCount >= 8) return void 0;
+      const expanded = parts.slice(0, left.length);
+      for (let i = hextetCount; i < 8; i++) expanded.push("0");
+      for (let i = left.length; i < parts.length; i++) expanded.push(parts[i]);
+      return compressIPv6ZeroRun(expanded);
     }
     function normalizeIPv6(host) {
-      if (findToken(host, ":") < 2) {
-        return { host, isIPV6: false };
+      const bracketed = host[0] === "[" && host[host.length - 1] === "]";
+      const hasBracket = host[0] === "[" || host[host.length - 1] === "]";
+      if (hasBracket && !bracketed) return { host, isIPV6: false, error: true };
+      let input = bracketed ? host.slice(1, -1) : host;
+      if (bracketed && isIPvFuture(input)) {
+        input = input.toLowerCase();
+        return { host: `[${input}]`, escapedHost: input, isIPV6: false, isIPVFuture: true };
       }
-      const ipv62 = getIPV6(host);
-      if (!ipv62.error) {
-        let newHost = ipv62.address;
-        let escapedHost = ipv62.address;
-        if (ipv62.zone) {
-          newHost += "%" + ipv62.zone;
-          escapedHost += "%25" + ipv62.zone;
-        }
-        return { host: newHost, isIPV6: true, escapedHost };
-      } else {
-        return { host, isIPV6: false };
+      if (findToken(input, ":") < 2) {
+        return { host, isIPV6: false, error: bracketed };
       }
+      let zoneIdentifier = "";
+      const zoneSeparator = input.indexOf("%");
+      if (zoneSeparator !== -1) {
+        const separatorLength = input.slice(zoneSeparator, zoneSeparator + 3).toLowerCase() === "%25" ? 3 : 1;
+        zoneIdentifier = input.slice(zoneSeparator + separatorLength);
+        if (!isZoneIdentifier(zoneIdentifier)) return { host, isIPV6: false, error: true };
+        input = input.slice(0, zoneSeparator);
+      }
+      const address = normalizeIPv6Address(input);
+      if (address === void 0) return { host, isIPV6: false, error: true };
+      return {
+        host: address + (zoneIdentifier ? "%" + zoneIdentifier : ""),
+        escapedHost: address + (zoneIdentifier ? "%25" + zoneIdentifier : ""),
+        isIPV6: true
+      };
     }
     function findToken(str, token) {
       let ind = 0;
@@ -3344,7 +3386,8 @@ var require_utils = __commonJS({
     function normalizePathEncoding(input) {
       let output = "";
       for (let i = 0; i < input.length; i++) {
-        if (input[i] === "%" && i + 2 < input.length) {
+        const ch = input[i];
+        if (ch === "%" && i + 2 < input.length) {
           const hex = input.slice(i + 1, i + 3);
           if (isHexPair(hex)) {
             const normalizedHex = hex.toUpperCase();
@@ -3358,10 +3401,152 @@ var require_utils = __commonJS({
             continue;
           }
         }
-        if (isPathCharacter(input[i])) {
-          output += input[i];
+        if (isPathCharacter(ch)) {
+          output += ch;
         } else {
-          output += escape(input[i]);
+          const code = input.charCodeAt(i);
+          if (code < 128) {
+            output += isEscapeSafe(code) ? ch : BYTE_HEX[code];
+          } else if (code < 55296 || code > 57343) {
+            output += percentEncodeNonAscii(code);
+          } else if (code <= 56319 && i + 1 < input.length) {
+            const low = input.charCodeAt(i + 1);
+            if (low >= 56320 && low <= 57343) {
+              output += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              i++;
+            } else {
+              output += percentEncodeNonAscii(65533);
+            }
+          } else {
+            output += percentEncodeNonAscii(65533);
+          }
+        }
+      }
+      return output;
+    }
+    function serializePathEncoding(input, pathNoScheme = false) {
+      let output = "";
+      let firstSegment = pathNoScheme && input[0] !== "/";
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === "%" && i + 2 < input.length) {
+          const hex = input.slice(i + 1, i + 3);
+          if (isHexPair(hex)) {
+            output += "%" + hex.toUpperCase();
+            i += 2;
+            continue;
+          }
+        }
+        if (ch === "/") {
+          firstSegment = false;
+        }
+        if (isPathCharacter(ch) && (ch !== ":" || !firstSegment)) {
+          output += ch;
+        } else {
+          const code = input.charCodeAt(i);
+          if (code < 128) {
+            output += BYTE_HEX[code];
+          } else if (code < 55296 || code > 57343) {
+            output += percentEncodeNonAscii(code);
+          } else if (code <= 56319 && i + 1 < input.length) {
+            const low = input.charCodeAt(i + 1);
+            if (low >= 56320 && low <= 57343) {
+              output += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              i++;
+            } else {
+              output += percentEncodeNonAscii(65533);
+            }
+          } else {
+            output += percentEncodeNonAscii(65533);
+          }
+        }
+      }
+      return output;
+    }
+    function encodeComponent(input, isAllowed) {
+      let output = "";
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === "%" && i + 2 < input.length) {
+          const hex = input.slice(i + 1, i + 3);
+          if (isHexPair(hex)) {
+            output += "%" + hex.toUpperCase();
+            i += 2;
+            continue;
+          }
+        }
+        if (isAllowed(ch)) {
+          output += ch;
+        } else {
+          const code = input.charCodeAt(i);
+          if (code < 128) {
+            output += BYTE_HEX[code];
+          } else if (code < 55296 || code > 57343) {
+            output += percentEncodeNonAscii(code);
+          } else if (code <= 56319 && i + 1 < input.length) {
+            const low = input.charCodeAt(i + 1);
+            if (low >= 56320 && low <= 57343) {
+              output += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              i++;
+            } else {
+              output += percentEncodeNonAscii(65533);
+            }
+          } else {
+            output += percentEncodeNonAscii(65533);
+          }
+        }
+      }
+      return output;
+    }
+    function encodeUserinfo(input) {
+      return encodeComponent(input, isUserinfoCharacter);
+    }
+    function encodeQuery(input) {
+      return encodeComponent(input, isQueryFragmentCharacter);
+    }
+    function encodeFragment(input) {
+      return encodeComponent(input, isQueryFragmentCharacter);
+    }
+    function isEscapeSafe(cp) {
+      return cp >= 48 && cp <= 57 || cp >= 65 && cp <= 90 || cp >= 97 && cp <= 122 || cp === 42 || cp === 43 || cp === 45 || cp === 46 || cp === 47 || cp === 64 || cp === 95;
+    }
+    function normalizeQueryFragmentEncoding(input) {
+      let output = "";
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === "%" && i + 2 < input.length) {
+          const hex = input.slice(i + 1, i + 3);
+          if (isHexPair(hex)) {
+            const normalizedHex = hex.toUpperCase();
+            const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
+            if (isUnreserved(decoded)) {
+              output += decoded;
+            } else {
+              output += "%" + normalizedHex;
+            }
+            i += 2;
+            continue;
+          }
+        }
+        if (isQueryFragmentCharacter(ch)) {
+          output += ch;
+        } else {
+          const code = input.charCodeAt(i);
+          if (code < 128) {
+            output += isEscapeSafe(code) ? ch : BYTE_HEX[code];
+          } else if (code < 55296 || code > 57343) {
+            output += percentEncodeNonAscii(code);
+          } else if (code <= 56319 && i + 1 < input.length) {
+            const low = input.charCodeAt(i + 1);
+            if (low >= 56320 && low <= 57343) {
+              output += percentEncodeNonAscii(65536 + (code - 55296 << 10) + (low - 56320));
+              i++;
+            } else {
+              output += percentEncodeNonAscii(65533);
+            }
+          } else {
+            output += percentEncodeNonAscii(65533);
+          }
         }
       }
       return output;
@@ -3384,14 +3569,18 @@ var require_utils = __commonJS({
     function recomposeAuthority(component) {
       const uriTokens = [];
       if (component.userinfo !== void 0) {
-        uriTokens.push(component.userinfo);
+        uriTokens.push(encodeUserinfo(component.userinfo));
         uriTokens.push("@");
       }
       if (component.host !== void 0) {
-        let host = unescape(component.host);
+        let host = component.host;
         if (!isIPv4(host)) {
-          const ipV6res = normalizeIPv6(host);
-          if (ipV6res.isIPV6 === true) {
+          let ipV6res = normalizeIPv6(host);
+          if (ipV6res.isIPV6 !== true && ipV6res.isIPVFuture !== true) {
+            host = normalizePercentEncoding(host, true);
+            ipV6res = normalizeIPv6(host);
+          }
+          if (ipV6res.isIPV6 === true || ipV6res.isIPVFuture === true) {
             host = `[${ipV6res.escapedHost}]`;
           } else {
             host = reescapeHostDelimiters(host, false);
@@ -3400,8 +3589,12 @@ var require_utils = __commonJS({
         uriTokens.push(host);
       }
       if (typeof component.port === "number" || typeof component.port === "string") {
+        const port = String(component.port);
+        if (!isPort(port)) {
+          throw new TypeError("URI port is malformed.");
+        }
         uriTokens.push(":");
-        uriTokens.push(String(component.port));
+        uriTokens.push(port);
       }
       return uriTokens.length ? uriTokens.join("") : void 0;
     }
@@ -3411,6 +3604,11 @@ var require_utils = __commonJS({
       reescapeHostDelimiters,
       normalizePercentEncoding,
       normalizePathEncoding,
+      serializePathEncoding,
+      normalizeQueryFragmentEncoding,
+      encodeUserinfo,
+      encodeQuery,
+      encodeFragment,
       escapePreservingEscapes,
       removeDotSegments,
       isIPv4,
@@ -3426,7 +3624,7 @@ var require_schemes = __commonJS({
   "node_modules/fast-uri/lib/schemes.js"(exports, module) {
     "use strict";
     var { isUUID } = require_utils();
-    var URN_REG = /([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-.:;=@]|%[\da-f]{2})+)/iu;
+    var URN_REG = /^([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-./:;=@]|%[\da-f]{2})+)$/iu;
     var supportedSchemeNames = (
       /** @type {const} */
       [
@@ -3487,9 +3685,10 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path4, query] = wsComponent.resourceName.split("?");
+        const queryIndex = wsComponent.resourceName.indexOf("?");
+        const path4 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
         wsComponent.path = path4 && path4 !== "/" ? path4 : void 0;
-        wsComponent.query = query;
+        wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
       wsComponent.fragment = void 0;
@@ -3501,7 +3700,7 @@ var require_schemes = __commonJS({
         return urnComponent;
       }
       const matches = urnComponent.path.match(URN_REG);
-      if (matches) {
+      if (matches && matches[0] === urnComponent.path) {
         const scheme = options.scheme || urnComponent.scheme || "urn";
         urnComponent.nid = matches[1].toLowerCase();
         urnComponent.nss = matches[2];
@@ -3635,8 +3834,17 @@ var require_schemes = __commonJS({
 var require_fast_uri = __commonJS({
   "node_modules/fast-uri/index.js"(exports, module) {
     "use strict";
-    var { normalizeIPv6, removeDotSegments, recomposeAuthority, normalizePercentEncoding, normalizePathEncoding, escapePreservingEscapes, reescapeHostDelimiters, isIPv4, nonSimpleDomain } = require_utils();
+    var { normalizeIPv6, removeDotSegments, recomposeAuthority, normalizePercentEncoding, normalizePathEncoding, serializePathEncoding, normalizeQueryFragmentEncoding, encodeQuery, encodeFragment, reescapeHostDelimiters, isIPv4, nonSimpleDomain } = require_utils();
     var { SCHEMES, getSchemeHandler } = require_schemes();
+    var VALID_SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*$/u;
+    var MALFORMED_SCHEME_ERROR = "URI scheme is malformed.";
+    function decodeValidScheme(scheme) {
+      const decodedScheme = unescape(String(scheme));
+      if (!VALID_SCHEME.test(decodedScheme)) {
+        throw new TypeError(MALFORMED_SCHEME_ERROR);
+      }
+      return decodedScheme;
+    }
     function normalize(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
@@ -3649,7 +3857,34 @@ var require_fast_uri = __commonJS({
     }
     function resolve(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
-      const resolved = resolveComponent(parse3(baseURI, schemelessOptions), parse3(relativeURI, schemelessOptions), schemelessOptions, true);
+      const {
+        parsed: baseParsed,
+        malformedAuthorityOrPort: baseMalformed,
+        malformedPercentEncoding: baseMalformedPercentEncoding,
+        malformedSchemeSpecific: baseMalformedSchemeSpecific,
+        malformedHost: baseMalformedHost,
+        malformedScheme: baseMalformedScheme
+      } = parseWithStatus(baseURI, schemelessOptions);
+      const {
+        parsed: relativeParsed,
+        malformedAuthorityOrPort: relativeMalformed,
+        malformedPercentEncoding: relativeMalformedPercentEncoding,
+        malformedSchemeSpecific: relativeMalformedSchemeSpecific,
+        malformedHost: relativeMalformedHost,
+        malformedScheme: relativeMalformedScheme
+      } = parseWithStatus(relativeURI, schemelessOptions);
+      if (baseMalformed || relativeMalformed || baseMalformedPercentEncoding || relativeMalformedPercentEncoding || baseMalformedSchemeSpecific || relativeMalformedSchemeSpecific || baseMalformedHost || relativeMalformedHost || baseMalformedScheme || relativeMalformedScheme) {
+        throw new Error(baseParsed.error || relativeParsed.error || "URI is malformed.");
+      }
+      const resolved = resolveComponent(baseParsed, relativeParsed, schemelessOptions, true);
+      const resolvedSchemeHandler = getSchemeHandler(options && options.scheme || resolved.scheme);
+      const resolvedHost = resolved.host;
+      const resolvedHostIsIP = resolvedHost !== void 0 && resolvedHost !== "" && (isIPv4(resolvedHost) || normalizeIPv6(resolvedHost).isIPV6);
+      canonicalizeHost(resolved, options || {}, resolvedSchemeHandler, resolvedHostIsIP);
+      const encodedASCIIHost = resolvedHost && resolvedHost.indexOf("%") !== -1 && !/\P{ASCII}/u.test(resolvedHost);
+      if (resolved.error && !encodedASCIIHost) {
+        throw new Error(resolved.error);
+      }
       schemelessOptions.skipEscape = true;
       return serialize(resolved, schemelessOptions);
     }
@@ -3709,7 +3944,7 @@ var require_fast_uri = __commonJS({
     function equal(uriA, uriB, options) {
       const normalizedA = normalizeComparableURI(uriA, options);
       const normalizedB = normalizeComparableURI(uriB, options);
-      return normalizedA !== void 0 && normalizedB !== void 0 && normalizedA.toLowerCase() === normalizedB.toLowerCase();
+      return normalizedA !== void 0 && normalizedB !== void 0 && normalizedA === normalizedB;
     }
     function serialize(cmpts, opts) {
       const component = {
@@ -3730,19 +3965,22 @@ var require_fast_uri = __commonJS({
       };
       const options = Object.assign({}, opts);
       const uriTokens = [];
+      if (component.scheme) {
+        component.scheme = decodeValidScheme(component.scheme);
+      }
       const schemeHandler = getSchemeHandler(options.scheme || component.scheme);
       if (schemeHandler && schemeHandler.serialize) schemeHandler.serialize(component, options);
+      const hasAuthority = component.userinfo !== void 0 || component.host !== void 0 || component.port !== void 0;
+      const pathNoScheme = !options.skipEscape && component.scheme === void 0 && !hasAuthority;
       if (component.path !== void 0) {
         if (!options.skipEscape) {
-          component.path = escapePreservingEscapes(component.path);
-          if (component.scheme !== void 0) {
-            component.path = component.path.split("%3A").join(":");
-          }
+          component.path = serializePathEncoding(component.path, pathNoScheme);
         } else {
           component.path = normalizePercentEncoding(component.path);
         }
       }
       if (options.reference !== "suffix" && component.scheme) {
+        component.scheme = decodeValidScheme(component.scheme);
         uriTokens.push(component.scheme, ":");
       }
       const authority = recomposeAuthority(component);
@@ -3760,20 +3998,25 @@ var require_fast_uri = __commonJS({
         if (!options.absolutePath && (!schemeHandler || !schemeHandler.absolutePath)) {
           s = removeDotSegments(s);
         }
+        if (pathNoScheme) {
+          s = serializePathEncoding(s, true);
+        }
         if (authority === void 0 && s[0] === "/" && s[1] === "/") {
           s = "/%2F" + s.slice(2);
         }
         uriTokens.push(s);
       }
       if (component.query !== void 0) {
-        uriTokens.push("?", component.query);
+        uriTokens.push("?", encodeQuery(component.query));
       }
       if (component.fragment !== void 0) {
-        uriTokens.push("#", component.fragment);
+        uriTokens.push("#", encodeFragment(component.fragment));
       }
       return uriTokens.join("");
     }
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
+    var AUTHORITY_PREFIX = /^(?:[^#/:?]+:)?\/\/([^/?#]*)/;
+    var AUTHORITY_INTRODUCER_REGION = /^(?:[^#/:?]+:)?([/\\\t\n\r]*)/;
     function getParseError(parsed, matches) {
       if (matches[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
         return 'URI path must start with "/" when authority is present.';
@@ -3782,6 +4025,35 @@ var require_fast_uri = __commonJS({
         return "URI port is malformed.";
       }
       return void 0;
+    }
+    function hasMalformedPercentEncoding(component) {
+      if (component === void 0) return false;
+      let percent = component.indexOf("%");
+      while (percent !== -1) {
+        if (percent + 2 >= component.length || !/^[\da-f]{2}$/iu.test(component.slice(percent + 1, percent + 3))) {
+          return true;
+        }
+        percent = component.indexOf("%", percent + 3);
+      }
+      return false;
+    }
+    function isIPLiteral(host) {
+      return host[0] === "[" && host[host.length - 1] === "]";
+    }
+    function hasMalformedComponentPercentEncoding(matches) {
+      const host = matches[4];
+      return hasMalformedPercentEncoding(matches[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches[6]) || hasMalformedPercentEncoding(matches[7]) || hasMalformedPercentEncoding(matches[8]);
+    }
+    function canonicalizeHost(parsed, options, schemeHandler, isIP) {
+      if (!options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport) && parsed.host && !isIPLiteral(parsed.host) && (options.domainHost || schemeHandler && schemeHandler.domainHost) && isIP === false && nonSimpleDomain(parsed.host)) {
+        try {
+          parsed.host = new URL("http://" + parsed.host).hostname;
+        } catch (e) {
+          parsed.error = parsed.error || "Host's domain name can not be converted to ASCII: " + e;
+          return true;
+        }
+      }
+      return false;
     }
     function parseWithStatus(uri, opts) {
       const options = Object.assign({}, opts);
@@ -3795,12 +4067,36 @@ var require_fast_uri = __commonJS({
         fragment: void 0
       };
       let malformedAuthorityOrPort = false;
+      let malformedPercentEncoding = false;
+      let malformedSchemeSpecific = false;
+      let malformedHost = false;
+      let malformedIPLiteral = false;
+      let malformedScheme = false;
       let isIP = false;
       if (options.reference === "suffix") {
         if (options.scheme) {
           uri = options.scheme + ":" + uri;
         } else {
           uri = "//" + uri;
+        }
+      }
+      const authorityMatch = uri.match(AUTHORITY_PREFIX);
+      if (authorityMatch !== null && authorityMatch[1].indexOf("\\") !== -1) {
+        parsed.error = "URI authority must not contain a literal backslash.";
+        malformedAuthorityOrPort = true;
+      }
+      const introducerMatch = uri.match(AUTHORITY_INTRODUCER_REGION);
+      if (introducerMatch !== null) {
+        const region = introducerMatch[1];
+        const normalizedRegion = region.replace(/[\t\n\r]/g, "");
+        if (normalizedRegion.length >= 2) {
+          if (normalizedRegion.slice(0, 2) !== "//") {
+            parsed.error = parsed.error || "URI authority must not contain a literal backslash.";
+            malformedAuthorityOrPort = true;
+          } else if (region.length !== normalizedRegion.length) {
+            parsed.error = parsed.error || "URI authority introducer must not contain whitespace.";
+            malformedAuthorityOrPort = true;
+          }
         }
       }
       const matches = uri.match(URI_PARSE);
@@ -3812,6 +4108,19 @@ var require_fast_uri = __commonJS({
         parsed.path = matches[6] || "";
         parsed.query = matches[7];
         parsed.fragment = matches[8];
+        if (parsed.scheme !== void 0) {
+          const decodedScheme = unescape(parsed.scheme);
+          if (VALID_SCHEME.test(decodedScheme)) {
+            parsed.scheme = decodedScheme.toLowerCase();
+          } else {
+            parsed.error = parsed.error || MALFORMED_SCHEME_ERROR;
+            malformedScheme = true;
+          }
+        }
+        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches);
+        if (malformedPercentEncoding) {
+          parsed.error = parsed.error || "URI contains malformed percent-encoding.";
+        }
         if (isNaN(parsed.port)) {
           parsed.port = matches[5];
         }
@@ -3823,9 +4132,16 @@ var require_fast_uri = __commonJS({
         if (parsed.host) {
           const ipv4result = isIPv4(parsed.host);
           if (ipv4result === false) {
+            const bracketedIPLiteral = isIPLiteral(parsed.host);
+            const hasIPLiteralBracket = parsed.host.indexOf("[") !== -1 || parsed.host.indexOf("]") !== -1;
             const ipv6result = normalizeIPv6(parsed.host);
-            parsed.host = ipv6result.host.toLowerCase();
-            isIP = ipv6result.isIPV6;
+            isIP = ipv6result.isIPV6 || ipv6result.isIPVFuture === true;
+            malformedIPLiteral = hasIPLiteralBracket && (!bracketedIPLiteral || ipv6result.error === true);
+            parsed.host = isIP ? ipv6result.host : ipv6result.host.toLowerCase();
+            if (malformedIPLiteral) {
+              parsed.error = parsed.error || "URI host is malformed.";
+              malformedAuthorityOrPort = true;
+            }
           } else {
             isIP = true;
           }
@@ -3843,42 +4159,37 @@ var require_fast_uri = __commonJS({
           parsed.error = parsed.error || "URI is not a " + options.reference + " reference.";
         }
         const schemeHandler = getSchemeHandler(options.scheme || parsed.scheme);
-        if (!options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport)) {
-          if (parsed.host && (options.domainHost || schemeHandler && schemeHandler.domainHost) && isIP === false && nonSimpleDomain(parsed.host)) {
-            try {
-              parsed.host = new URL("http://" + parsed.host).hostname;
-            } catch (e) {
-              parsed.error = parsed.error || "Host's domain name can not be converted to ASCII: " + e;
-            }
+        if (!malformedIPLiteral) {
+          malformedHost = canonicalizeHost(parsed, options, schemeHandler, isIP);
+        }
+        if (uri.indexOf("%") !== -1 && parsed.host !== void 0 && !malformedIPLiteral) {
+          let host = isIP ? parsed.host : normalizePercentEncoding(parsed.host, true);
+          if (!isIP) {
+            host = normalizePercentEncoding(host.toLowerCase());
           }
+          parsed.host = reescapeHostDelimiters(host, isIP);
         }
         if (!schemeHandler || schemeHandler && !schemeHandler.skipNormalize) {
-          if (uri.indexOf("%") !== -1) {
-            if (parsed.scheme !== void 0) {
-              parsed.scheme = unescape(parsed.scheme);
-            }
-            if (parsed.host !== void 0) {
-              parsed.host = reescapeHostDelimiters(unescape(parsed.host), isIP);
-            }
-          }
           if (parsed.path) {
             parsed.path = normalizePathEncoding(parsed.path);
           }
+          if (parsed.query) {
+            parsed.query = normalizeQueryFragmentEncoding(parsed.query);
+          }
           if (parsed.fragment) {
-            try {
-              parsed.fragment = encodeURI(decodeURIComponent(parsed.fragment));
-            } catch {
-              parsed.error = parsed.error || "URI malformed";
-            }
+            parsed.fragment = normalizeQueryFragmentEncoding(parsed.fragment);
           }
         }
         if (schemeHandler && schemeHandler.parse) {
           schemeHandler.parse(parsed, options);
+          if (schemeHandler === SCHEMES.urn && parsed.nid === void 0) {
+            malformedSchemeSpecific = true;
+          }
         }
       } else {
         parsed.error = parsed.error || "URI can not be parsed.";
       }
-      return { parsed, malformedAuthorityOrPort };
+      return { parsed, malformedAuthorityOrPort, malformedPercentEncoding, malformedSchemeSpecific, malformedHost, malformedScheme };
     }
     function parse3(uri, opts) {
       return parseWithStatus(uri, opts).parsed;
@@ -3887,20 +4198,28 @@ var require_fast_uri = __commonJS({
       return normalizeStringWithStatus(uri, opts).normalized;
     }
     function normalizeStringWithStatus(uri, opts) {
-      const { parsed, malformedAuthorityOrPort } = parseWithStatus(uri, opts);
+      const { parsed, malformedAuthorityOrPort, malformedPercentEncoding, malformedSchemeSpecific, malformedHost, malformedScheme } = parseWithStatus(uri, opts);
       return {
-        normalized: malformedAuthorityOrPort ? uri : serialize(parsed, opts),
-        malformedAuthorityOrPort
+        normalized: malformedAuthorityOrPort || malformedPercentEncoding || malformedSchemeSpecific || malformedHost || malformedScheme ? uri : serialize(parsed, opts),
+        malformedAuthorityOrPort,
+        malformedPercentEncoding,
+        malformedSchemeSpecific,
+        malformedHost,
+        malformedScheme
       };
     }
     function normalizeComparableURI(uri, opts) {
-      if (typeof uri === "string") {
-        const { normalized, malformedAuthorityOrPort } = normalizeStringWithStatus(uri, opts);
-        return malformedAuthorityOrPort ? void 0 : normalized;
+      if (typeof uri !== "string" && typeof uri !== "object") {
+        return void 0;
       }
-      if (typeof uri === "object") {
-        return serialize(uri, opts);
+      let value;
+      try {
+        value = typeof uri === "string" ? uri : serialize(uri, opts);
+      } catch {
+        return void 0;
       }
+      const { normalized, malformedAuthorityOrPort, malformedPercentEncoding, malformedSchemeSpecific, malformedHost, malformedScheme } = normalizeStringWithStatus(value, opts);
+      return malformedAuthorityOrPort || malformedPercentEncoding || malformedSchemeSpecific || malformedHost || malformedScheme ? void 0 : normalized;
     }
     var fastUri = {
       SCHEMES,
@@ -6894,6 +7213,110 @@ var require_dist = __commonJS({
   }
 });
 
+// node_modules/content-type/index.js
+var require_content_type = __commonJS({
+  "node_modules/content-type/index.js"(exports) {
+    "use strict";
+    var PARAM_REGEXP = /; *([!#$%&'*+.^_`|~0-9A-Za-z-]+) *= *("(?:[\u000b\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\u000b\u0020-\u00ff])*"|[!#$%&'*+.^_`|~0-9A-Za-z-]+) */g;
+    var TEXT_REGEXP = /^[\u000b\u0020-\u007e\u0080-\u00ff]+$/;
+    var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    var QESC_REGEXP = /\\([\u000b\u0020-\u00ff])/g;
+    var QUOTE_REGEXP = /([\\"])/g;
+    var TYPE_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+    exports.format = format;
+    exports.parse = parse3;
+    function format(obj) {
+      if (!obj || typeof obj !== "object") {
+        throw new TypeError("argument obj is required");
+      }
+      var parameters = obj.parameters;
+      var type = obj.type;
+      if (!type || !TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid type");
+      }
+      var string4 = type;
+      if (parameters && typeof parameters === "object") {
+        var param;
+        var params = Object.keys(parameters).sort();
+        for (var i = 0; i < params.length; i++) {
+          param = params[i];
+          if (!TOKEN_REGEXP.test(param)) {
+            throw new TypeError("invalid parameter name");
+          }
+          string4 += "; " + param + "=" + qstring(parameters[param]);
+        }
+      }
+      return string4;
+    }
+    function parse3(string4) {
+      if (!string4) {
+        throw new TypeError("argument string is required");
+      }
+      var header = typeof string4 === "object" ? getcontenttype(string4) : string4;
+      if (typeof header !== "string") {
+        throw new TypeError("argument string is required to be a string");
+      }
+      var index = header.indexOf(";");
+      var type = index !== -1 ? header.slice(0, index).trim() : header.trim();
+      if (!TYPE_REGEXP.test(type)) {
+        throw new TypeError("invalid media type");
+      }
+      var obj = new ContentType(type.toLowerCase());
+      if (index !== -1) {
+        var key;
+        var match;
+        var value;
+        PARAM_REGEXP.lastIndex = index;
+        while (match = PARAM_REGEXP.exec(header)) {
+          if (match.index !== index) {
+            throw new TypeError("invalid parameter format");
+          }
+          index += match[0].length;
+          key = match[1].toLowerCase();
+          value = match[2];
+          if (value.charCodeAt(0) === 34) {
+            value = value.slice(1, -1);
+            if (value.indexOf("\\") !== -1) {
+              value = value.replace(QESC_REGEXP, "$1");
+            }
+          }
+          obj.parameters[key] = value;
+        }
+        if (index !== header.length) {
+          throw new TypeError("invalid parameter format");
+        }
+      }
+      return obj;
+    }
+    function getcontenttype(obj) {
+      var header;
+      if (typeof obj.getHeader === "function") {
+        header = obj.getHeader("content-type");
+      } else if (typeof obj.headers === "object") {
+        header = obj.headers && obj.headers["content-type"];
+      }
+      if (typeof header !== "string") {
+        throw new TypeError("content-type header is missing from object");
+      }
+      return header;
+    }
+    function qstring(val) {
+      var str = String(val);
+      if (TOKEN_REGEXP.test(str)) {
+        return str;
+      }
+      if (str.length > 0 && !TEXT_REGEXP.test(str)) {
+        throw new TypeError("invalid parameter value");
+      }
+      return '"' + str.replace(QUOTE_REGEXP, "\\$1") + '"';
+    }
+    function ContentType(type) {
+      this.parameters = /* @__PURE__ */ Object.create(null);
+      this.type = type;
+    }
+  }
+});
+
 // node_modules/isexe/windows.js
 var require_windows = __commonJS({
   "node_modules/isexe/windows.js"(exports, module) {
@@ -8397,7 +8820,14 @@ var require_utils2 = __commonJS({
   "node_modules/pg/lib/utils.js"(exports, module) {
     "use strict";
     var defaults2 = require_defaults2();
+    var nodeUtils = __require("util");
     var { isDate } = __require("util/types");
+    var invalidDateDeprecationNotice = nodeUtils.deprecate(
+      () => {
+      },
+      "Sending an invalid date to Postgres is deprecated and will throw an error in the next major version of pg. Ensure any Date object passed as a query parameter is valid.",
+      "PG_INVALID_DATE"
+    );
     function escapeElement(elementRepresentation) {
       const escaped = elementRepresentation.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
       return '"' + escaped + '"';
@@ -8437,6 +8867,9 @@ var require_utils2 = __commonJS({
           return Buffer.from(val.buffer, val.byteOffset, val.byteLength);
         }
         if (isDate(val)) {
+          if (isNaN(val.getTime())) {
+            invalidDateDeprecationNotice();
+          }
           if (defaults2.parseInputDatesAsUTC) {
             return dateToStringUTC(val);
           } else {
@@ -8487,7 +8920,7 @@ var require_utils2 = __commonJS({
       return ret;
     }
     function normalizeQueryConfig(config2, values, callback) {
-      config2 = typeof config2 === "string" ? { text: config2 } : config2;
+      config2 = typeof config2 === "string" ? { text: config2 } : cloneQueryConfig(config2);
       if (values) {
         if (typeof values === "function") {
           config2.callback = values;
@@ -8499,6 +8932,12 @@ var require_utils2 = __commonJS({
         config2.callback = callback;
       }
       return config2;
+    }
+    function cloneQueryConfig(config2) {
+      if (config2 == null) {
+        return config2;
+      }
+      return Object.defineProperties(Object.create(Object.getPrototypeOf(config2)), Object.getOwnPropertyDescriptors(config2));
     }
     var escapeIdentifier2 = function(str) {
       return '"' + str.replace(/"/g, '""') + '"';
@@ -8689,7 +9128,7 @@ var require_cert_signatures = __commonJS({
           }
           throw x509Error("unknown hash OID " + hashOID, data);
         }
-        // Ed25519 -- see https: return//github.com/openssl/openssl/issues/15477
+        // Ed25519 -- see https://github.com/openssl/openssl/issues/15477
         case "1.3.101.110":
         case "1.3.101.112":
           return "SHA-512";
@@ -8961,7 +9400,7 @@ var require_pg_connection_string = __commonJS({
         config2.client_encoding = result.searchParams.get("encoding");
         return config2;
       }
-      const hostname2 = dummyHost ? "" : result.hostname;
+      const hostname2 = (dummyHost ? "" : result.hostname).replace(/^\[(.+)\]$/, "$1");
       if (!config2.host) {
         config2.host = decodeURIComponent(hostname2);
       } else if (hostname2 && /^%2f/i.test(hostname2)) {
@@ -9478,7 +9917,7 @@ var require_query = __commonJS({
         if (typeof this.text !== "string" && typeof this.name !== "string") {
           return new Error("A query must have either text or a name. Supplying neither is unsupported.");
         }
-        const previous = connection.parsedStatements[this.name];
+        const previous = connection.parsedStatements[this.name] || connection.submittedNamedStatements[this.name];
         if (this.text && previous && this.text !== previous) {
           return new Error(`Prepared statements must be unique - '${this.name}' was used for a different statement`);
         }
@@ -9498,7 +9937,7 @@ var require_query = __commonJS({
         return null;
       }
       hasBeenParsed(connection) {
-        return this.name && connection.parsedStatements[this.name];
+        return this.name && (connection.parsedStatements[this.name] !== void 0 || connection.submittedNamedStatements[this.name] !== void 0);
       }
       handlePortalSuspended(connection) {
         this._getRows(connection, this.rows);
@@ -9522,6 +9961,9 @@ var require_query = __commonJS({
             name: this.name,
             types: this.types
           });
+          if (this.name) {
+            connection.submittedNamedStatements[this.name] = this.text;
+          }
         }
         try {
           connection.bind({
@@ -9737,7 +10179,7 @@ var require_buffer_writer = __commonJS({
           const oldBuffer = this.buffer;
           const newSize = oldBuffer.length + (oldBuffer.length >> 1) + size;
           this.buffer = Buffer.allocUnsafe(newSize);
-          oldBuffer.copy(this.buffer);
+          oldBuffer.copy(this.buffer, 0, 0, this.offset);
         }
       }
       addInt32(num) {
@@ -9797,6 +10239,15 @@ var require_buffer_writer = __commonJS({
         otherBuffer.copy(this.buffer, this.offset);
         this.offset += otherBuffer.length;
         return this;
+      }
+      /**
+       * Appends an uninitialized block of {@link size} bytes to the buffer and returns its offset.
+       */
+      reserveUnsafe(size) {
+        const offset = this.offset;
+        this.ensure(size);
+        this.offset += size;
+        return offset;
       }
       join(code) {
         if (code) {
@@ -9890,30 +10341,23 @@ var require_serializer = __commonJS({
         /* code.parse */
       );
     };
-    var paramWriter = new buffer_writer_1.Writer();
-    var writeValues = function(values, valueMapper) {
-      for (let i = 0; i < values.length; i++) {
+    var writeValues = function(values, valueMapper, formatsOffset) {
+      const len = values.length;
+      for (let i = 0; i < len; i++) {
         const mappedVal = valueMapper ? valueMapper(values[i], i) : values[i];
+        let formatByte = 0;
         if (mappedVal == null) {
-          writer.addInt16(
-            0
-            /* ParamType.STRING */
-          );
-          paramWriter.addInt32(-1);
+          writer.addInt32(-1);
         } else if (mappedVal instanceof Buffer) {
-          writer.addInt16(
-            1
-            /* ParamType.BINARY */
-          );
-          paramWriter.addInt32(mappedVal.length);
-          paramWriter.add(mappedVal);
+          formatByte = 1;
+          writer.addInt32(mappedVal.length);
+          writer.add(mappedVal);
         } else {
-          writer.addInt16(
-            0
-            /* ParamType.STRING */
-          );
-          paramWriter.addInt32PrefixedString(mappedVal);
+          writer.addInt32PrefixedString(mappedVal);
         }
+        const buf = writer.buffer;
+        buf[formatsOffset++] = 0;
+        buf[formatsOffset++] = formatByte;
       }
     };
     var bind = (config2 = {}) => {
@@ -9924,15 +10368,14 @@ var require_serializer = __commonJS({
       const len = values.length;
       writer.addCString(portal).addCString(statement);
       writer.addInt16(len);
+      const formatsOffset = writer.reserveUnsafe(len * 2);
+      writer.addInt16(len);
       try {
-        writeValues(values, config2.valueMapper);
+        writeValues(values, config2.valueMapper, formatsOffset);
       } catch (err) {
         writer.clear();
-        paramWriter.clear();
         throw err;
       }
-      writer.addInt16(len);
-      writer.add(paramWriter.flush());
       writer.addInt16(1);
       writer.addInt16(
         binary ? 1 : 0
@@ -10310,7 +10753,7 @@ var require_parser = __commonJS({
       const parameterCount = reader.int16();
       const message = new messages_1.ParameterDescriptionMessage(LATEINIT_LENGTH, parameterCount);
       for (let i = 0; i < parameterCount; i++) {
-        message.dataTypeIDs[i] = reader.int32();
+        message.dataTypeIDs[i] = reader.uint32();
       }
       return message;
     };
@@ -10531,6 +10974,7 @@ var require_connection = __commonJS({
         this._keepAlive = config2.keepAlive;
         this._keepAliveInitialDelayMillis = config2.keepAliveInitialDelayMillis;
         this.parsedStatements = {};
+        this.submittedNamedStatements = {};
         this.ssl = config2.ssl || false;
         this.sslNegotiation = config2.sslNegotiation || "postgres";
         this._ending = false;
@@ -10589,7 +11033,12 @@ var require_connection = __commonJS({
       upgradeToSSL(host, reportStreamError) {
         const self = this;
         const options = {
-          socket: self.stream
+          socket: self.stream,
+          // tls.connect checks the server identity against `servername`, falling
+          // back to `host` and then to 'localhost'. `servername` must stay unset
+          // for IP addresses (see below), so `host` is needed to keep certificate
+          // validation working when connecting to an IP address.
+          host
         };
         if (self.ssl !== true) {
           Object.assign(options, self.ssl);
@@ -10667,7 +11116,6 @@ var require_connection = __commonJS({
         }
       }
       sync() {
-        this._ending = true;
         this._send(syncBuffer);
       }
       ref() {
@@ -10712,8 +11160,8 @@ var require_split2 = __commonJS({
     "use strict";
     var { Transform } = __require("stream");
     var { StringDecoder } = __require("string_decoder");
-    var kLast = Symbol("last");
-    var kDecoder = Symbol("decoder");
+    var kLast = /* @__PURE__ */ Symbol("last");
+    var kDecoder = /* @__PURE__ */ Symbol("decoder");
     function transform2(chunk, enc, cb) {
       let list;
       if (this.overflow) {
@@ -11087,6 +11535,8 @@ var require_client = __commonJS({
           encoding: this.connectionParameters.client_encoding || "utf8"
         });
         this._queryQueue = [];
+        this._sentQueryQueue = [];
+        this.pipeline = Boolean(c.pipeline);
         this.binary = c.binary || defaults2.binary;
         this.processID = null;
         this.secretKey = null;
@@ -11121,6 +11571,8 @@ var require_client = __commonJS({
           enqueueError(activeQuery);
           this._activeQuery = null;
         }
+        this._sentQueryQueue.forEach(enqueueError);
+        this._sentQueryQueue.length = 0;
         this._queryQueue.forEach(enqueueError);
         this._queryQueue.length = 0;
       }
@@ -11363,6 +11815,9 @@ var require_client = __commonJS({
           return;
         }
         this._activeQuery = null;
+        if (activeQuery.name) {
+          delete this.connection.submittedNamedStatements[activeQuery.name];
+        }
         activeQuery.handleError(msg, this.connection);
       }
       _handleRowDescription(msg) {
@@ -11419,6 +11874,7 @@ var require_client = __commonJS({
         }
         if (activeQuery.name) {
           this.connection.parsedStatements[activeQuery.name] = activeQuery.text;
+          delete this.connection.submittedNamedStatements[activeQuery.name];
         }
       }
       _handleCopyInResponse(msg) {
@@ -11485,6 +11941,9 @@ var require_client = __commonJS({
           });
         } else if (client._queryQueue.indexOf(query) !== -1) {
           client._queryQueue.splice(client._queryQueue.indexOf(query), 1);
+        } else if (client._sentQueryQueue.indexOf(query) !== -1) {
+          query.callback = () => {
+          };
         }
       }
       setTypeParser(oid, format, parseFn) {
@@ -11503,6 +11962,10 @@ var require_client = __commonJS({
         return utils.escapeLiteral(str);
       }
       _pulseQueryQueue() {
+        if (this.pipeline) {
+          this._pulsePipelinedQueryQueue();
+          return;
+        }
         if (this.readyForQuery === true) {
           this._activeQuery = this._queryQueue.shift();
           const activeQuery = this._getActiveQuery();
@@ -11521,6 +11984,30 @@ var require_client = __commonJS({
             this._activeQuery = null;
             this.emit("drain");
           }
+        }
+      }
+      _pulsePipelinedQueryQueue() {
+        if (!this._connected || !this._queryable) {
+          return;
+        }
+        while (this._queryQueue.length > 0) {
+          const query = this._queryQueue.shift();
+          this.hasExecuted = true;
+          const queryError = query.submit(this.connection);
+          if (queryError) {
+            process.nextTick(() => {
+              query.handleError(queryError, this.connection);
+            });
+            continue;
+          }
+          this._sentQueryQueue.push(query);
+        }
+        if (this.readyForQuery && !this._activeQuery && this._sentQueryQueue.length > 0) {
+          this._activeQuery = this._sentQueryQueue.shift();
+          this.readyForQuery = false;
+        }
+        if (!this._activeQuery && this._sentQueryQueue.length === 0 && this._queryQueue.length === 0 && this.hasExecuted) {
+          this.emit("drain");
         }
       }
       query(config2, values, callback) {
@@ -11566,6 +12053,9 @@ var require_client = __commonJS({
             const index = this._queryQueue.indexOf(query);
             if (index > -1) {
               this._queryQueue.splice(index, 1);
+            } else if (this.pipeline) {
+              this.connection.stream.destroy();
+              return;
             }
             this._pulseQueryQueue();
           }, readTimeout);
@@ -11580,6 +12070,15 @@ var require_client = __commonJS({
         if (query._result && !query._result._types) {
           query._result._types = this._types;
         }
+        if (this.pipeline) {
+          const portalQuery = typeof config2.submit === "function" && !(query instanceof Query2) ? "Custom query classes such as pg-cursor and pg-query-stream are" : query.rows ? "The `rows` option is" : null;
+          if (portalQuery) {
+            process.nextTick(() => {
+              query.handleError(new Error(`${portalQuery} not supported in pipeline mode`), this.connection);
+            });
+            return result;
+          }
+        }
         if (!this._queryable) {
           process.nextTick(() => {
             query.handleError(new Error("Client has encountered a connection error and is not queryable"), this.connection);
@@ -11592,7 +12091,7 @@ var require_client = __commonJS({
           });
           return result;
         }
-        if (this._queryQueue.length > 0) {
+        if (this._queryQueue.length > 0 && !this.pipeline) {
           queryQueueLengthDeprecationNotice();
         }
         this._queryQueue.push(query);
@@ -11618,7 +12117,11 @@ var require_client = __commonJS({
             return this._Promise.resolve();
           }
         }
-        if (this._getActiveQuery() || !this._queryable) {
+        if (!this._queryable) {
+          this.connection.stream.destroy();
+        } else if (this.pipeline && (this._getActiveQuery() || this._sentQueryQueue.length > 0 || this._queryQueue.length > 0)) {
+          this.once("drain", () => this.connection.end());
+        } else if (this._getActiveQuery()) {
           this.connection.stream.destroy();
         } else {
           this.connection.end();
@@ -12097,6 +12600,8 @@ var require_query2 = __commonJS({
       sqlState: "code",
       statementPosition: "position",
       messagePrimary: "message",
+      messageDetail: "detail",
+      messageHint: "hint",
       context: "where",
       schemaName: "schema",
       tableName: "table",
@@ -12108,7 +12613,7 @@ var require_query2 = __commonJS({
       sourceFunction: "routine"
     };
     NativeQuery.prototype.handleError = function(err) {
-      const fields = this.native.pq.resultErrorFields();
+      const fields = this.native && this.native.pq.resultErrorFields();
       if (fields) {
         for (const key in fields) {
           const normalizedFieldName = errorFieldMap[key] || key;
@@ -12180,7 +12685,7 @@ var require_query2 = __commonJS({
           console.error("This can cause conflicts and silent errors executing queries");
         }
         const values = (this.values || []).map(utils.prepareValue);
-        if (client.namedQueries[this.name]) {
+        if (client.namedQueries[this.name] !== void 0) {
           if (this.text && client.namedQueries[this.name] !== this.text) {
             const err = new Error(`Prepared statements must be unique - '${this.name}' was used for a different statement`);
             return after(err);
@@ -12241,6 +12746,8 @@ var require_client2 = __commonJS({
       this._connecting = false;
       this._connected = false;
       this._queryable = true;
+      this.pipeline = Boolean(config2.pipeline);
+      this._pipelineInFlight = false;
       const cp = this.connectionParameters = new ConnectionParameters(config2);
       if (config2.nativeConnectionString) cp.nativeConnectionString = config2.nativeConnectionString;
       this.user = cp.user;
@@ -12384,7 +12891,7 @@ var require_client2 = __commonJS({
         });
         return result;
       }
-      if (this._queryQueue.length > 0) {
+      if (this._queryQueue.length > 0 && !this.pipeline) {
         queryQueueLengthDeprecationNotice();
       }
       this._queryQueue.push(query);
@@ -12406,14 +12913,21 @@ var require_client2 = __commonJS({
           cb = (err) => err ? reject(err) : resolve();
         });
       }
-      this.native.end(function() {
-        self._connected = false;
-        self._errorAllQueries(new Error("Connection terminated"));
-        process.nextTick(() => {
-          self.emit("end");
-          if (cb) cb();
+      const doEnd = function() {
+        self.native.end(function() {
+          self._connected = false;
+          self._errorAllQueries(new Error("Connection terminated"));
+          process.nextTick(() => {
+            self.emit("end");
+            if (cb) cb();
+          });
         });
-      });
+      };
+      if (this.pipeline && (this._pipelineInFlight || this._queryQueue.length > 0)) {
+        this.once("drain", doEnd);
+      } else {
+        doEnd();
+      }
       return result;
     };
     Client3.prototype._hasActiveQuery = function() {
@@ -12422,6 +12936,9 @@ var require_client2 = __commonJS({
     Client3.prototype._pulseQueryQueue = function(initialConnection) {
       if (!this._connected) {
         return;
+      }
+      if (this.pipeline && !initialConnection) {
+        return this._pulsePipelinedQueryQueue();
       }
       if (this._hasActiveQuery()) {
         return;
@@ -12438,6 +12955,73 @@ var require_client2 = __commonJS({
       const self = this;
       query.once("_done", function() {
         self._pulseQueryQueue();
+      });
+    };
+    Client3.prototype._pulsePipelinedQueryQueue = function() {
+      if (!this._connected || this._pipelineInFlight) {
+        return;
+      }
+      if (this._queryQueue.length === 0) {
+        if (this.hasExecuted) {
+          this.emit("drain");
+        }
+        return;
+      }
+      this._pipelineInFlight = true;
+      const self = this;
+      const queries = [];
+      const nativeQueries = [];
+      const utils = require_utils2();
+      while (this._queryQueue.length > 0) {
+        const query = this._queryQueue.shift();
+        this.hasExecuted = true;
+        nativeQueries.push(query);
+        const values = query.values ? query.values.map(utils.prepareValue) : null;
+        const pipelineEntry = { text: query.text, name: query.name, arrayMode: query._arrayMode };
+        if (values) {
+          pipelineEntry.values = values;
+        }
+        if (query.name && this.namedQueries[query.name]) {
+          pipelineEntry._alreadyPrepared = true;
+        }
+        queries.push(pipelineEntry);
+      }
+      this.native.pipeline(queries, function(err, results) {
+        self._pipelineInFlight = false;
+        if (err) {
+          self._connected = false;
+          self._queryable = false;
+          for (let i = 0; i < nativeQueries.length; i++) {
+            const q = nativeQueries[i];
+            q.native = self.native;
+            q.handleError(err);
+          }
+          self._errorAllQueries(err);
+          self.emit("error", err);
+          self.emit("end");
+          return;
+        }
+        for (let i = 0; i < nativeQueries.length; i++) {
+          const q = nativeQueries[i];
+          const r = results[i];
+          q.native = self.native;
+          if (r.err) {
+            q.handleError(r.err);
+          } else {
+            if (q.name) {
+              self.namedQueries[q.name] = q.text;
+            }
+            q.state = "end";
+            q.emit("end", r.result);
+            if (q.callback) {
+              q.callback(null, r.result);
+            }
+          }
+          setImmediate(function() {
+            q.emit("_done");
+          });
+        }
+        self._pulsePipelinedQueryQueue();
       });
     };
     Client3.prototype.cancel = function(query) {
@@ -16602,7 +17186,7 @@ ZodNaN.create = (params) => {
     ...processCreateParams(params)
   });
 };
-var BRAND = Symbol("zod_brand");
+var BRAND = /* @__PURE__ */ Symbol("zod_brand");
 var ZodBranded = class extends ZodType {
   _parse(input) {
     const { ctx } = this._processInputParams(input);
@@ -16804,14 +17388,14 @@ var ostring = () => stringType().optional();
 var onumber = () => numberType().optional();
 var oboolean = () => booleanType().optional();
 var coerce = {
-  string: (arg) => ZodString.create({ ...arg, coerce: true }),
-  number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
-  boolean: (arg) => ZodBoolean.create({
+  string: ((arg) => ZodString.create({ ...arg, coerce: true })),
+  number: ((arg) => ZodNumber.create({ ...arg, coerce: true })),
+  boolean: ((arg) => ZodBoolean.create({
     ...arg,
     coerce: true
-  }),
-  bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
-  date: (arg) => ZodDate.create({ ...arg, coerce: true })
+  })),
+  bigint: ((arg) => ZodBigInt.create({ ...arg, coerce: true })),
+  date: ((arg) => ZodDate.create({ ...arg, coerce: true }))
 };
 var NEVER = INVALID;
 
@@ -16862,7 +17446,6 @@ function $constructor(name, initializer3, params) {
   Object.defineProperty(_, "name", { value: name });
   return _;
 }
-var $brand = Symbol("zod_brand");
 var $ZodAsyncError = class extends Error {
   constructor() {
     super(`Encountered Promise during synchronous parse. Use .parseAsync() instead.`);
@@ -19415,8 +19998,6 @@ function en_default2() {
 }
 
 // node_modules/zod/v4/core/registries.js
-var $output = Symbol("ZodOutput");
-var $input = Symbol("ZodInput");
 var $ZodRegistry = class {
   constructor() {
     this._map = /* @__PURE__ */ new Map();
@@ -20735,10 +21316,10 @@ var ZodMiniType = /* @__PURE__ */ $constructor("ZodMiniType", (inst, def) => {
   };
   inst.clone = (_def, params) => clone(inst, _def, params);
   inst.brand = () => inst;
-  inst.register = (reg, meta) => {
+  inst.register = ((reg, meta) => {
     reg.add(inst, meta);
     return inst;
-  };
+  });
 });
 var ZodMiniObject = /* @__PURE__ */ $constructor("ZodMiniObject", (inst, def) => {
   $ZodObject.init(inst, def);
@@ -20841,16 +21422,32 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
+function getDotPath(path4) {
+  if (path4.length === 0) {
+    return "object root";
+  }
+  return path4.reduce((acc, seg, index) => {
+    if (index === 0) {
+      return String(seg);
+    }
+    if (typeof seg === "number") {
+      return `${acc}[${seg}]`;
+    }
+    return `${acc}.${seg}`;
+  }, "");
+}
 function getParseErrorMessage(error2) {
   if (error2 && typeof error2 === "object") {
+    if ("issues" in error2 && Array.isArray(error2.issues) && error2.issues.length > 0) {
+      return error2.issues.map((i) => {
+        if (!i.path?.length) {
+          return i.message;
+        }
+        return `${i.message} at ${getDotPath(i.path)}`;
+      }).join("\n");
+    }
     if ("message" in error2 && typeof error2.message === "string") {
       return error2.message;
-    }
-    if ("issues" in error2 && Array.isArray(error2.issues) && error2.issues.length > 0) {
-      const firstIssue = error2.issues[0];
-      if (firstIssue && typeof firstIssue === "object" && "message" in firstIssue) {
-        return String(firstIssue.message);
-      }
     }
     try {
       return JSON.stringify(error2);
@@ -21001,10 +21598,10 @@ var ZodType2 = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
   };
   inst.clone = (def2, params) => clone(inst, def2, params);
   inst.brand = () => inst;
-  inst.register = (reg, meta) => {
+  inst.register = ((reg, meta) => {
     reg.add(inst, meta);
     return inst;
-  };
+  });
   inst.parse = (data, params) => parse2(inst, data, params, { callee: inst.parse });
   inst.safeParse = (data, params) => safeParse3(inst, data, params);
   inst.parseAsync = async (data, params) => parseAsync2(inst, data, params, { callee: inst.parseAsync });
@@ -23055,11 +23652,13 @@ function assertCompleteRequestPrompt(request) {
   if (request.params.ref.type !== "ref/prompt") {
     throw new TypeError(`Expected CompleteRequestPrompt, but got ${request.params.ref.type}`);
   }
+  void request;
 }
 function assertCompleteRequestResourceTemplate(request) {
   if (request.params.ref.type !== "ref/resource") {
     throw new TypeError(`Expected CompleteRequestResourceTemplate, but got ${request.params.ref.type}`);
   }
+  void request;
 }
 var CompleteResultSchema = ResultSchema.extend({
   completion: looseObject({
@@ -23212,7 +23811,7 @@ function isTerminal(status) {
 }
 
 // node_modules/zod-to-json-schema/dist/esm/Options.js
-var ignoreOverride = Symbol("Let zodToJsonSchema decide on which parser to use");
+var ignoreOverride = /* @__PURE__ */ Symbol("Let zodToJsonSchema decide on which parser to use");
 var defaultOptions = {
   name: void 0,
   $refStrategy: "root",
@@ -24578,6 +25177,9 @@ var Protocol = class {
       this.setRequestHandler(GetTaskPayloadRequestSchema, async (request, extra) => {
         const handleTaskResult = async () => {
           const taskId = request.params.taskId;
+          if (!await this._taskStore.getTask(taskId, extra.sessionId)) {
+            throw new McpError(ErrorCode.InvalidParams, `Task not found: ${taskId}`);
+          }
           if (this._taskMessageQueue) {
             let queuedMessage;
             while (queuedMessage = await this._taskMessageQueue.dequeue(taskId, extra.sessionId)) {
@@ -24608,12 +25210,12 @@ var Protocol = class {
             throw new McpError(ErrorCode.InvalidParams, `Task not found: ${taskId}`);
           }
           if (!isTerminal(task.status)) {
-            await this._waitForTaskUpdate(taskId, extra.signal);
+            await this._waitForTaskUpdate(taskId, extra.signal, extra.sessionId);
             return await handleTaskResult();
           }
           if (isTerminal(task.status)) {
             const result = await this._taskStore.getTaskResult(taskId, extra.sessionId);
-            this._clearTaskQueue(taskId);
+            this._clearTaskQueue(taskId, extra.sessionId);
             return {
               ...result,
               _meta: {
@@ -24650,7 +25252,7 @@ var Protocol = class {
             throw new McpError(ErrorCode.InvalidParams, `Cannot cancel task in terminal status: ${task.status}`);
           }
           await this._taskStore.updateTaskStatus(request.params.taskId, "cancelled", "Client cancelled task execution.", extra.sessionId);
-          this._clearTaskQueue(request.params.taskId);
+          this._clearTaskQueue(request.params.taskId, extra.sessionId);
           const cancelledTask = await this._taskStore.getTask(request.params.taskId, extra.sessionId);
           if (!cancelledTask) {
             throw new McpError(ErrorCode.InvalidParams, `Task not found after cancellation: ${request.params.taskId}`);
@@ -24778,6 +25380,19 @@ var Protocol = class {
     const handler = this._requestHandlers.get(request.method) ?? this.fallbackRequestHandler;
     const capturedTransport = this._transport;
     const relatedTaskId = request.params?._meta?.[RELATED_TASK_META_KEY]?.taskId;
+    const sessionId = capturedTransport?.sessionId;
+    const store = this._taskStore;
+    let relatedTaskFound = true;
+    let relatedTaskLookup;
+    if (relatedTaskId && store && this._taskMessageQueue && sessionId !== void 0) {
+      relatedTaskFound = false;
+      relatedTaskLookup = (async () => {
+        if (!await store.getTask(relatedTaskId, sessionId)) {
+          throw new McpError(ErrorCode.InvalidParams, `Task not found: ${relatedTaskId}`);
+        }
+        relatedTaskFound = true;
+      })();
+    }
     if (handler === void 0) {
       const errorResponse = {
         jsonrpc: "2.0",
@@ -24787,7 +25402,10 @@ var Protocol = class {
           message: "Method not found"
         }
       };
-      if (relatedTaskId && this._taskMessageQueue) {
+      if (relatedTaskId && relatedTaskLookup) {
+        const queuedError = { type: "error", message: errorResponse, timestamp: Date.now() };
+        relatedTaskLookup.then(() => this._enqueueTaskMessage(relatedTaskId, queuedError, sessionId), () => capturedTransport?.send(errorResponse)).catch((error2) => this._onerror(new Error(`Failed to send an error response: ${error2}`)));
+      } else if (relatedTaskId && this._taskMessageQueue) {
         this._enqueueTaskMessage(relatedTaskId, {
           type: "error",
           message: errorResponse,
@@ -24838,7 +25456,10 @@ var Protocol = class {
       closeSSEStream: extra?.closeSSEStream,
       closeStandaloneSSEStream: extra?.closeStandaloneSSEStream
     };
-    Promise.resolve().then(() => {
+    (relatedTaskLookup ?? Promise.resolve()).then(() => {
+      if (relatedTaskLookup && abortController.signal.aborted) {
+        throw new McpError(ErrorCode.ConnectionClosed, "Request was cancelled");
+      }
       if (taskCreationParams) {
         this.assertTaskHandlerCapability(request.method);
       }
@@ -24873,7 +25494,7 @@ var Protocol = class {
           ...error2["data"] !== void 0 && { data: error2["data"] }
         }
       };
-      if (relatedTaskId && this._taskMessageQueue) {
+      if (relatedTaskId && this._taskMessageQueue && relatedTaskFound) {
         await this._enqueueTaskMessage(relatedTaskId, {
           type: "error",
           message: errorResponse,
@@ -25353,7 +25974,7 @@ var Protocol = class {
       throw new Error("Cannot enqueue task message: taskStore and taskMessageQueue are not configured");
     }
     const maxQueueSize = this._options?.maxTaskQueueSize;
-    await this._taskMessageQueue.enqueue(taskId, message, sessionId, maxQueueSize);
+    await this._taskMessageQueue.enqueue(taskId, message, sessionId ?? this._transport?.sessionId, maxQueueSize);
   }
   /**
    * Clears the message queue for a task and rejects any pending request resolvers.
@@ -25382,12 +26003,13 @@ var Protocol = class {
    * Uses polling to check for updates at the task's configured poll interval.
    * @param taskId The task ID to wait for
    * @param signal Abort signal to cancel the wait
+   * @param sessionId Session of the request that waits, passed to the task store
    * @returns Promise that resolves when an update occurs or rejects if aborted
    */
-  async _waitForTaskUpdate(taskId, signal) {
+  async _waitForTaskUpdate(taskId, signal, sessionId) {
     let interval = this._options?.defaultTaskPollInterval ?? 1e3;
     try {
-      const task = await this._taskStore?.getTask(taskId);
+      const task = await this._taskStore?.getTask(taskId, sessionId);
       if (task?.pollInterval) {
         interval = task.pollInterval;
       }
@@ -25873,16 +26495,7 @@ var Server = class extends Protocol {
     if (!methodSchema) {
       throw new Error("Schema is missing a method literal");
     }
-    let methodValue;
-    if (isZ4Schema(methodSchema)) {
-      const v4Schema = methodSchema;
-      const v4Def = v4Schema._zod?.def;
-      methodValue = v4Def?.value ?? v4Schema.value;
-    } else {
-      const v3Schema = methodSchema;
-      const legacyDef = v3Schema._def;
-      methodValue = legacyDef?.value ?? v3Schema.value;
-    }
+    const methodValue = getLiteralValue(methodSchema);
     if (typeof methodValue !== "string") {
       throw new Error("Schema method literal must be a string");
     }
@@ -26188,7 +26801,7 @@ var Server = class extends Protocol {
 };
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/server/completable.js
-var COMPLETABLE_SYMBOL = Symbol.for("mcp.completable");
+var COMPLETABLE_SYMBOL = /* @__PURE__ */ Symbol.for("mcp.completable");
 function isCompletable(schema) {
   return !!schema && typeof schema === "object" && COMPLETABLE_SYMBOL in schema;
 }
@@ -26275,6 +26888,42 @@ var ExperimentalMcpServerTasks = class {
 };
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js
+function toolInputElementCount(value, max) {
+  let count = 0;
+  const stack = [value];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (node === null || typeof node !== "object")
+      continue;
+    if (Array.isArray(node)) {
+      for (const child of node) {
+        if (++count > max)
+          return count;
+        if (child !== null && typeof child === "object")
+          stack.push(child);
+      }
+    } else {
+      for (const key in node) {
+        if (!Object.prototype.hasOwnProperty.call(node, key))
+          continue;
+        if (++count > max)
+          return count;
+        const child = node[key];
+        if (child !== null && typeof child === "object")
+          stack.push(child);
+      }
+    }
+  }
+  return count;
+}
+function resolveMaxToolInputElements(value) {
+  if (value === void 0 || value === Infinity)
+    return void 0;
+  if (typeof value !== "number" || Number.isNaN(value) || value < 1) {
+    throw new RangeError(`maxToolInputElements must be a number of at least 1, or Infinity, got ${String(value)}`);
+  }
+  return value;
+}
 var McpServer = class {
   constructor(serverInfo, options) {
     this._registeredResources = {};
@@ -26286,6 +26935,7 @@ var McpServer = class {
     this._resourceHandlersInitialized = false;
     this._promptHandlersInitialized = false;
     this.server = new Server(serverInfo, options);
+    this._maxToolInputElements = resolveMaxToolInputElements(options?.maxToolInputElements);
   }
   /**
    * Access experimental features.
@@ -26416,12 +27066,15 @@ var McpServer = class {
    * Validates tool input arguments against the tool's input schema.
    */
   async validateToolInput(tool, args, toolName) {
+    if (this._maxToolInputElements !== void 0 && toolInputElementCount(args, this._maxToolInputElements) > this._maxToolInputElements) {
+      throw new McpError(ErrorCode.InvalidParams, `Invalid arguments for tool ${toolName}: arguments contain more than the maximum of ${this._maxToolInputElements} elements`);
+    }
     if (!tool.inputSchema) {
       return void 0;
     }
     const inputObj = normalizeObjectSchema(tool.inputSchema);
     const schemaToParse = inputObj ?? tool.inputSchema;
-    const parseResult = await safeParseAsync2(schemaToParse, args);
+    const parseResult = await safeParseAsync2(schemaToParse, args ?? {});
     if (!parseResult.success) {
       const error2 = "error" in parseResult ? parseResult.error : "Unknown error";
       const errorMessage = getParseErrorMessage(error2);
@@ -26659,7 +27312,7 @@ var McpServer = class {
       }
       if (prompt.argsSchema) {
         const argsObj = normalizeObjectSchema(prompt.argsSchema);
-        const parseResult = await safeParseAsync2(argsObj, request.params.arguments);
+        const parseResult = await safeParseAsync2(argsObj, request.params.arguments ?? {});
         if (!parseResult.success) {
           const error2 = "error" in parseResult ? parseResult.error : "Unknown error";
           const errorMessage = getParseErrorMessage(error2);
@@ -27070,8 +27723,17 @@ var EMPTY_COMPLETION_RESULT = {
 import process2 from "node:process";
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/shared/stdio.js
+var STDIO_DEFAULT_MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 var ReadBuffer = class {
+  constructor(options) {
+    this._maxBufferSize = options?.maxBufferSize ?? STDIO_DEFAULT_MAX_BUFFER_SIZE;
+  }
   append(chunk) {
+    const newSize = (this._buffer?.length ?? 0) + chunk.length;
+    if (newSize > this._maxBufferSize) {
+      this.clear();
+      throw new Error(`ReadBuffer exceeded maximum size of ${this._maxBufferSize} bytes`);
+    }
     this._buffer = this._buffer ? Buffer.concat([this._buffer, chunk]) : chunk;
   }
   readMessage() {
@@ -27099,18 +27761,24 @@ function serializeMessage(message) {
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
 var StdioServerTransport = class {
-  constructor(_stdin = process2.stdin, _stdout = process2.stdout) {
+  constructor(_stdin = process2.stdin, _stdout = process2.stdout, options) {
     this._stdin = _stdin;
     this._stdout = _stdout;
-    this._readBuffer = new ReadBuffer();
     this._started = false;
     this._ondata = (chunk) => {
-      this._readBuffer.append(chunk);
-      this.processReadBuffer();
+      try {
+        this._readBuffer.append(chunk);
+        this.processReadBuffer();
+      } catch (error2) {
+        this.onerror?.(error2);
+        this.close().catch(() => {
+        });
+      }
     };
     this._onerror = (error2) => {
       this.onerror?.(error2);
     };
+    this._readBuffer = new ReadBuffer({ maxBufferSize: options?.maxBufferSize });
   }
   /**
    * Starts listening for messages on stdin.
@@ -27499,16 +28167,7 @@ var Client = class extends Protocol {
     if (!methodSchema) {
       throw new Error("Schema is missing a method literal");
     }
-    let methodValue;
-    if (isZ4Schema(methodSchema)) {
-      const v4Schema = methodSchema;
-      const v4Def = v4Schema._zod?.def;
-      methodValue = v4Def?.value ?? v4Schema.value;
-    } else {
-      const v3Schema = methodSchema;
-      const legacyDef = v3Schema._def;
-      methodValue = legacyDef?.value ?? v3Schema.value;
-    }
+    const methodValue = getLiteralValue(methodSchema);
     if (typeof methodValue !== "string") {
       throw new Error("Schema method literal must be a string");
     }
@@ -27899,6 +28558,23 @@ var Client = class extends Protocol {
   }
 };
 
+// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/mediaType.js
+var import_content_type = __toESM(require_content_type(), 1);
+function mediaTypeEssence(header) {
+  if (!header) {
+    return void 0;
+  }
+  try {
+    return import_content_type.default.parse(header).type;
+  } catch {
+    const essence = (header.split(";", 1)[0] ?? "").trim().toLowerCase();
+    if (essence === "" || header.slice(essence.length).includes(",")) {
+      return void 0;
+    }
+    return essence;
+  }
+}
+
 // node_modules/@modelcontextprotocol/sdk/dist/esm/shared/transport.js
 function normalizeHeaders(headers) {
   if (!headers)
@@ -27924,6 +28600,68 @@ function createFetchWithInit(baseFetch = fetch, baseInit) {
     };
     return baseFetch(url2, mergedInit);
   };
+}
+var MAX_REDIRECTS = 5;
+var REDIRECT_STATUSES = [301, 302, 303, 307, 308];
+function isWithinOrigin(from, to) {
+  if (from.protocol === to.protocol && from.hostname === to.hostname && from.port === to.port) {
+    return true;
+  }
+  return from.hostname === to.hostname && from.protocol === "http:" && from.port === "" && to.protocol === "https:" && to.port === "";
+}
+function redirectTarget(response, requestUrl) {
+  const location = REDIRECT_STATUSES.includes(response.status) ? response.headers.get("location") : null;
+  try {
+    return location ? new URL(location, requestUrl) : void 0;
+  } catch {
+    return void 0;
+  }
+}
+function followWithinOrigin(baseFetch, url2, init2, response, followed = 0) {
+  const target = redirectTarget(response, url2);
+  const keepsMethod = response.status === 307 || response.status === 308 || (init2?.method ?? "GET").toUpperCase() === "GET";
+  if (!target || followed === MAX_REDIRECTS || !keepsMethod) {
+    return void 0;
+  }
+  const from = new URL(url2);
+  const addsUserinfo = (target.username || target.password) && (target.username !== from.username || target.password !== from.password);
+  if (addsUserinfo || !isWithinOrigin(from, target)) {
+    return void 0;
+  }
+  return Promise.resolve(response.body?.cancel()).then(() => baseFetch(target, { ...init2, redirect: "manual" })).then((next) => followWithinOrigin(baseFetch, target, init2, next, followed + 1) ?? next);
+}
+var followingFetches = /* @__PURE__ */ new WeakSet();
+function fetchLeavingRedirects(baseFetch) {
+  const following = (url2, init2) => (baseFetch ?? fetch)(url2, init2);
+  followingFetches.add(following);
+  return following;
+}
+function fetchWithinOrigin(baseFetch = fetch) {
+  if (followingFetches.has(baseFetch)) {
+    return baseFetch;
+  }
+  return (url2, init2) => {
+    if (init2?.redirect === "error" || init2?.redirect === "manual") {
+      return baseFetch(url2, init2);
+    }
+    return Promise.resolve(baseFetch(url2, { ...init2, redirect: "manual" })).then((response) => followWithinOrigin(baseFetch, url2, init2, response) ?? response);
+  };
+}
+function unfollowedRedirect(response, requestUrl) {
+  if (response.type === "opaqueredirect") {
+    return "Redirect not followed: this runtime does not expose the redirect target";
+  }
+  const from = response.url || requestUrl;
+  const target = redirectTarget(response, from);
+  if (!target) {
+    return void 0;
+  }
+  target.username = target.password = target.search = target.hash = "";
+  if (target.protocol === "http:" && new URL(from).protocol === "https:") {
+    target.protocol = "https:";
+    return `Redirect to plain http not followed; try ${target.href} instead`;
+  }
+  return `Redirect to ${target.href} not followed`;
 }
 
 // node_modules/pkce-challenge/dist/index.node.js
@@ -28071,7 +28809,12 @@ var OAuthTokensSchema = object2({
   token_type: string2(),
   expires_in: coerce_exports2.number().optional(),
   scope: string2().optional(),
-  refresh_token: string2().optional()
+  refresh_token: string2().optional(),
+  /**
+   * Not part of the wire format: the authorization server this value was obtained from, added by
+   * the client's `auth()` before it is stored and compared when it is read back.
+   */
+  issuer: string2().optional().catch(void 0)
 }).strip();
 var OAuthErrorResponseSchema = object2({
   error: string2(),
@@ -28101,7 +28844,12 @@ var OAuthClientInformationSchema = object2({
   client_id: string2(),
   client_secret: string2().optional(),
   client_id_issued_at: number2().optional(),
-  client_secret_expires_at: number2().optional()
+  client_secret_expires_at: number2().optional(),
+  /**
+   * Not part of the wire format: the authorization server this value was obtained from, added by
+   * the client's `auth()` before it is stored and compared when it is read back.
+   */
+  issuer: string2().optional().catch(void 0)
 }).strip();
 var OAuthClientInformationFullSchema = OAuthClientMetadataSchema.merge(OAuthClientInformationSchema);
 var OAuthClientRegistrationErrorSchema = object2({
@@ -28299,9 +29047,30 @@ async function parseErrorResponse(input) {
     const errorClass = OAUTH_ERRORS[error2] || ServerError;
     return new errorClass(error_description || "", error_uri);
   } catch (error2) {
-    const errorMessage = `${statusCode ? `HTTP ${statusCode}: ` : ""}Invalid OAuth error response: ${error2}. Raw body: ${body}`;
+    const redirect = input instanceof Response ? unfollowedRedirect(input, input.url) : void 0;
+    const errorMessage = `${statusCode ? `HTTP ${statusCode}: ` : ""}${redirect ?? `Invalid OAuth error response: ${error2}. Raw body: ${body}`}`;
     return new ServerError(errorMessage);
   }
+}
+function issuersMatch(a, b) {
+  let [x, y] = [a, b];
+  try {
+    [x, y] = [new URL(a).href, new URL(b).href];
+  } catch {
+  }
+  return x === y || x.endsWith("/") && x.slice(0, -1) === y || y.endsWith("/") && y.slice(0, -1) === x;
+}
+function discardIfIssuerMismatch(stored, issuer) {
+  if (!stored)
+    return void 0;
+  if (typeof stored.issuer !== "string")
+    return stored.issuer == null ? stored : { ...stored, issuer: void 0 };
+  return issuersMatch(stored.issuer, issuer) ? stored : void 0;
+}
+var TokenResponseSchema = OAuthTokensSchema.omit({ issuer: true });
+var RegistrationResponseSchema = OAuthClientInformationFullSchema.omit({ issuer: true });
+function boundElsewhereError(stored, issuer) {
+  return new Error(`OAuth client information is bound to authorization server ${stored.issuer} and is not presented to ${issuer}. Clear the stored client information, or correct \`expectedIssuer\`, if the authorization server has moved.`);
 }
 async function auth(provider, options) {
   try {
@@ -28356,9 +29125,24 @@ async function authInternal(provider, { serverUrl, authorizationCode, scope, res
       authorizationServerMetadata: metadata
     });
   }
-  const resource = await selectResourceURL(serverUrl, provider, resourceMetadata);
+  const issuer = String(authorizationServerUrl);
+  const selectedResource = await selectResourceURL(serverUrl, provider, resourceMetadata);
+  const resource = selectedResource && resourceMetadata && !provider.validateResourceURL ? resourceMetadata.resource : selectedResource;
   const resolvedScope = scope || resourceMetadata?.scopes_supported?.join(" ") || provider.clientMetadata.scope;
-  let clientInformation = await Promise.resolve(provider.clientInformation());
+  const storedClientInformation = await Promise.resolve(provider.clientInformation());
+  let clientInformation = discardIfIssuerMismatch(storedClientInformation, issuer);
+  const canRegisterAgain = provider.saveClientInformation !== void 0 && !!provider.redirectUrl;
+  if (storedClientInformation && !clientInformation && !canRegisterAgain) {
+    throw boundElsewhereError(storedClientInformation, issuer);
+  }
+  const unstampedClientInformation = clientInformation?.issuer == null ? clientInformation : void 0;
+  const bindClientInformation = async () => {
+    try {
+      if (unstampedClientInformation)
+        await provider.saveClientInformation?.({ ...unstampedClientInformation, issuer });
+    } catch {
+    }
+  };
   if (!clientInformation) {
     if (authorizationCode !== void 0) {
       throw new Error("Existing OAuth client information is required when exchanging an authorization code");
@@ -28370,9 +29154,7 @@ async function authInternal(provider, { serverUrl, authorizationCode, scope, res
     }
     const shouldUseUrlBasedClientId = supportsUrlBasedClientId && clientMetadataUrl;
     if (shouldUseUrlBasedClientId) {
-      clientInformation = {
-        client_id: clientMetadataUrl
-      };
+      clientInformation = { client_id: clientMetadataUrl, issuer };
       await provider.saveClientInformation?.(clientInformation);
     } else {
       if (!provider.saveClientInformation) {
@@ -28384,8 +29166,8 @@ async function authInternal(provider, { serverUrl, authorizationCode, scope, res
         scope: resolvedScope,
         fetchFn
       });
-      await provider.saveClientInformation(fullInformation);
-      clientInformation = fullInformation;
+      clientInformation = { ...fullInformation, issuer };
+      await provider.saveClientInformation(clientInformation);
     }
   }
   const nonInteractiveFlow = !provider.redirectUrl;
@@ -28396,10 +29178,14 @@ async function authInternal(provider, { serverUrl, authorizationCode, scope, res
       authorizationCode,
       fetchFn
     });
-    await provider.saveTokens(tokens2);
+    await bindClientInformation();
+    await provider.saveTokens({ ...tokens2, issuer });
     return "AUTHORIZED";
   }
-  const tokens = await provider.tokens();
+  const tokens = discardIfIssuerMismatch(await provider.tokens(), issuer);
+  if (tokens?.refresh_token && tokens.issuer == null) {
+    console.warn("[mcp-sdk] stored OAuth tokens have no 'issuer' property (saved by an earlier version, or by a provider that does not keep it) and are used as-is; make sure your OAuthClientProvider stores what saveTokens() and saveClientInformation() receive unchanged.");
+  }
   if (tokens?.refresh_token) {
     try {
       const newTokens = await refreshAuthorization(authorizationServerUrl, {
@@ -28410,7 +29196,8 @@ async function authInternal(provider, { serverUrl, authorizationCode, scope, res
         addClientAuthentication: provider.addClientAuthentication,
         fetchFn
       });
-      await provider.saveTokens(newTokens);
+      await bindClientInformation();
+      await provider.saveTokens({ ...newTokens, issuer });
       return "AUTHORIZED";
     } catch (error2) {
       if (!(error2 instanceof OAuthError) || error2 instanceof ServerError) {
@@ -28509,7 +29296,7 @@ async function discoverOAuthProtectedResourceMetadata(serverUrl, opts, fetchFn =
 }
 async function fetchWithCorsRetry(url2, headers, fetchFn = fetch) {
   try {
-    return await fetchFn(url2, { headers });
+    return await fetchWithinOrigin(fetchFn)(url2, { headers });
   } catch (error2) {
     if (error2 instanceof TypeError) {
       if (headers) {
@@ -28534,7 +29321,7 @@ async function tryMetadataDiscovery(url2, protocolVersion, fetchFn = fetch) {
   return await fetchWithCorsRetry(url2, headers, fetchFn);
 }
 function shouldAttemptFallback(response, pathname) {
-  return !response || response.status >= 400 && response.status < 500 && pathname !== "/";
+  return !response || !response.ok && response.status < 500 && pathname !== "/";
 }
 async function discoverMetadataWithFallback(serverUrl, wellKnownType, fetchFn, opts) {
   const issuer = new URL(serverUrl);
@@ -28600,7 +29387,7 @@ async function discoverAuthorizationServerMetadata(authorizationServerUrl, { fet
     }
     if (!response.ok) {
       await response.body?.cancel();
-      if (response.status >= 400 && response.status < 500) {
+      if (response.status < 500) {
         continue;
       }
       throw new Error(`HTTP ${response.status} trying to load ${type === "oauth" ? "OAuth" : "OpenID provider"} metadata from ${endpointUrl}`);
@@ -28633,6 +29420,9 @@ async function discoverOAuthServerInfo(serverUrl, opts) {
     resourceMetadata
   };
 }
+function resourceIndicatorToString(resource) {
+  return typeof resource === "string" ? resource : resource.href;
+}
 async function startAuthorization(authorizationServerUrl, { metadata, clientInformation, redirectUrl, scope, state, resource }) {
   let authorizationUrl;
   if (metadata) {
@@ -28664,7 +29454,7 @@ async function startAuthorization(authorizationServerUrl, { metadata, clientInfo
     authorizationUrl.searchParams.append("prompt", "consent");
   }
   if (resource) {
-    authorizationUrl.searchParams.set("resource", resource.href);
+    authorizationUrl.searchParams.set("resource", resourceIndicatorToString(resource));
   }
   return { authorizationUrl, codeVerifier };
 }
@@ -28683,7 +29473,7 @@ async function executeTokenRequest(authorizationServerUrl, { metadata, tokenRequ
     Accept: "application/json"
   });
   if (resource) {
-    tokenRequestParams.set("resource", resource.href);
+    tokenRequestParams.set("resource", resourceIndicatorToString(resource));
   }
   if (addClientAuthentication) {
     await addClientAuthentication(headers, tokenRequestParams, tokenUrl, metadata);
@@ -28692,7 +29482,7 @@ async function executeTokenRequest(authorizationServerUrl, { metadata, tokenRequ
     const authMethod = selectClientAuthMethod(clientInformation, supportedMethods);
     applyClientAuthentication(authMethod, clientInformation, headers, tokenRequestParams);
   }
-  const response = await (fetchFn ?? fetch)(tokenUrl, {
+  const response = await fetchWithinOrigin(fetchFn ?? fetch)(tokenUrl, {
     method: "POST",
     headers,
     body: tokenRequestParams
@@ -28700,7 +29490,7 @@ async function executeTokenRequest(authorizationServerUrl, { metadata, tokenRequ
   if (!response.ok) {
     throw await parseErrorResponse(response);
   }
-  return OAuthTokensSchema.parse(await response.json());
+  return TokenResponseSchema.parse(await response.json());
 }
 async function refreshAuthorization(authorizationServerUrl, { metadata, clientInformation, refreshToken, resource, addClientAuthentication, fetchFn }) {
   const tokenRequestParams = new URLSearchParams({
@@ -28718,6 +29508,15 @@ async function refreshAuthorization(authorizationServerUrl, { metadata, clientIn
   return { refresh_token: refreshToken, ...tokens };
 }
 async function fetchToken(provider, authorizationServerUrl, { metadata, resource, authorizationCode, fetchFn } = {}) {
+  const readClientInformation = async () => {
+    const storedClientInformation = await provider.clientInformation();
+    const checked = discardIfIssuerMismatch(storedClientInformation, String(authorizationServerUrl));
+    if (storedClientInformation && !checked) {
+      throw boundElsewhereError(storedClientInformation, String(authorizationServerUrl));
+    }
+    return checked;
+  };
+  let clientInformation = await readClientInformation();
   const scope = provider.clientMetadata.scope;
   let tokenRequestParams;
   if (provider.prepareTokenRequest) {
@@ -28733,11 +29532,11 @@ async function fetchToken(provider, authorizationServerUrl, { metadata, resource
     const codeVerifier = await provider.codeVerifier();
     tokenRequestParams = prepareAuthorizationCodeRequest(authorizationCode, codeVerifier, provider.redirectUrl);
   }
-  const clientInformation = await provider.clientInformation();
+  clientInformation ?? (clientInformation = await readClientInformation());
   return executeTokenRequest(authorizationServerUrl, {
     metadata,
     tokenRequestParams,
-    clientInformation: clientInformation ?? void 0,
+    clientInformation,
     addClientAuthentication: provider.addClientAuthentication,
     resource,
     fetchFn
@@ -28753,7 +29552,7 @@ async function registerClient(authorizationServerUrl, { metadata, clientMetadata
   } else {
     registrationUrl = new URL("/register", authorizationServerUrl);
   }
-  const response = await (fetchFn ?? fetch)(registrationUrl, {
+  const response = await fetchWithinOrigin(fetchFn ?? fetch)(registrationUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -28766,7 +29565,7 @@ async function registerClient(authorizationServerUrl, { metadata, clientMetadata
   if (!response.ok) {
     throw await parseErrorResponse(response);
   }
-  return OAuthClientInformationFullSchema.parse(await response.json());
+  return RegistrationResponseSchema.parse(await response.json());
 }
 
 // node_modules/eventsource-parser/dist/index.js
@@ -28873,7 +29672,7 @@ ${value2}`, dataLines++;
     }
     if (firstCharCode === 105 && chunk.charCodeAt(start + 1) === 100 && chunk.charCodeAt(start + 2) === 58) {
       const value2 = chunk.slice(chunk.charCodeAt(start + 3) === SPACE ? start + 4 : start + 3, end);
-      id = value2.includes("\0") ? void 0 : value2;
+      value2.includes("\0") || (id = value2);
       return;
     }
     if (firstCharCode === 58) {
@@ -28901,7 +29700,7 @@ ${value2}`, dataLines++;
 ${value}`, dataLines++;
         break;
       case "id":
-        id = value.includes("\0") ? void 0 : value;
+        value.includes("\0") || (id = value);
         break;
       case "retry":
         /^\d+$/.test(value) ? onRetry(parseInt(value, 10)) : onError(
@@ -28993,8 +29792,18 @@ var StreamableHTTPClientTransport = class {
     this._authProvider = opts?.authProvider;
     this._fetch = opts?.fetch;
     this._fetchWithInit = createFetchWithInit(opts?.fetch, opts?.requestInit);
+    this._followRedirects = opts?.redirectPolicy === "follow";
+    if (this._followRedirects) {
+      this._fetch = fetchLeavingRedirects(this._fetch);
+      this._fetchWithInit = fetchLeavingRedirects(this._fetchWithInit);
+    }
     this._sessionId = opts?.sessionId;
     this._reconnectionOptions = opts?.reconnectionOptions ?? DEFAULT_STREAMABLE_HTTP_RECONNECTION_OPTIONS;
+  }
+  /** Error text for a redirect `response` that was not followed, or `undefined` for any other response. */
+  _unfollowedRedirect(response, url2) {
+    const text2 = unfollowedRedirect(response, url2);
+    return text2 && !this._followRedirects ? `${text2} (redirectPolicy: 'same-origin')` : text2;
   }
   async _authThenStart() {
     if (!this._authProvider) {
@@ -29045,11 +29854,13 @@ var StreamableHTTPClientTransport = class {
       if (resumptionToken) {
         headers.set("last-event-id", resumptionToken);
       }
-      const response = await (this._fetch ?? fetch)(this._url, {
-        method: "GET",
-        headers,
-        signal: this._abortController?.signal
-      });
+      const fetchFn = this._fetch ?? fetch;
+      const init2 = { method: "GET", headers, signal: this._abortController?.signal };
+      let response = await fetchFn(this._url, this._followRedirects ? init2 : { ...init2, redirect: "manual" });
+      const followed = this._followRedirects ? void 0 : followWithinOrigin(fetchFn, this._url, init2, response);
+      if (followed) {
+        response = await followed;
+      }
       if (!response.ok) {
         await response.body?.cancel();
         if (response.status === 401 && this._authProvider) {
@@ -29058,7 +29869,7 @@ var StreamableHTTPClientTransport = class {
         if (response.status === 405) {
           return;
         }
-        throw new StreamableHTTPError(response.status, `Failed to open SSE stream: ${response.statusText}`);
+        throw new StreamableHTTPError(response.status, `Failed to open SSE stream: ${this._unfollowedRedirect(response, this._url) ?? response.statusText}`);
       }
       this._handleSseStream(response.body, options, true);
     } catch (error2) {
@@ -29221,7 +30032,7 @@ var StreamableHTTPClientTransport = class {
         body: JSON.stringify(message),
         signal: this._abortController?.signal
       };
-      const response = await (this._fetch ?? fetch)(this._url, init2);
+      const response = await fetchWithinOrigin(this._fetch ?? fetch)(this._url, init2);
       const sessionId = response.headers.get("mcp-session-id");
       if (sessionId) {
         this._sessionId = sessionId;
@@ -29273,7 +30084,7 @@ var StreamableHTTPClientTransport = class {
             return this.send(message);
           }
         }
-        throw new StreamableHTTPError(response.status, `Error POSTing to endpoint: ${text2}`);
+        throw new StreamableHTTPError(response.status, `Error POSTing to endpoint: ${this._unfollowedRedirect(response, this._url) ?? text2}`);
       }
       this._hasCompletedAuthFlow = false;
       this._lastUpscopingHeader = void 0;
@@ -29286,11 +30097,12 @@ var StreamableHTTPClientTransport = class {
       }
       const messages = Array.isArray(message) ? message : [message];
       const hasRequests = messages.filter((msg) => "method" in msg && "id" in msg && msg.id !== void 0).length > 0;
-      const contentType = response.headers.get("content-type");
+      const contentType2 = response.headers.get("content-type");
+      const responseMediaType = mediaTypeEssence(contentType2);
       if (hasRequests) {
-        if (contentType?.includes("text/event-stream")) {
+        if (responseMediaType === "text/event-stream") {
           this._handleSseStream(response.body, { onresumptiontoken }, false);
-        } else if (contentType?.includes("application/json")) {
+        } else if (responseMediaType === "application/json") {
           const data = await response.json();
           const responseMessages = Array.isArray(data) ? data.map((msg) => JSONRPCMessageSchema.parse(msg)) : [JSONRPCMessageSchema.parse(data)];
           for (const msg of responseMessages) {
@@ -29298,7 +30110,7 @@ var StreamableHTTPClientTransport = class {
           }
         } else {
           await response.body?.cancel();
-          throw new StreamableHTTPError(-1, `Unexpected content type: ${contentType}`);
+          throw new StreamableHTTPError(-1, `Unexpected content type: ${contentType2}`);
         }
       } else {
         await response.body?.cancel();
@@ -29334,10 +30146,10 @@ var StreamableHTTPClientTransport = class {
         headers,
         signal: this._abortController?.signal
       };
-      const response = await (this._fetch ?? fetch)(this._url, init2);
+      const response = await fetchWithinOrigin(this._fetch ?? fetch)(this._url, init2);
       await response.body?.cancel();
       if (!response.ok && response.status !== 405) {
-        throw new StreamableHTTPError(response.status, `Failed to terminate session: ${response.statusText}`);
+        throw new StreamableHTTPError(response.status, `Failed to terminate session: ${this._unfollowedRedirect(response, this._url) ?? response.statusText}`);
       }
       this._sessionId = void 0;
     } catch (error2) {
@@ -29403,9 +30215,9 @@ function getDefaultEnvironment() {
 }
 var StdioClientTransport = class {
   constructor(server) {
-    this._readBuffer = new ReadBuffer();
     this._stderrStream = null;
     this._serverParams = server;
+    this._readBuffer = new ReadBuffer({ maxBufferSize: server.maxBufferSize });
     if (server.stderr === "pipe" || server.stderr === "overlapped") {
       this._stderrStream = new PassThrough();
     }
@@ -29444,8 +30256,14 @@ var StdioClientTransport = class {
         this.onerror?.(error2);
       });
       this._process.stdout?.on("data", (chunk) => {
-        this._readBuffer.append(chunk);
-        this.processReadBuffer();
+        try {
+          this._readBuffer.append(chunk);
+          this.processReadBuffer();
+        } catch (error2) {
+          this.onerror?.(error2);
+          this.close().catch(() => {
+          });
+        }
       });
       this._process.stdout?.on("error", (error2) => {
         this.onerror?.(error2);
@@ -29775,6 +30593,7 @@ var ProfileSession = class {
     this.config = config2;
     this.selection = this.resolve(name);
   }
+  config;
   selection;
   switchRevision = 0;
   toolLists = /* @__PURE__ */ new Map();
@@ -29800,7 +30619,7 @@ var ProfileSession = class {
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
   }
   async withClient(snapshot, run) {
-    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.2.0" });
+    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.2.1" });
     const profile = snapshot.profile;
     const transport = profile.backend === "cloud" ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
       requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, "X-Oak-Graph": profile.graphId } },
@@ -29852,7 +30671,7 @@ var ProfileSession = class {
 };
 async function startProfileBridge(config2, name) {
   const session = new ProfileSession(config2, name);
-  const server = new Server({ name: "oak-memory-plugin", version: "0.2.0" }, {
+  const server = new Server({ name: "oak-memory-plugin", version: "0.2.1" }, {
     capabilities: { tools: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}
 
@@ -34784,7 +35603,7 @@ async function main() {
   }
   const env = loadEnv();
   const server = new McpServer(
-    { name: "oak-memory-plugin", version: "0.2.0" },
+    { name: "oak-memory-plugin", version: "0.2.1" },
     { instructions: buildServerInstructions(env.policy) }
   );
   registerAllTools(server, env);
@@ -34801,3 +35620,12 @@ main().catch((error2) => {
   console.error("[oak-memory-plugin] Startup failed. Check backend/profile configuration and credentials.");
   process.exit(1);
 });
+/*! Bundled license information:
+
+content-type/index.js:
+  (*!
+   * content-type
+   * Copyright(c) 2015 Douglas Christopher Wilson
+   * MIT Licensed
+   *)
+*/

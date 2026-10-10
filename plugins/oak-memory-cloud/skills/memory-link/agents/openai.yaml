@@ -1,0 +1,4 @@
+interface:
+  display_name: "Edit Memory Links"
+  short_description: "Edit relationships between memories"
+  default_prompt: "Use $memory-link to edit relationships between memories."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Save Memory"
+  short_description: "Save a specific memory in OAK.memory"
+  default_prompt: "Use $memory-save to save a specific memory."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Delete Memory"
+  short_description: "Delete selected memories in OAK.memory"
+  default_prompt: "Use $memory-delete to delete selected memories."
