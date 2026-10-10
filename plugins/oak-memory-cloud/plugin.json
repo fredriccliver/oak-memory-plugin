@@ -89,10 +89,10 @@
               "expected_behavior": "Verify endpoints, direction and type; typed edits require a graph store; do not silently downgrade a rejected type."
             },
             {
-              "description": "Organise with source preservation",
+              "description": "Organise with an atomic merge",
               "prompt": "Propose a merge of these review sample duplicates and execute only my chosen plan.",
-              "tools_triggered": "currentMemoryStore, listMemories, suggestMemoryLinks, updateMemory, updateMemoryLink, adjustMemoryLinkStrength, deleteMemory",
-              "expected_behavior": "Preserve sources until replacement content and every required edge are verified; stop on failure or incomplete coverage and report partial results."
+              "tools_triggered": "currentMemoryStore, getMemoryPolicy, listMemories, suggestMemoryLinks, mergeMemories",
+              "expected_behavior": "Propose the exact survivor, sources and complete merged content; execute only the chosen plan with real UUIDs and exact original expectedContents. Use atomic mergeMemories rather than sequential update/link/delete. Verify the retained target and absorbed sources afterward; after an error or uncertain response inspect state before retrying or claiming rollback. Stop on incomplete original-content coverage."
             },
             {
               "description": "Edit policy with current version",

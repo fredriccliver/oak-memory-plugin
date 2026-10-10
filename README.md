@@ -584,7 +584,7 @@ Local PostgreSQL/Ollama and cloud profiles expose `mergeMemories` with the same
 up to 16,000 characters per original). Read all originals and write the final text
 yourself. A changed or foreign-entity record refuses the entire merge. Incoming
 and outgoing directed typed links move to the retained UUID; collisions keep the
-strongest signal, and internal self-links disappear.
+strongest signal, and internal self-links disappear, including links between absorbed sources or between a source and the retained target.
 
 A local merge requires a configured policy scope, embeds once through local
 Ollama, and commits record/link changes together. Before deletion, it archives
