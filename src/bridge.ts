@@ -85,7 +85,7 @@ export class ProfileSession {
   async callTool(name: string, args: Record<string, unknown> = {}) {
     const snapshot = this.snapshot(); // capture before the first await
     if (snapshot.profile.backend === 'cloud' && ['createMemory', 'updateMemory', 'mergeMemories', 'deleteMemory', 'updateMemoryLink', 'adjustMemoryLinkStrength'].includes(name) && loadPolicy(() => {}).scope === null) {
-      return { ...text({ error: 'Configure the client memory policy before storing memories.' }), isError: true };
+      return { ...text({ error: 'Configure the client memory policy before changing memories.' }), isError: true };
     }
     return this.withClient(snapshot, client => client.callTool({ name, arguments: args }));
   }
