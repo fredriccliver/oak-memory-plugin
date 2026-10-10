@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 cloud preparation
+
+- Align shared organisation skill and OpenAI review cases with the hosted atomic mergeMemories contract.
+- Require exact source snapshots and explicit deletion scope; document revision, edge collision and sequential fallback boundaries.
+- Existing OpenAI portal review is unchanged; prepared package updates require separate installation/publication.
+
 ## 0.2.1 local plugin / 0.1.3 cloud preparation
 
 - Add shared OAuth remote package for OpenAI and Claude; preserve the local plugin.

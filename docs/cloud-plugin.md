@@ -28,9 +28,11 @@ MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없�
 
 ChatGPT는 portable `plugin.json`·`mcp.json` 패키지를 제출 포털에서 심사·공개해야
 한다. GitHub 마켓플레이스 URL을 추가하는 Claude 절차와 같다고 안내하지 않는다.
-기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.3의 코드
+기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.4의 코드
 갱신과 기존 심사본 0.1.2의 심사 상태는 별개이며, 기존 심사 통과 후 새 패키지를
-진행한다. 저장소 머지나 서버 배포만으로 설치된 스킬과 listing이 바뀌지 않는다.
+진행한다. manifest의 기존 demo는 이전 빌드 자료이며 0.1.4 병합 검증 증거가
+아니다. 새 포털 제출 전 실제 최신 흐름을 확인하고 그에 맞는 demo를 준비한다.
+저장소 머지나 서버 배포만으로 설치된 스킬과 listing이 바뀌지 않는다.
 
 ## 패키지 검증과 생성
 
@@ -46,6 +48,14 @@ MCP 파일, Claude ZIP은 `.claude-plugin/plugin.json`과 `.mcp.json`을 포함�
 호스트의 MCP type 표현은 `streamable-http`와 `http`로 다르며 URL은 동일하다.
 명시한 파일만 압축해 로컬 bundle·hook·환경 파일을 포함하지 않는다. 기존 출력은
 덮어쓰지 않는다. 포털 업로드와 공개는 별도 단계다.
+
+## 최신 병합 도구
+
+정리 스킬은 호스트에 `mergeMemories`가 노출되면 원자적 병합을 우선한다. 정확한
+원문 snapshot, 명시한 UUID와 병합 결과를 입력하고 이후 조회로 확인한다. source UUID
+삭제, 중복 edge의 최대 strength 선택, cloud revision 보관과 legacy 저장소의 복구 불가
+경계를 설명한다. split과 수동 fallback은 여전히 순차 작업이다. 실제 메모리 병합을
+릴리스 검증용으로 실행하지 않는다.
 
 ## 실제 완료 기준
 
