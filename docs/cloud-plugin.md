@@ -28,7 +28,7 @@ MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없�
 
 ChatGPT는 portable `plugin.json`·`mcp.json` 패키지를 제출 포털에서 심사·공개해야
 한다. GitHub 마켓플레이스 URL을 추가하는 Claude 절차와 같다고 안내하지 않는다.
-기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.3의 코드
+기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.4의 코드
 갱신과 기존 심사본 0.1.2의 심사 상태는 별개이며, 기존 심사 통과 후 새 패키지를
 진행한다. 저장소 머지나 서버 배포만으로 설치된 스킬과 listing이 바뀌지 않는다.
 

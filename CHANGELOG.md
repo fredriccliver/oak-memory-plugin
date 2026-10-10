@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.3.0 local plugin
+## 0.3.0 local plugin / 0.1.4 cloud preparation
 
+- Align the cloud organisation skill and prepared packages with the hosted atomic merge; keep split/manual edits sequential.
 - Add atomic `mergeMemories` with the cloud input contract, exact original checks, typed link remapping and local pre-merge history.
 - Keep survivor retrieval/creation metadata; archive absorbed records and incident relationships.
 - Include merge in client policy guards and curation guidance; preserve the shared OAuth cloud package and MCP SDK 1.32.1 security update.
