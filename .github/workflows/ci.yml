@@ -22,6 +22,9 @@ jobs:
         run: |
           cmp dist/index.mjs plugins/oak-memory/dist/index.mjs
           cmp dist/hook.mjs plugins/oak-memory/dist/hook.mjs
+      - run: npm run check:cloud-plugin
+      - run: npm run package:cloud:openai
+      - run: npm run package:cloud:claude
       - run: npm test
       - name: Verify generated bundles remain synchronized
         run: |
