@@ -30574,11 +30574,12 @@ var sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path2.join(os2.homedir(), ".
 var sharedEnvFile = path2.join(sharedConfigDir, "oak-memory.env");
 var legacyClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path2.join(os2.homedir(), ".claude");
 var legacyEnvFile = path2.join(legacyClaudeConfigDir, "oak-memory.env");
-var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
-var fallbackUserEnvFile = process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
+var desktopIsolated = process.env.OAK_DESKTOP_ISOLATED === "true";
+var userEnvFile = desktopIsolated || process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
+var fallbackUserEnvFile = desktopIsolated || process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
 var defaultPolicyFile = path2.join(path2.dirname(userEnvFile), "oak-memory-policy.md");
 var fallbackPolicyFile = fallbackUserEnvFile ? path2.join(path2.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
-if (process.env.OAK_DESKTOP_ISOLATED !== "true") {
+if (!desktopIsolated) {
   loadEnvFile(path2.join(pluginRoot, ".env"));
   loadEnvFile(userEnvFile);
   if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
