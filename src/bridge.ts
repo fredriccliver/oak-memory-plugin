@@ -92,7 +92,7 @@ export class ProfileSession {
   }
 }
 
-export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string } = {}) {
+export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string; respectStoreRole?: boolean } = {}) {
   const session = new ProfileSession(config, name);
   const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.0' }, {
     capabilities: { tools: { listChanged: true } },
@@ -102,7 +102,15 @@ export async function startProfileBridge(config: Profiles, name: string, options
     let remote;
     try { remote = await session.listTools(); }
     catch { remote = { tools: [] }; } // Keep setup/status tools discoverable when cloud access fails.
-    return { tools: [...remote.tools.filter(tool => !options.readOnly || cloudReadTools.has(tool.name)), ...(session.snapshot().profile.backend === 'cloud' ? [{
+    let canChange = !options.readOnly;
+    const snapshot = session.snapshot();
+    if (canChange && options.respectStoreRole && snapshot.profile.backend === 'cloud') {
+      try {
+        const context = await session.withClient(snapshot, client => client.callTool({ name: 'currentMemoryStore', arguments: {} }));
+        canChange = ['owner', 'admin', 'editor'].includes(verifiedCloudStore(context, snapshot.profile).role);
+      } catch { canChange = false; }
+    }
+    return { tools: [...remote.tools.filter(tool => canChange || cloudReadTools.has(tool.name)), ...(session.snapshot().profile.backend === 'cloud' ? [{
       name: 'getMemoryPolicy', description: 'Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.', inputSchema: { type: 'object' as const, properties: {} },
     }] : []), {
       name: 'memoryConnectionStatus', description: 'Verify and show the active profile, backend, server-authorized graph, role and recording identity. Returns safe setup errors without exposing credentials or changing stores.', inputSchema: { type: 'object', properties: {} },

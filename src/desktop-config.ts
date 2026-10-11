@@ -6,8 +6,9 @@ export function desktopConfig(env: NodeJS.ProcessEnv): { config: Profiles; allow
   const key = env.OAK_DESKTOP_PERSONAL_KEY?.trim();
   if (!graphId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(graphId)) throw new Error('Invalid store ID');
   if (!key || !/^oak_[0-9a-f]{64}$/.test(key)) throw new Error('Invalid personal key');
-  const flag = env.OAK_DESKTOP_ALLOW_CHANGES ?? 'false';
-  if (!['true', 'false'].includes(flag)) throw new Error('Invalid change permission');
+  // Missing, unexpanded or unexpected optional values keep reads available.
+  // Only an explicit true enables changes; every other value fails closed.
+  const flag = env.OAK_DESKTOP_ALLOW_CHANGES?.trim().toLowerCase();
   return {
     allowChanges: flag === 'true',
     config: { defaultProfile: 'desktop-cloud', profiles: {

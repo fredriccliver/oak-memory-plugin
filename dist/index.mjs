@@ -30786,7 +30786,17 @@ ${attributionInstructions}${options.readOnly ? "\nThis connection permits reads 
     } catch {
       remote = { tools: [] };
     }
-    return { tools: [...remote.tools.filter((tool) => !options.readOnly || cloudReadTools.has(tool.name)), ...session.snapshot().profile.backend === "cloud" ? [{
+    let canChange = !options.readOnly;
+    const snapshot = session.snapshot();
+    if (canChange && options.respectStoreRole && snapshot.profile.backend === "cloud") {
+      try {
+        const context = await session.withClient(snapshot, (client) => client.callTool({ name: "currentMemoryStore", arguments: {} }));
+        canChange = ["owner", "admin", "editor"].includes(verifiedCloudStore(context, snapshot.profile).role);
+      } catch {
+        canChange = false;
+      }
+    }
+    return { tools: [...remote.tools.filter((tool) => canChange || cloudReadTools.has(tool.name)), ...session.snapshot().profile.backend === "cloud" ? [{
       name: "getMemoryPolicy",
       description: "Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.",
       inputSchema: { type: "object", properties: {} }

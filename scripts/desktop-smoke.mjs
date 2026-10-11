@@ -35,7 +35,9 @@ try {
   assert.equal(manifest.server.entry_point,'server/desktop.mjs');
   await build({entryPoints:['src/desktop-config.ts'],bundle:true,platform:'node',format:'esm',outfile:path.join(temp,'config.mjs')});
   const {desktopConfig}=await import(pathToFileURL(path.join(temp,'config.mjs')));
-  for (const bad of [{},{OAK_DESKTOP_STORE_ID:graph},{OAK_DESKTOP_STORE_ID:'bad',OAK_DESKTOP_PERSONAL_KEY:key},{OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:'secret'},{OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:key,OAK_DESKTOP_ALLOW_CHANGES:'yes'}]) assert.throws(()=>desktopConfig(bad));
+  for (const bad of [{},{OAK_DESKTOP_STORE_ID:graph},{OAK_DESKTOP_STORE_ID:'bad',OAK_DESKTOP_PERSONAL_KEY:key},{OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:'secret'}]) assert.throws(()=>desktopConfig(bad));
+  for (const flag of ['', 'yes', '${user_config.allow_changes}', 'false']) assert.equal(desktopConfig({OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:key,OAK_DESKTOP_ALLOW_CHANGES:flag}).allowChanges,false);
+  assert.equal(desktopConfig({OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:key,OAK_DESKTOP_ALLOW_CHANGES:' TRUE '}).allowChanges,true);
   assert.equal(desktopConfig({OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:key,OAK_BACKEND:'local'}).config.profiles['desktop-cloud'].backend,'cloud');
   const entry=path.join(temp,manifest.server.entry_point);
   const original=readFileSync(entry,'utf8');
@@ -61,6 +63,7 @@ try {
         assert.equal(!!response.isError,!allow);assert.equal(writes,count+(allow?1:0));
       }
       reader=true;
+      assert(!(await client.listTools()).tools.some(t=>t.name==='createMemory'));
       assert.equal((await client.callTool({name:'createMemory',arguments:{}})).isError,true);reader=false;
       wrongStore=true;
       assert.equal((await client.callTool({name:'memoryConnectionStatus',arguments:{}})).isError,true);wrongStore=false;

@@ -7,7 +7,7 @@ async function main() {
   process.env.MEMORY_POLICY_SCOPE = allowChanges ? 'important' : '';
   process.env.MEMORY_POLICY_AUTOSAVE = 'false';
   process.env.MEMORY_POLICY_RECALL = 'minimal';
-  await startProfileBridge(config, config.defaultProfile, { readOnly: !allowChanges, serverName: 'oak-desktop-cloud' });
+  await startProfileBridge(config, config.defaultProfile, { readOnly: !allowChanges, respectStoreRole: true, serverName: 'oak-desktop-cloud' });
 }
 main().catch(() => {
   console.error('[oak-desktop-cloud] Check Store ID and Personal key in the extension settings. No local store or fallback is used.');
