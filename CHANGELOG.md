@@ -1,3 +1,10 @@
+# Desktop Cloud 0.1.0 (2026-10-11)
+
+- Add an installable MCPB for local stdio access to OAK cloud stores, with secure personal-key settings and explicit write opt-in.
+- Hide mutation tools for reader stores and keep unexpected optional settings read-only.
+- Verify admin store roles, package roundtrips, revocation and graph mismatch. Include Desktop tests in npm test.
+- The fixed read allowlist intentionally denies unknown tools. Compare it with hosted tool contracts before publishing a Desktop update; new reads require a new reviewed bundle. Host hints alone do not grant permission.
+
 # Changelog
 
 ## 0.3.0 local plugin

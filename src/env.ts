@@ -91,17 +91,18 @@ const sharedEnvFile = path.join(sharedConfigDir, 'oak-memory.env');
 const legacyClaudeConfigDir =
   process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), '.claude');
 const legacyEnvFile = path.join(legacyClaudeConfigDir, 'oak-memory.env');
+const desktopIsolated = process.env.OAK_DESKTOP_ISOLATED === 'true';
 
 // Existing Claude-only installs keep working without migration. New installs
 // use a client-neutral location shared by Claude Code and Codex. A stray empty
 // shared file must not mask a complete legacy configuration.
 const userEnvFile =
-  process.env.OAK_CONFIG_DIR ||
+  desktopIsolated || process.env.OAK_CONFIG_DIR ||
   envFileSets(sharedEnvFile, 'MEMORY_DATABASE_URL') ||
   !envFileSets(legacyEnvFile, 'MEMORY_DATABASE_URL')
     ? sharedEnvFile
     : legacyEnvFile;
-const fallbackUserEnvFile = process.env.OAK_CONFIG_DIR
+const fallbackUserEnvFile = desktopIsolated || process.env.OAK_CONFIG_DIR
   ? undefined
   : userEnvFile === sharedEnvFile
     ? legacyEnvFile
@@ -118,12 +119,14 @@ const fallbackPolicyFile = fallbackUserEnvFile
 // loadEnvFile never overwrites an already-set var, so earlier calls win.
 // "Already set" means readEnvVar-set: an unexpanded `${VAR}` from .mcp.json
 // counts as unset, so these files can supply the value it failed to expand.
-loadEnvFile(path.join(pluginRoot, '.env'));
-loadEnvFile(userEnvFile);
+if (!desktopIsolated) {
+  loadEnvFile(path.join(pluginRoot, '.env'));
+  loadEnvFile(userEnvFile);
 // During migration, the selected file is authoritative but the other standard
 // location may still contain policy values that have not moved yet. Fill only
 // missing values from it; loadEnvFile never overwrites an earlier source.
-if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+  if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+}
 
 export interface Env {
   memoryDatabaseUrl: string;

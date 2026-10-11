@@ -12,11 +12,12 @@ import { buildServerInstructions } from './policy.js';
 type Selection = Readonly<{ name: string; profile: Profile }>;
 const text = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
 const errorResult = () => ({ ...text({ error: 'Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used.' }), isError: true });
+const cloudReadTools = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks']);
 
 function verifiedCloudStore(context: Awaited<ReturnType<Client['callTool']>>, profile: Extract<Profile, { backend: 'cloud' }>) {
   if (context.isError || !Array.isArray(context.content)) throw new Error('Context unavailable');
   const store = JSON.parse(context.content.filter(item => item?.type === 'text' && typeof item.text === 'string').map(item => item.text).join(''));
-  if (store.storeId !== profile.graphId || !['owner', 'editor', 'reader'].includes(store.role) || typeof store.authorUserId !== 'string') throw new Error('Context mismatch');
+  if (store.storeId !== profile.graphId || !['owner', 'admin', 'editor', 'reader'].includes(store.role) || typeof store.authorUserId !== 'string') throw new Error('Context mismatch');
   return store;
 }
 
@@ -91,17 +92,25 @@ export class ProfileSession {
   }
 }
 
-export async function startProfileBridge(config: Profiles, name: string) {
+export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string; respectStoreRole?: boolean } = {}) {
   const session = new ProfileSession(config, name);
-  const server = new Server({ name: 'oak-memory-plugin', version: '0.3.0' }, {
+  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.0' }, {
     capabilities: { tools: { listChanged: true } },
-    instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}`,
+    instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let remote;
     try { remote = await session.listTools(); }
     catch { remote = { tools: [] }; } // Keep setup/status tools discoverable when cloud access fails.
-    return { tools: [...remote.tools, ...(session.snapshot().profile.backend === 'cloud' ? [{
+    let canChange = !options.readOnly;
+    const snapshot = session.snapshot();
+    if (canChange && options.respectStoreRole && snapshot.profile.backend === 'cloud') {
+      try {
+        const context = await session.withClient(snapshot, client => client.callTool({ name: 'currentMemoryStore', arguments: {} }));
+        canChange = ['owner', 'admin', 'editor'].includes(verifiedCloudStore(context, snapshot.profile).role);
+      } catch { canChange = false; }
+    }
+    return { tools: [...remote.tools.filter(tool => canChange || cloudReadTools.has(tool.name)), ...(session.snapshot().profile.backend === 'cloud' ? [{
       name: 'getMemoryPolicy', description: 'Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.', inputSchema: { type: 'object' as const, properties: {} },
     }] : []), {
       name: 'memoryConnectionStatus', description: 'Verify and show the active profile, backend, server-authorized graph, role and recording identity. Returns safe setup errors without exposing credentials or changing stores.', inputSchema: { type: 'object', properties: {} },
@@ -138,6 +147,17 @@ export async function startProfileBridge(config: Profiles, name: string) {
         const selected = await session.select(name);
         await server.notification({ method: 'notifications/tools/list_changed' }).catch(() => {});
         return text(selected);
+      }
+      if (options.readOnly && !cloudReadTools.has(request.params.name)) {
+        return { ...text({ error: 'This desktop extension is read-only. Enable Allow memory changes in its settings only after approving writes to this store.' }), isError: true };
+      }
+      if (options.respectStoreRole && !cloudReadTools.has(request.params.name)) {
+        const snapshot = session.snapshot();
+        if (snapshot.profile.backend !== 'cloud') return errorResult();
+        const context = await session.withClient(snapshot, client => client.callTool({ name: 'currentMemoryStore', arguments: {} }));
+        if (!['owner', 'admin', 'editor'].includes(verifiedCloudStore(context, snapshot.profile).role)) {
+          return { ...text({ error: 'The selected store role does not permit memory changes.' }), isError: true };
+        }
       }
       return await session.callTool(request.params.name, request.params.arguments);
     } catch { return errorResult(); }

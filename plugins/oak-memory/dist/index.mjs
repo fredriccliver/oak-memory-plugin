@@ -30574,13 +30574,16 @@ var sharedConfigDir = process.env.OAK_CONFIG_DIR ?? path2.join(os2.homedir(), ".
 var sharedEnvFile = path2.join(sharedConfigDir, "oak-memory.env");
 var legacyClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR ?? path2.join(os2.homedir(), ".claude");
 var legacyEnvFile = path2.join(legacyClaudeConfigDir, "oak-memory.env");
-var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
-var fallbackUserEnvFile = process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
+var desktopIsolated = process.env.OAK_DESKTOP_ISOLATED === "true";
+var userEnvFile = desktopIsolated || process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMORY_DATABASE_URL") || !envFileSets(legacyEnvFile, "MEMORY_DATABASE_URL") ? sharedEnvFile : legacyEnvFile;
+var fallbackUserEnvFile = desktopIsolated || process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
 var defaultPolicyFile = path2.join(path2.dirname(userEnvFile), "oak-memory-policy.md");
 var fallbackPolicyFile = fallbackUserEnvFile ? path2.join(path2.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
-loadEnvFile(path2.join(pluginRoot, ".env"));
-loadEnvFile(userEnvFile);
-if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+if (!desktopIsolated) {
+  loadEnvFile(path2.join(pluginRoot, ".env"));
+  loadEnvFile(userEnvFile);
+  if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+}
 function readEnvVar(name) {
   const value = process.env[name];
   if (value === void 0) return void 0;
@@ -30683,10 +30686,11 @@ function loadEnv() {
 // src/bridge.ts
 var text = (value) => ({ content: [{ type: "text", text: JSON.stringify(value) }] });
 var errorResult = () => ({ ...text({ error: "Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used." }), isError: true });
+var cloudReadTools = /* @__PURE__ */ new Set(["currentMemoryStore", "listMemoryStores", "listMemories", "recallMemory", "suggestMemoryLinks"]);
 function verifiedCloudStore(context, profile) {
   if (context.isError || !Array.isArray(context.content)) throw new Error("Context unavailable");
   const store = JSON.parse(context.content.filter((item) => item?.type === "text" && typeof item.text === "string").map((item) => item.text).join(""));
-  if (store.storeId !== profile.graphId || !["owner", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
+  if (store.storeId !== profile.graphId || !["owner", "admin", "editor", "reader"].includes(store.role) || typeof store.authorUserId !== "string") throw new Error("Context mismatch");
   return store;
 }
 var ProfileSession = class {
@@ -30770,13 +30774,13 @@ var ProfileSession = class {
     return this.withClient(snapshot, (client) => client.callTool({ name, arguments: args }));
   }
 };
-async function startProfileBridge(config2, name) {
+async function startProfileBridge(config2, name, options = {}) {
   const session = new ProfileSession(config2, name);
-  const server = new Server({ name: "oak-memory-plugin", version: "0.3.0" }, {
+  const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: "0.3.0" }, {
     capabilities: { tools: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}
 
-${attributionInstructions}`
+${attributionInstructions}${options.readOnly ? "\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings." : ""}`
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let remote;
@@ -30785,7 +30789,17 @@ ${attributionInstructions}`
     } catch {
       remote = { tools: [] };
     }
-    return { tools: [...remote.tools, ...session.snapshot().profile.backend === "cloud" ? [{
+    let canChange = !options.readOnly;
+    const snapshot = session.snapshot();
+    if (canChange && options.respectStoreRole && snapshot.profile.backend === "cloud") {
+      try {
+        const context = await session.withClient(snapshot, (client) => client.callTool({ name: "currentMemoryStore", arguments: {} }));
+        canChange = ["owner", "admin", "editor"].includes(verifiedCloudStore(context, snapshot.profile).role);
+      } catch {
+        canChange = false;
+      }
+    }
+    return { tools: [...remote.tools.filter((tool) => canChange || cloudReadTools.has(tool.name)), ...session.snapshot().profile.backend === "cloud" ? [{
       name: "getMemoryPolicy",
       description: "Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.",
       inputSchema: { type: "object", properties: {} }
@@ -30831,6 +30845,17 @@ ${attributionInstructions}`
         await server.notification({ method: "notifications/tools/list_changed" }).catch(() => {
         });
         return text(selected);
+      }
+      if (options.readOnly && !cloudReadTools.has(request.params.name)) {
+        return { ...text({ error: "This desktop extension is read-only. Enable Allow memory changes in its settings only after approving writes to this store." }), isError: true };
+      }
+      if (options.respectStoreRole && !cloudReadTools.has(request.params.name)) {
+        const snapshot = session.snapshot();
+        if (snapshot.profile.backend !== "cloud") return errorResult();
+        const context = await session.withClient(snapshot, (client) => client.callTool({ name: "currentMemoryStore", arguments: {} }));
+        if (!["owner", "admin", "editor"].includes(verifiedCloudStore(context, snapshot.profile).role)) {
+          return { ...text({ error: "The selected store role does not permit memory changes." }), isError: true };
+        }
       }
       return await session.callTool(request.params.name, request.params.arguments);
     } catch {
