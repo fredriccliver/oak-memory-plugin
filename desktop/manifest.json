@@ -1,0 +1,33 @@
+{
+  "manifest_version": "0.3",
+  "name": "oak-desktop-cloud",
+  "display_name": "OAK.memory Cloud via Desktop",
+  "version": "0.1.0",
+  "description": "Run OAK MCP locally and use your private cloud store. No local database or Docker required.",
+  "author": { "name": "Fredric Cliver", "url": "https://github.com/fredriccliver" },
+  "homepage": "https://www.openaikits.com/memory",
+  "documentation": "https://www.openaikits.com/docs/claude-desktop#local",
+  "support": "https://github.com/fredriccliver/oak-memory-plugin/issues",
+  "license": "PolyForm-Shield-1.0.0",
+  "privacy_policies": ["https://www.openaikits.com/privacy"],
+  "tools_generated": true,
+  "compatibility": { "platforms": ["darwin", "win32"], "runtimes": { "node": ">=20" } },
+  "server": {
+    "type": "node",
+    "entry_point": "server/desktop.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/desktop.mjs"],
+      "env": {
+        "OAK_DESKTOP_STORE_ID": "${user_config.store_id}",
+        "OAK_DESKTOP_PERSONAL_KEY": "${user_config.personal_key}",
+        "OAK_DESKTOP_ALLOW_CHANGES": "${user_config.allow_changes}"
+      }
+    }
+  },
+  "user_config": {
+    "store_id": { "type": "string", "title": "Store ID", "description": "Copy the store UUID from your OAK dashboard. This must match the store for your personal key.", "required": true },
+    "personal_key": { "type": "string", "title": "Personal key", "description": "Create a named connection key for this store in OAK. Enter it only here, never in chat. Claude stores this sensitive setting securely.", "required": true, "sensitive": true },
+    "allow_changes": { "type": "boolean", "title": "Allow memory changes", "description": "Off by default. Turn on only to permit creating, editing, merging, deleting and policy changes in this store. Server roles, credits and Claude approvals still apply. Autosave stays off.", "default": false }
+  }
+}

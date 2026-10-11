@@ -18,6 +18,14 @@ infrastructure; the engine itself knows nothing about the AI client using it.
 
 > Enable only one of `oak-memory-cloud` and the local `oak-memory` plugin in a host session. The cloud package registers `oak-memory-cloud`; the local package registers `oak-memory`. Disable the other entry before connecting, then verify `currentMemoryStore` to confirm the intended store.
 
+## Claude Desktop: local installation with a cloud store
+
+Download the [Desktop Cloud extension](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.0) and install the `.mcpb` in Settings → Extensions → Advanced settings → Install Extension. Configure **Store ID** and your own **Personal key** from the OAK dashboard in the extension settings, never in chat. Claude uses its built-in Node runtime; no Docker, Ollama or local database is needed. Memories remain in OAK cloud.
+
+The extension is named `oak-desktop-cloud`. **Allow memory changes** is off by default; enabling it permits mutations subject to server roles, credits and Claude tool approvals. Autosave remains off. Revoke its key in OAK to disconnect. In a fresh chat, enable only this OAK connection and verify `memoryConnectionStatus` and `listMemories`. It never falls back to a local store.
+
+Personal accounts may choose this extension or remote OAuth. Company accounts may use it only when local extensions are allowed by their organization. Installing from GitHub does not override remote-connector or desktop-extension policy. This Desktop installation does not install a connector in Claude web or ChatGPT. See [installation, permissions and verification](docs/desktop-cloud.md).
+
 ## OAuth cloud plugin (ChatGPT and Claude)
 
 For hosted OAK.memory, use **OAK.memory Cloud**. It connects directly to
@@ -28,7 +36,7 @@ Docker, Ollama or API key. The shared skills and host manifests live in
 - **Claude Desktop / claude.ai / Cowork:** Customize → Plugins → Add → Add marketplace.
   Enter `https://github.com/fredriccliver/oak-memory-plugin`, sync, then select
   **OAK.memory Cloud** (`oak-memory-cloud`). The existing `oak-memory` plugin is
-  the local Node package. Complete the cloud plugin's OAK sign-in, select a store,
+  the local Node package. Under the plugin’s Connectors tab, connect the remote server first. If Connect is disabled with an organization-owner message, an eligible organization owner must add it. Installing the plugin cannot perform that step for a member. Complete the cloud plugin's OAK sign-in, select a store,
   and enable it for the conversation. Organization policy may restrict marketplaces
   or remote connectors; an installation does not override that policy.
 - **ChatGPT / Codex:** use the OpenAI portable ZIP built from the same source.

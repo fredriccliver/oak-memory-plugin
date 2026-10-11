@@ -26,6 +26,12 @@ jobs:
       - run: npm run package:cloud:openai
       - run: npm run package:cloud:claude
       - run: npm test
+      - run: npm run test:desktop
+      - run: npm run package:desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oak-desktop-cloud
+          path: artifacts/*.mcpb
       - name: Verify generated bundles remain synchronized
         run: |
           cmp dist/index.mjs plugins/oak-memory/dist/index.mjs

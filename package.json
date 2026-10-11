@@ -23,7 +23,9 @@
     "check:cloud-plugin": "node scripts/package-cloud-plugin.mjs --check",
     "package:cloud:openai": "node scripts/package-cloud-plugin.mjs openai",
     "package:cloud:claude": "node scripts/package-cloud-plugin.mjs claude",
-    "test:merge-stdio": "node scripts/merge-stdio-smoke.mjs"
+    "test:merge-stdio": "node scripts/merge-stdio-smoke.mjs",
+    "package:desktop": "node scripts/package-desktop.mjs",
+    "test:desktop": "node scripts/desktop-smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
