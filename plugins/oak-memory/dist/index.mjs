@@ -30578,9 +30578,11 @@ var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMO
 var fallbackUserEnvFile = process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
 var defaultPolicyFile = path2.join(path2.dirname(userEnvFile), "oak-memory-policy.md");
 var fallbackPolicyFile = fallbackUserEnvFile ? path2.join(path2.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
-loadEnvFile(path2.join(pluginRoot, ".env"));
-loadEnvFile(userEnvFile);
-if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+if (process.env.OAK_DESKTOP_ISOLATED !== "true") {
+  loadEnvFile(path2.join(pluginRoot, ".env"));
+  loadEnvFile(userEnvFile);
+  if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+}
 function readEnvVar(name) {
   const value = process.env[name];
   if (value === void 0) return void 0;
@@ -30845,6 +30847,14 @@ ${attributionInstructions}${options.readOnly ? "\nThis connection permits reads 
       }
       if (options.readOnly && !cloudReadTools.has(request.params.name)) {
         return { ...text({ error: "This desktop extension is read-only. Enable Allow memory changes in its settings only after approving writes to this store." }), isError: true };
+      }
+      if (options.respectStoreRole && !cloudReadTools.has(request.params.name)) {
+        const snapshot = session.snapshot();
+        if (snapshot.profile.backend !== "cloud") return errorResult();
+        const context = await session.withClient(snapshot, (client) => client.callTool({ name: "currentMemoryStore", arguments: {} }));
+        if (!["owner", "admin", "editor"].includes(verifiedCloudStore(context, snapshot.profile).role)) {
+          return { ...text({ error: "The selected store role does not permit memory changes." }), isError: true };
+        }
       }
       return await session.callTool(request.params.name, request.params.arguments);
     } catch {

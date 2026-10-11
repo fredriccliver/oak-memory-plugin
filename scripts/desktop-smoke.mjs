@@ -12,14 +12,14 @@ import { build } from 'esbuild';
 import { pathToFileURL } from 'node:url';
 const temp = mkdtempSync(path.join(os.tmpdir(), 'oak-desktop-test-'));
 const graph = '11111111-1111-4111-8111-111111111111', key = 'oak_' + 'a'.repeat(64);
-let revoked = false, reader = false, admin = false, wrongStore = false, writes = 0;
+let revoked = false, reader = false, admin = false, wrongStore = false, writes = 0, mutationRequests = 0;
 const result = value => ({content:[{type:'text',text:JSON.stringify(value)}]});
 const http = createServer(async (req,res) => {
   if (revoked || req.headers.authorization !== `Bearer ${key}` || req.headers['x-oak-graph'] !== graph) {res.writeHead(401).end();return;}
   const server = new McpServer({name:'fixture',version:'1'});
   server.registerTool('currentMemoryStore',{inputSchema:{}},async()=>result({storeId:wrongStore?'wrong':graph,name:'Fixture',role:reader?'reader':admin?'admin':'owner',authorUserId:'fixture-person'}));
   server.registerTool('listMemories',{inputSchema:{}},async()=>result({memories:[],graphId:graph}));
-  for (const name of ['createMemory','updateMemoryPolicy','futureWriteTool']) server.registerTool(name,{inputSchema:{}},async()=>{ if(reader)return {...result({error:'Reader denied'}),isError:true}; writes++;return result({created:true});});
+  for (const name of ['createMemory','updateMemoryPolicy','futureWriteTool']) server.registerTool(name,{inputSchema:{}},async()=>{ mutationRequests++; if(reader)return {...result({error:'Reader denied'}),isError:true}; writes++;return result({created:true});});
   const transport = new StreamableHTTPServerTransport({sessionIdGenerator:undefined});
   res.on('close',()=>{void transport.close();void server.close();});
   await server.connect(transport);await transport.handleRequest(req,res);
@@ -40,6 +40,9 @@ try {
   assert.equal(desktopConfig({OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:key,OAK_DESKTOP_ALLOW_CHANGES:' TRUE '}).allowChanges,true);
   assert.equal(desktopConfig({OAK_DESKTOP_STORE_ID:graph,OAK_DESKTOP_PERSONAL_KEY:key,OAK_BACKEND:'local'}).config.profiles['desktop-cloud'].backend,'cloud');
   const entry=path.join(temp,manifest.server.entry_point);
+  writeFileSync(path.join(temp,'oak-memory.env'),`OAK_DESKTOP_STORE_ID=${graph}\nOAK_DESKTOP_PERSONAL_KEY=${key}\n`);
+  const missing=spawnSync(process.execPath,[entry],{encoding:'utf8',timeout:3000,env:{PATH:process.env.PATH,HOME:temp,OAK_CONFIG_DIR:temp,PLUGIN_ROOT:temp}});
+  assert.equal(missing.status,1);assert(!missing.stderr.includes(key));
   const original=readFileSync(entry,'utf8');
   assert(original.includes('https://www.openaikits.com/api/mcp'));
   // Only the extracted test copy points to loopback. Shipping code has no endpoint override.
@@ -64,9 +67,11 @@ try {
       }
       reader=true;
       assert(!(await client.listTools()).tools.some(t=>t.name==='createMemory'));
-      assert.equal((await client.callTool({name:'createMemory',arguments:{}})).isError,true);reader=false;
+      const beforeReader=mutationRequests;
+      assert.equal((await client.callTool({name:'createMemory',arguments:{}})).isError,true);assert.equal(mutationRequests,beforeReader);reader=false;
       wrongStore=true;
-      assert.equal((await client.callTool({name:'memoryConnectionStatus',arguments:{}})).isError,true);wrongStore=false;
+      assert.equal((await client.callTool({name:'memoryConnectionStatus',arguments:{}})).isError,true);
+      const beforeMismatch=mutationRequests;assert.equal((await client.callTool({name:'createMemory',arguments:{}})).isError,true);assert.equal(mutationRequests,beforeMismatch);wrongStore=false;
       revoked=true;
       assert.equal((await client.callTool({name:'listMemories',arguments:{}})).isError,true);revoked=false;
       assert(!stderr.includes(key));

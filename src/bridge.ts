@@ -151,6 +151,14 @@ export async function startProfileBridge(config: Profiles, name: string, options
       if (options.readOnly && !cloudReadTools.has(request.params.name)) {
         return { ...text({ error: 'This desktop extension is read-only. Enable Allow memory changes in its settings only after approving writes to this store.' }), isError: true };
       }
+      if (options.respectStoreRole && !cloudReadTools.has(request.params.name)) {
+        const snapshot = session.snapshot();
+        if (snapshot.profile.backend !== 'cloud') return errorResult();
+        const context = await session.withClient(snapshot, client => client.callTool({ name: 'currentMemoryStore', arguments: {} }));
+        if (!['owner', 'admin', 'editor'].includes(verifiedCloudStore(context, snapshot.profile).role)) {
+          return { ...text({ error: 'The selected store role does not permit memory changes.' }), isError: true };
+        }
+      }
       return await session.callTool(request.params.name, request.params.arguments);
     } catch { return errorResult(); }
   });

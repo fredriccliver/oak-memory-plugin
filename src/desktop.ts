@@ -1,5 +1,4 @@
 import { desktopConfig } from './desktop-config.js';
-import { startProfileBridge } from './bridge.js';
 
 async function main() {
   const { config, allowChanges } = desktopConfig(process.env);
@@ -7,6 +6,8 @@ async function main() {
   process.env.MEMORY_POLICY_SCOPE = allowChanges ? 'important' : '';
   process.env.MEMORY_POLICY_AUTOSAVE = 'false';
   process.env.MEMORY_POLICY_RECALL = 'minimal';
+  process.env.OAK_DESKTOP_ISOLATED = 'true';
+  const { startProfileBridge } = await import('./bridge.js');
   await startProfileBridge(config, config.defaultProfile, { readOnly: !allowChanges, respectStoreRole: true, serverName: 'oak-desktop-cloud' });
 }
 main().catch(() => {

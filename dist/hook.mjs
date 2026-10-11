@@ -116,9 +116,11 @@ var userEnvFile = process.env.OAK_CONFIG_DIR || envFileSets(sharedEnvFile, "MEMO
 var fallbackUserEnvFile = process.env.OAK_CONFIG_DIR ? void 0 : userEnvFile === sharedEnvFile ? legacyEnvFile : sharedEnvFile;
 var defaultPolicyFile = path.join(path.dirname(userEnvFile), "oak-memory-policy.md");
 var fallbackPolicyFile = fallbackUserEnvFile ? path.join(path.dirname(fallbackUserEnvFile), "oak-memory-policy.md") : void 0;
-loadEnvFile(path.join(pluginRoot, ".env"));
-loadEnvFile(userEnvFile);
-if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+if (process.env.OAK_DESKTOP_ISOLATED !== "true") {
+  loadEnvFile(path.join(pluginRoot, ".env"));
+  loadEnvFile(userEnvFile);
+  if (fallbackUserEnvFile) loadEnvFile(fallbackUserEnvFile);
+}
 function readEnvVar(name) {
   const value = process.env[name];
   if (value === void 0) return void 0;
