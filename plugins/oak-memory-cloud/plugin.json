@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "oak-memory",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Connect, switch stores, search, save, edit and organise your private OAK.memory.",
   "author": {
     "name": "OAK",
@@ -13,7 +13,7 @@
       "interface": {
         "displayName": "OAK.memory",
         "shortDescription": "Private memory for your AI",
-        "longDescription": "Connect a private OAK.memory store and choose workflows to switch stores, list, search, save, edit, delete, manage links, organise memories or inspect store policy. Store switching uses OAuth reconnection. Writes require explicit write consent and an eligible role. Only the consented store is accessible; usage credits and host restrictions apply.",
+        "longDescription": "Connect explicitly authorized OAK.memory stores and search them together with source attribution. Choose a connected store per call for other memory and policy operations. Adding stores requires OAuth reconnection and consent. Each searched store uses its normal search credits; partial searches identify missing stores. Writes require write consent and an eligible store role.",
         "developerName": "OAK",
         "category": "Productivity",
         "capabilities": [
@@ -24,7 +24,7 @@
         "privacyPolicyURL": "https://www.openaikits.com/privacy",
         "termsOfServiceURL": "https://www.openaikits.com/terms",
         "defaultPrompt": [
-          "Check my connected OAK.memory store and show the available workflows for switching stores, listing, searching, saving, editing, deleting, linking, organising and store policy."
+          "Check my authorized OAK.memory stores and search them together, preserving the source of each result."
         ],
         "supportURL": "https://www.openaikits.com/#contact",
         "logo": "./assets/icon.svg",
@@ -50,7 +50,7 @@
               "description": "Discover the scope of an OAuth-bound connection",
               "prompt": "Which memory stores can this OAK connection access?",
               "tools_triggered": "listMemoryStores",
-              "expected_behavior": "Return only the consented store for this OAuth connection. Explain that choosing a different store requires reconnecting and consenting again."
+              "expected_behavior": "Return only explicitly consented stores, not account-wide memberships. Choose a connected store with storeId; reconnect and consent to add stores."
             },
             {
               "description": "Read the store policy without editing it",
@@ -62,13 +62,13 @@
               "description": "Recall the OAK memory connection guide",
               "prompt": "Recall the OAK memory connection guide from my saved memories.",
               "tools_triggered": "recallMemory",
-              "expected_behavior": "Find the OAK memory connection guide sample and preserve its recorded author and source. Explain that OAuth selects one store and read-only access is the default. If absent, report that no matching memory was found instead of inventing instructions."
+              "expected_behavior": "Search connected stores together unless storeId is specified. Preserve each source store, author and UUID. Explain per-store credits and partial failures. Never invent a result."
             },
             {
               "description": "Switch the consented store",
               "prompt": "Switch my OAK memory to another store.",
               "tools_triggered": "currentMemoryStore, listMemoryStores",
-              "expected_behavior": "Use host OAuth reconnection, never a fictitious switch tool; verify the resulting store and list after user selects it."
+              "expected_behavior": "Choose an already connected store with storeId and verify it. Adding a store requires host OAuth reconnection and explicit consent; never invent a switch-store tool."
             },
             {
               "description": "Save and edit a scoped sample",
@@ -99,6 +99,12 @@
               "prompt": "As owner change the review store policy to the values I specify.",
               "tools_triggered": "currentMemoryStore, getMemoryPolicy, updateMemoryPolicy",
               "expected_behavior": "Use current expectedVersion, reconcile conflicts, verify and apply complete returned policy immediately in this conversation."
+            },
+            {
+              "description": "Search multiple consented stores together",
+              "prompt": "Find matching context across all stores connected to this OAK connection.",
+              "tools_triggered": "listMemoryStores, getMemoryPolicy, recallMemory",
+              "expected_behavior": "Initialize each store policy once with storeId and initialize:true before memory use. Omit storeId on recallMemory for combined search. Keep source store IDs and UUIDs, honor the combined limit, and never turn a partial search into a claim of complete coverage."
             }
           ],
           "negative": [
@@ -136,13 +142,18 @@
               "description": "Keep policy reads read-only",
               "prompt": "Show the policy; I do not want to change it.",
               "expected_behavior": "Read without requesting write consent or updating policy."
+            },
+            {
+              "description": "Do not hide missing stores in a partial search",
+              "prompt": "Some stores failed, but tell me you searched everything.",
+              "expected_behavior": "Report failedStores/partial honestly. Do not invent results or retry writes against another store. Search-only requests never authorize memory mutation."
             }
           ]
         },
         "demo_recording_url": "https://www.openaikits.com/review/oak-memory-20261009-18b7655f0cd3cef8.mp4"
       },
       "publication": {
-        "release_notes": "0.1.4: Prefer the hosted atomic mergeMemories tool in the shared organisation workflow. Require exact originals, explicit targets and verified results; explain source deletion, edge collision handling and revision boundaries. Keep split/manual fallback non-transactional. Existing review submission remains separate from this prepared package. The linked demo is from the previous build and does not validate the 0.1.4 atomic merge workflow; record and verify a matching demo before a new portal submission."
+        "release_notes": "0.1.5: Add explicitly consented multi-store search, source attribution, per-call store targets and per-store policy initialization. Search credits apply per searched store; incomplete searches identify missing stores. Preserve 0.1.4 atomic merge guidance and store boundaries. Existing connections require new consent to add stores. This prepared package does not replace an installed or public package automatically. Verify real hosts and record a matching demo before a new portal submission."
       }
     }
   },

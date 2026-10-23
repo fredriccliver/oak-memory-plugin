@@ -69,3 +69,18 @@ MCP 파일, Claude ZIP은 `.claude-plugin/plugin.json`과 `.mcp.json`을 포함�
 [원격 MCP를 포함하는 플러그인](https://support.claude.com/en/articles/11725091-when-to-use-desktop-and-web-connectors),
 [Claude 조직 정책](https://support.claude.com/en/articles/13837433-manage-plugins-for-your-organization),
 [OpenAI portable 패키지](https://developers.openai.com/plugins/build/plugins).
+
+
+## 0.1.5 다중 저장소 검색 준비본
+
+한 OAuth 연결에서 동의한 여러 저장소를 통합 검색하는 호스팅 계약은
+[서버 PR #71](https://github.com/fredriccliver/openaikits.com/pull/71)을 따른다.
+`recallMemory`의 `storeId` 생략은 통합 검색이고 나머지 작업은 다중 연결에서
+호출별 대상을 지정한다. 검색 결과의 출처와 `partial`/`failedStores`를 유지하며
+크레딧은 검색한 저장소별로 사용한다. 저장소 정책은 최초 사용 시 그 `storeId`와
+`initialize:true`로 한 번 읽고, 이후 단순 정책 조회는 세션 정책을 바꾸지 않는다.
+
+기존 연결은 재동의 전까지 범위가 넓어지지 않는다. 추가 reader 저장소는 쓰기
+scope가 있어도 읽기만 가능하다. 0.1.4의 동일 저장소 원자적 병합 지침은 유지한다.
+이 소스와 검증용 ZIP은 공개 포털 제출·설치 갱신·실제 호스트 검증 완료를 뜻하지
+않으며, 현재 배포 상태는 기존 릴리스 기록과 포털에서 별도로 확인한다.

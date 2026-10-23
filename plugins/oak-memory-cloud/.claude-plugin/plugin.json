@@ -1,7 +1,7 @@
 {
   "name": "oak-memory-cloud",
   "displayName": "OAK.memory Cloud",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Connect your private OAK.memory cloud store with OAuth. List, search, save and organise memories in Claude chat, Desktop, Cowork and Claude Code.",
   "author": {
     "name": "OAK",
