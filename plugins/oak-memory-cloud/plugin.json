@@ -50,7 +50,7 @@
               "description": "Discover the scope of an OAuth-bound connection",
               "prompt": "Which memory stores can this OAK connection access?",
               "tools_triggered": "listMemoryStores",
-              "expected_behavior": "Return only explicitly consented stores, not account-wide memberships. Choose a connected store with storeId; reconnect and consent to add stores."
+              "expected_behavior": "Return only enabled, explicitly consented stores, not account-wide memberships. Choose a connected store with storeId; reconnect and consent to add stores."
             },
             {
               "description": "Read the store policy without editing it",
@@ -153,7 +153,7 @@
         "demo_recording_url": "https://www.openaikits.com/review/oak-memory-20261009-18b7655f0cd3cef8.mp4"
       },
       "publication": {
-        "release_notes": "0.1.5: Add explicitly consented multi-store search, source attribution, per-call store targets and per-store policy initialization. Search credits apply per searched store; incomplete searches identify missing stores. Preserve 0.1.4 atomic merge guidance and store boundaries. Existing connections require new consent to add stores. This prepared package does not replace an installed or public package automatically. Verify real hosts and record a matching demo before a new portal submission."
+        "release_notes": "0.1.5: Add explicitly consented multi-store search, source attribution, per-call store targets and per-store policy initialization. Search credits apply per searched store; incomplete searches identify missing stores. Preserve 0.1.4 atomic merge guidance and store boundaries. Existing connections require new consent to add stores. This prepared package does not replace an installed or public package automatically. Verify real hosts and record a matching demo before a new portal submission. Manage connections and per-store activation in OAK web settings. Older single-store calls remain compatible; multi-store writes still require an explicit target even with one enabled store. Host reauthentication and tool refresh are separate acceptance checks."
       }
     }
   },
