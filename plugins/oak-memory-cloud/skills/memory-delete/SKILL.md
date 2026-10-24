@@ -9,7 +9,7 @@ First establish the user-intended target `storeId`. Resolve every mutation targe
 
 Read `getMemoryPolicy` when supported and follow the selected store policy. Writes require OAuth `memory:write` consent, an eligible role and enabled service writes; use the host's additional-consent flow if offered, otherwise guide reconnection with write permission. The user's request authorizes only its stated content and targets. Do not require a second confirmation for an already explicit, unambiguous instruction. If content, target or scope is missing, ask for the missing information before writing. Report permission, credit and service errors as errors, never as success.
 
-Resolve each target from `recallMemory` or `listMemories` using actual UUIDs. An explicit request to delete an identified record authorizes that deletion. A vague request such as "clean up old memories" needs a concrete candidate list and the user's chosen deletion scope first; selecting this skill alone is not permission to delete an unspecified set.
+Resolve each target from `recallMemory` or `listMemories` with that same `storeId`, using actual UUIDs. An explicit request to delete an identified record authorizes that deletion. A vague request such as "clean up old memories" needs a concrete candidate list and the user's chosen deletion scope first; selecting this skill alone is not permission to delete an unspecified set.
 
 Call `deleteMemory` only for the selected targets. Deletion also removes their attached links and is not a reversible archive. Report which deletions succeeded and which failed; do not claim a bulk operation was atomic. Verify absence with `listMemories` when practical; disclose if verification is incomplete.
 
