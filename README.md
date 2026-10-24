@@ -16,7 +16,7 @@ is the **entity-specific associative network**: associations differ per individu
 from the memory graph rather than from fine-tuning the model. This plugin is one consumer of that
 infrastructure; the engine itself knows nothing about the AI client using it.
 
-> Enable only one of `oak-memory-cloud` and the local `oak-memory` plugin in a host session. The cloud package registers `oak-memory-cloud`; the local package registers `oak-memory`. Disable the other entry before connecting, then verify `currentMemoryStore` to confirm the intended store.
+> Enable only one of `oak-memory-cloud` and the local `oak-memory` plugin in a host session. The cloud package registers `oak-memory-cloud`; the local package registers `oak-memory`. Disable the other entry before connecting. For OAuth cloud, call `listMemoryStores`, then pass the intended enabled `storeId` to `currentMemoryStore` and `listMemories` to verify it. Local Node profiles keep their own single-store verification flow.
 
 ## Claude Desktop: local installation with a cloud store
 
@@ -36,7 +36,7 @@ Docker, Ollama or API key. The shared skills and host manifests live in
 - **Claude Desktop / claude.ai / Cowork:** Customize → Plugins → Add → Add marketplace.
   Enter `https://github.com/fredriccliver/oak-memory-plugin`, sync, then select
   **OAK.memory Cloud** (`oak-memory-cloud`). The existing `oak-memory` plugin is
-  the local Node package. Under the plugin’s Connectors tab, connect the remote server first. If Connect is disabled with an organization-owner message, an eligible organization owner must add it. Installing the plugin cannot perform that step for a member. Complete the cloud plugin's OAK sign-in, select a store,
+  the local Node package. Under the plugin’s Connectors tab, connect the remote server first. If Connect is disabled with an organization-owner message, an eligible organization owner must add it. Installing the plugin cannot perform that step for a member. Complete the cloud plugin's OAK sign-in and explicitly consent to the intended stores,
   and enable it for the conversation. Organization policy may restrict marketplaces
   or remote connectors; an installation does not override that policy.
 - **ChatGPT / Codex:** use the OpenAI portable ZIP built from the same source.
@@ -46,7 +46,7 @@ Docker, Ollama or API key. The shared skills and host manifests live in
   in Add marketplace. Team/Enterprise organization connectors require an eligible
   owner to register them before members can connect.
 
-Check `currentMemoryStore` and `listMemories` in a fresh conversation. A tool list or
+In a fresh OAuth cloud conversation, call `listMemoryStores`, select the intended enabled target, then pass its explicit `storeId` to `currentMemoryStore` and `listMemories`. Non-search calls always use `storeId`; combined `recallMemory` omits it after first-use policy initialization for each enabled store. A tool list or
 successful sign-in alone does not prove a working connection. The cloud organisation workflow prefers the exposed atomic `mergeMemories` tool, requires exact originals and verifies results; source deletion, revision history and sequential fallback limits are documented in the shared skill. Initial access is read-only;
 writing requires separate OAK OAuth consent, an eligible store role, credits and host approval.
 
@@ -615,3 +615,5 @@ the dedicated fixture URL and runs as `npm run test:merge-stdio` in CI.
 ### OAuth cloud 0.1.5 preparation
 
 Multi-store combined search and per-call targets are prepared in the cloud package. Connection/store activation is managed in OAK web settings. This is separate from the local plugin and from portal publication or acceptance of an installed host package. See [cloud setup and compatibility](docs/cloud-plugin.md).
+
+The server prerequisite is already deployed: [backend #71](https://github.com/fredriccliver/openaikits.com/pull/71) and [activation #75 production verification](https://github.com/fredriccliver/openaikits.com/pull/75#issuecomment-6382683719). This does not claim host schema refresh, installed-package acceptance, a new demo or portal publication.
