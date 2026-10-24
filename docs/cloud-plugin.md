@@ -6,6 +6,24 @@
 요구하지 않는다. 기존 루트 Claude Code 플러그인과 `plugins/oak-memory`의 로컬
 Codex 패키지는 유지한다. 로컬 메모리를 클라우드로 이전하거나 동기화하지 않는다.
 
+## 0.1.5 공개 전 확인 목록
+
+저장소 머지는 소스 통합이며 설치된 패키지·포털 공개 완료를 뜻하지 않는다.
+아래 호스트 검증은 공개 전 별도로 수행하고 결과를 남긴다.
+
+- [x] 서버 다중 저장소·활성화 계약 배포: [#71](https://github.com/fredriccliver/openaikits.com/pull/71), [#75 운영 검증](https://github.com/fredriccliver/openaikits.com/pull/75#issuecomment-6382683719).
+- [ ] ChatGPT·Claude 각각 새 패키지를 설치/동기화하고 도구 스키마를 갱신한다.
+- [ ] 기존 단일 저장소 읽기와 새 다중 저장소 OAuth 동의를 각각 실제 호스트에서 확인한다.
+- [ ] 통합 검색의 출처·부분 실패, 명시적 대상 호출, 저장소별 정책을 확인한다.
+- [ ] 연결 중지/재개·저장소 끄기/켜기 후 접근 차단·복구와 필요한 재인증을 확인한다.
+- [ ] 최신 흐름의 데모를 기록하고 manifest의 이전 영상 URL을 교체한 뒤 포털 제출·수락·공개를 각각 확인한다.
+
+스킬이 대상을 누락해도 다중 저장소 연결의 쓰기가 기본 저장소로 이동해서는 안 된다.
+서버의 `oauthStoreSelectionRequired`는 켜진 저장소가 하나뿐이어도 명시적 대상을
+요구하며, 꺼진 저장소·미동의 저장소·reader 쓰기는 거부한다. 기존 단일 저장소
+호출의 대상 생략 호환과는 구분한다. 이 경계는 서버의
+`tests/multiple-store-tools.test.ts`와 `tests/oauth-security.test.ts`에서 검증한다.
+
 ## 설치와 회사 계정
 
 Claude Desktop 또는 claude.ai에서 Customize → Plugins → Add → Add marketplace에
@@ -15,7 +33,7 @@ Claude Desktop 또는 claude.ai에서 Customize → Plugins → Add → Add mark
 OAK 로그인·저장소 동의를 완료하고 새 대화에서 사용한다. 클라우드는
 `oak-memory-cloud`, 로컬은 `oak-memory`라는 별도 MCP 이름을 사용한다. 대상 혼동을
 줄이려면 한 세션에서 하나만 활성화한다. 다른 플러그인을
-비활성화한 뒤 `currentMemoryStore`로 의도한 저장소인지 확인한다.
+비활성화한 뒤 `listMemoryStores`에서 켜진 대상의 ID를 확인하고, 그 `storeId`로 `currentMemoryStore`와 `listMemories`를 호출해 검증한다.
 
 MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없다. 직접 원격
 커넥터를 등록할 때는 Customize → Connectors를 사용한다. Team·Enterprise의 조직
@@ -28,9 +46,9 @@ MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없�
 
 ChatGPT는 portable `plugin.json`·`mcp.json` 패키지를 제출 포털에서 심사·공개해야
 한다. GitHub 마켓플레이스 URL을 추가하는 Claude 절차와 같다고 안내하지 않는다.
-기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.4의 코드
+기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.5의 코드
 갱신과 기존 심사본 0.1.2의 심사 상태는 별개이며, 기존 심사 통과 후 새 패키지를
-진행한다. manifest의 기존 demo는 이전 빌드 자료이며 0.1.4 병합 검증 증거가
+진행한다. manifest의 기존 demo는 이전 빌드 자료이며 0.1.5 다중 저장소 검증 증거가
 아니다. 새 포털 제출 전 실제 최신 흐름을 확인하고 그에 맞는 demo를 준비한다.
 저장소 머지나 서버 배포만으로 설치된 스킬과 listing이 바뀌지 않는다.
 
@@ -60,7 +78,7 @@ MCP 파일, Claude ZIP은 `.claude-plugin/plugin.json`과 `.mcp.json`을 포함�
 ## 실제 완료 기준
 
 설치·도구 목록·OAuth callback만으로 연결 완료를 선언하지 않는다. 실제 호스트에서
-`currentMemoryStore`와 `listMemories`를 호출해 선택 저장소와 역할을 확인한다.
+`listMemoryStores`로 켜진 동의 저장소를 찾은 뒤, 대상 `storeId`를 명시해 `currentMemoryStore`와 `listMemories`를 호출하고 저장소와 역할을 확인한다.
 초기 읽기 동의와 Claude의 도구 실행 승인은 별개이며, 쓰기는 추가 OAuth 동의,
 저장소 역할, 서비스 쓰기 허용과 크레딧을 모두 충족해야 한다. 쓰기 테스트는 허용된
 합성 내용과 저장소에서만 실행한다. 실제 검증되지 않은 플랫폼은 미확인으로 남긴다.
@@ -69,3 +87,20 @@ MCP 파일, Claude ZIP은 `.claude-plugin/plugin.json`과 `.mcp.json`을 포함�
 [원격 MCP를 포함하는 플러그인](https://support.claude.com/en/articles/11725091-when-to-use-desktop-and-web-connectors),
 [Claude 조직 정책](https://support.claude.com/en/articles/13837433-manage-plugins-for-your-organization),
 [OpenAI portable 패키지](https://developers.openai.com/plugins/build/plugins).
+
+
+## 0.1.5 다중 저장소 검색 준비본
+
+한 OAuth 연결에서 동의한 여러 저장소를 통합 검색하는 호스팅 계약은
+[서버 PR #71](https://github.com/fredriccliver/openaikits.com/pull/71)을 따른다.
+`recallMemory`의 `storeId` 생략은 통합 검색이고 나머지 작업은 다중 연결에서
+호출별 대상을 지정한다. 검색 결과의 출처와 `partial`/`failedStores`를 유지하며
+크레딧은 검색한 저장소별로 사용한다. 저장소 정책은 최초 사용 시 그 `storeId`와
+`initialize:true`로 한 번 읽고, 이후 단순 정책 조회는 세션 정책을 바꾸지 않는다.
+
+기존 연결은 재동의 전까지 범위가 넓어지지 않는다. 추가 reader 저장소는 쓰기
+scope가 있어도 읽기만 가능하다. 0.1.4의 동일 저장소 원자적 병합 지침은 유지한다.
+이 소스와 검증용 ZIP은 공개 포털 제출·설치 갱신·실제 호스트 검증 완료를 뜻하지
+않으며, 현재 배포 상태는 기존 릴리스 기록과 포털에서 별도로 확인한다.
+
+0.1.5 준비 패키지 후속: 연결별 중지/재개와 저장소별 활성화는 OAK 웹에서 관리한다. 구버전 단일 저장소 호출은 유지하며, 둘 이상의 저장소에 동의한 다중 저장소 연결은 켜진 저장소가 하나만 남아도 검색 외 도구에 명시적 storeId가 필요하다. 중지 상태의 401은 호스트에 따라 재연결이 필요할 수 있다. 이 변경은 공개 게시나 호스트 수락 완료를 의미하지 않는다.
