@@ -611,3 +611,7 @@ Choose the target UUID with that retained identity/state in mind. Local history
 has no automatic expiry; storage retention is managed by the local DB owner.
 `npm test` covers transport/policy regressions; the real DB merge suite requires
 the dedicated fixture URL and runs as `npm run test:merge-stdio` in CI.
+
+### OAuth cloud 0.1.5 preparation
+
+Multi-store combined search and per-call targets are prepared in the cloud package. Connection/store activation is managed in OAK web settings. This is separate from the local plugin and from portal publication or acceptance of an installed host package. See [cloud setup and compatibility](docs/cloud-plugin.md).

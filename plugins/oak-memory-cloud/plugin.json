@@ -37,74 +37,74 @@
             {
               "description": "Verify the selected store after OAuth connection",
               "prompt": "Which OAK.memory store is connected, and what access do I have?",
-              "tools_triggered": "currentMemoryStore",
-              "expected_behavior": "Report the selected review store and actual role returned by the tool; never infer a different store."
+              "tools_triggered": "listMemoryStores, currentMemoryStore",
+              "expected_behavior": "Report the selected review store and actual role returned by the tool; never infer a different store. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "List sample memories in explicitly consented stores",
               "prompt": "List the memories in my connected OAK store.",
-              "tools_triggered": "listMemories",
-              "expected_behavior": "Show only sample memories from the consented review store. If it is empty, clearly report that it is empty."
+              "tools_triggered": "listMemoryStores, listMemories",
+              "expected_behavior": "Show only sample memories from the consented review store. If it is empty, clearly report that it is empty. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Discover the scope of an OAuth-bound connection",
               "prompt": "Which memory stores can this OAK connection access?",
               "tools_triggered": "listMemoryStores",
-              "expected_behavior": "Return only enabled, explicitly consented stores, not account-wide memberships. Choose a connected store with storeId; reconnect and consent to add stores."
+              "expected_behavior": "Return only enabled, explicitly consented stores, not account-wide memberships. Choose a connected store with storeId; reconnect and consent to add stores. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Read the store policy without editing it",
               "prompt": "Show the policy for my connected OAK memory store without changing it.",
-              "tools_triggered": "getMemoryPolicy",
-              "expected_behavior": "Report the stored policy and any stated service limitation. Do not change the policy or silently apply a revised policy to an existing session."
+              "tools_triggered": "listMemoryStores, getMemoryPolicy",
+              "expected_behavior": "Report the stored policy and any stated service limitation. Do not change the policy or silently apply a revised policy to an existing session. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates. This is routine inspection of an already established session: omit initialize (or false), so applyToCurrentSession is false. This differs from first-use initialization for memory search and does not alter stored policy."
             },
             {
               "description": "Recall the OAK memory connection guide",
               "prompt": "Recall the OAK memory connection guide from my saved memories.",
-              "tools_triggered": "recallMemory",
-              "expected_behavior": "Search connected stores together unless storeId is specified. Preserve each source store, author and UUID. Explain per-store credits and partial failures. Never invent a result."
+              "tools_triggered": "listMemoryStores, recallMemory, getMemoryPolicy",
+              "expected_behavior": "Search connected stores together unless storeId is specified. Preserve each source store, author and UUID. Explain per-store credits and partial failures. Never invent a result. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates. For combined recall, do not select one default store: iterate every enabled store, initializing its own policy with its storeId and initialize:true once at first use, then omit storeId only on recallMemory. Routine policy inspection uses initialize:false/omitted and is not this initialization step."
             },
             {
               "description": "Choose a consented target per call",
-              "prompt": "Choose the target for my OAK memory to another store.",
-              "tools_triggered": "currentMemoryStore, listMemoryStores",
-              "expected_behavior": "Choose an already connected store with storeId and verify it. Adding a store requires host OAuth reconnection and explicit consent; never invent a switch-store tool."
+              "prompt": "Use the connected OAK store I name as the explicit target for these operations; do not change any global default.",
+              "tools_triggered": "listMemoryStores, currentMemoryStore",
+              "expected_behavior": "Choose an already connected store with storeId and verify it. Adding a store requires host OAuth reconnection and explicit consent; never invent a switch-store tool. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Save and edit a scoped sample",
               "prompt": "In my writable review store save a sample note, then update that exact note as I specify.",
-              "tools_triggered": "currentMemoryStore, getMemoryPolicy, recallMemory, createMemory, updateMemory",
-              "expected_behavior": "Use explicit content and actual returned UUIDs, avoid duplicates, preserve attribution and verify final content."
+              "tools_triggered": "listMemoryStores, currentMemoryStore, getMemoryPolicy, recallMemory, createMemory, updateMemory",
+              "expected_behavior": "Use explicit content and actual returned UUIDs, avoid duplicates, preserve attribution and verify final content. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Delete an exact sample",
               "prompt": "Delete only the review sample UUID I select.",
-              "tools_triggered": "currentMemoryStore, deleteMemory, listMemories",
-              "expected_behavior": "Delete only the specified UUID with write consent and verify its absence; selecting the skill alone is not deletion authorization."
+              "tools_triggered": "listMemoryStores, currentMemoryStore, deleteMemory, listMemories",
+              "expected_behavior": "Delete only the specified UUID with write consent and verify its absence; selecting the skill alone is not deletion authorization. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Edit directed relations",
               "prompt": "Add the specified relation between these two review sample UUIDs.",
-              "tools_triggered": "currentMemoryStore, listMemories, updateMemoryLink",
-              "expected_behavior": "Verify endpoints, direction and type; typed edits require a graph store; do not silently downgrade a rejected type."
+              "tools_triggered": "listMemoryStores, currentMemoryStore, listMemories, updateMemoryLink",
+              "expected_behavior": "Verify endpoints, direction and type; typed edits require a graph store; do not silently downgrade a rejected type. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Atomically merge authorised duplicates",
               "prompt": "Propose a merge of these review sample duplicates and execute only my chosen plan.",
-              "tools_triggered": "currentMemoryStore, listMemories, mergeMemories",
-              "expected_behavior": "Preview the explicit target/source UUIDs and complete merged content. Use mergeMemories with exact expectedContents only when authorised and exposed; verify target and source removal. Explain source deletion and cloud revision versus irreversible legacy-store boundaries. Never claim an entire organisation pass is atomic."
+              "tools_triggered": "listMemoryStores, currentMemoryStore, listMemories, mergeMemories",
+              "expected_behavior": "Preview the explicit target/source UUIDs and complete merged content. Use mergeMemories with exact expectedContents only when authorised and exposed; verify target and source removal. Explain source deletion and cloud revision versus irreversible legacy-store boundaries. Never claim an entire organisation pass is atomic. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Edit policy with current version",
               "prompt": "As owner change the review store policy to the values I specify.",
-              "tools_triggered": "currentMemoryStore, getMemoryPolicy, updateMemoryPolicy",
-              "expected_behavior": "Use current expectedVersion, reconcile conflicts, verify and apply complete returned policy immediately in this conversation."
+              "tools_triggered": "listMemoryStores, currentMemoryStore, getMemoryPolicy, updateMemoryPolicy",
+              "expected_behavior": "Use current expectedVersion, reconcile conflicts, verify and apply complete returned policy immediately in this conversation. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates."
             },
             {
               "description": "Search multiple consented stores together",
               "prompt": "Find matching context across all stores connected to this OAK connection.",
               "tools_triggered": "listMemoryStores, getMemoryPolicy, recallMemory",
-              "expected_behavior": "Initialize each store policy once with storeId and initialize:true before memory use. Omit storeId on recallMemory for combined search. Keep source store IDs and UUIDs, honor the combined limit, and never turn a partial search into a claim of complete coverage."
+              "expected_behavior": "Initialize each store policy once with storeId and initialize:true before memory use. Omit storeId on recallMemory for combined search. Keep source store IDs and UUIDs, honor the combined limit, and never turn a partial search into a claim of complete coverage. Begin with listMemoryStores. For each non-search call always pass the intended enabled storeId explicitly, including currentMemoryStore, policy, listing and mutation calls. Resolve mutation UUIDs and perform duplicate checks with recallMemory or listMemories in that same target storeId; never use combined results as mutation candidates. For combined recall, do not select one default store: iterate every enabled store, initializing its own policy with its storeId and initialize:true once at first use, then omit storeId only on recallMemory. Routine policy inspection uses initialize:false/omitted and is not this initialization step."
             }
           ],
           "negative": [

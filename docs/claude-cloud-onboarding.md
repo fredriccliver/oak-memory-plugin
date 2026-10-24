@@ -12,8 +12,14 @@ claude plugin marketplace add https://github.com/fredriccliver/oak-memory-plugin
 claude plugin install oak-memory-cloud@oak-memory --scope user
 ```
 
-Complete the host's OAuth sign-in, select your store and verify it with
-`currentMemoryStore` and `listMemories`. Installation alone does not prove access.
+Complete the host's OAuth sign-in and explicitly consent to the intended stores. Call
+`listMemoryStores` to discover enabled stores, then pass the intended `storeId` to
+`currentMemoryStore` and `listMemories` to verify access. Omit `storeId` only on
+`recallMemory` for combined search; non-search calls keep an explicit target even
+with one enabled store. Manage connection pause/resume and per-store activation
+in [OAK connection settings](https://www.openaikits.com/oauth/connections).
+Installation alone does not prove access; older single-store compatibility does
+not update installed skills or cached tool schemas.
 
 The rest of this page documents the separate **oak-memory** local Node plugin's
 API-key cloud profiles. Choose that package only for local execution or explicit
