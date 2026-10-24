@@ -15,7 +15,7 @@ Claude Desktop 또는 claude.ai에서 Customize → Plugins → Add → Add mark
 OAK 로그인·저장소 동의를 완료하고 새 대화에서 사용한다. 클라우드는
 `oak-memory-cloud`, 로컬은 `oak-memory`라는 별도 MCP 이름을 사용한다. 대상 혼동을
 줄이려면 한 세션에서 하나만 활성화한다. 다른 플러그인을
-비활성화한 뒤 `currentMemoryStore`로 의도한 저장소인지 확인한다.
+비활성화한 뒤 `listMemoryStores`에서 켜진 대상의 ID를 확인하고, 그 `storeId`로 `currentMemoryStore`와 `listMemories`를 호출해 검증한다.
 
 MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없다. 직접 원격
 커넥터를 등록할 때는 Customize → Connectors를 사용한다. Team·Enterprise의 조직
@@ -28,9 +28,9 @@ MCP URL 자체는 Add marketplace의 Git 저장소 입력칸에 넣을 수 없�
 
 ChatGPT는 portable `plugin.json`·`mcp.json` 패키지를 제출 포털에서 심사·공개해야
 한다. GitHub 마켓플레이스 URL을 추가하는 Claude 절차와 같다고 안내하지 않는다.
-기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.4의 코드
+기존 OpenAI listing의 `oak-memory` 식별자를 유지한다. 준비본 버전 0.1.5의 코드
 갱신과 기존 심사본 0.1.2의 심사 상태는 별개이며, 기존 심사 통과 후 새 패키지를
-진행한다. manifest의 기존 demo는 이전 빌드 자료이며 0.1.4 병합 검증 증거가
+진행한다. manifest의 기존 demo는 이전 빌드 자료이며 0.1.5 다중 저장소 검증 증거가
 아니다. 새 포털 제출 전 실제 최신 흐름을 확인하고 그에 맞는 demo를 준비한다.
 저장소 머지나 서버 배포만으로 설치된 스킬과 listing이 바뀌지 않는다.
 
