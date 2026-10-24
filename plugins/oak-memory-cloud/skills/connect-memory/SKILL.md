@@ -1,6 +1,6 @@
 ---
 name: connect-memory
-description: Connect OAK.memory to a private cloud store, verify the selected store, and help troubleshoot OAuth or permission errors.
+description: Connect OAK.memory to private cloud stores, verify consented targets, and troubleshoot OAuth or permission errors.
 ---
 
 Use the bundled OAK.memory MCP connection. If it is unauthenticated, invoke the host's OAuth connection flow. The user signs in and chooses a primary store, optional additional stores and permissions in the OAK consent screen. Never request passwords, API keys or tokens in chat, or ask the user to report login completion in chat.
