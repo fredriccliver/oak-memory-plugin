@@ -14,6 +14,13 @@
 - Include merge in client policy guards and local curation guidance; preserve the shared OAuth cloud workflow and SDK 1.32.1 security update.
 - Verify actual stdio/PostgreSQL success, rollback, concurrent content/link writes, input limits, store isolation and synchronized Claude/Codex bundles.
 
+## 0.1.5 cloud preparation
+
+- Search explicitly consented, enabled stores together with source attribution and partial-failure disclosure.
+- Require an explicit target per call for non-search workflows, even with only one enabled store. Save deduplication and UUID links stay in that target.
+- Align OpenAI skill metadata, onboarding and Claude descriptions; guide connection/store activation in OAK web settings.
+- Existing single-store calls remain compatible. New consent, tool refresh, fresh demo, host acceptance and portal publication are separate checks; this entry describes a prepared package.
+
 ## 0.1.4 cloud preparation
 
 - Align shared organisation skill and OpenAI review cases with the hosted atomic mergeMemories contract.

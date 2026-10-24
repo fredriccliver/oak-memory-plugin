@@ -60,7 +60,7 @@ MCP 파일, Claude ZIP은 `.claude-plugin/plugin.json`과 `.mcp.json`을 포함�
 ## 실제 완료 기준
 
 설치·도구 목록·OAuth callback만으로 연결 완료를 선언하지 않는다. 실제 호스트에서
-`currentMemoryStore`와 `listMemories`를 호출해 선택 저장소와 역할을 확인한다.
+`listMemoryStores`로 켜진 동의 저장소를 찾은 뒤, 대상 `storeId`를 명시해 `currentMemoryStore`와 `listMemories`를 호출하고 저장소와 역할을 확인한다.
 초기 읽기 동의와 Claude의 도구 실행 승인은 별개이며, 쓰기는 추가 OAuth 동의,
 저장소 역할, 서비스 쓰기 허용과 크레딧을 모두 충족해야 한다. 쓰기 테스트는 허용된
 합성 내용과 저장소에서만 실행한다. 실제 검증되지 않은 플랫폼은 미확인으로 남긴다.
