@@ -20,7 +20,9 @@ infrastructure; the engine itself knows nothing about the AI client using it.
 
 ## Claude Desktop: local installation with a cloud store
 
-Download the [Desktop Cloud extension](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.0) and install the `.mcpb` in Settings → Extensions → Advanced settings → Install Extension. Configure **Store ID** and your own **Personal key** from the OAK dashboard in the extension settings, never in chat. Claude uses its built-in Node runtime; no Docker, Ollama or local database is needed. Memories remain in OAK cloud.
+Download the [Desktop Cloud extension](https://github.com/fredriccliver/oak-memory-plugin/releases) and install the `.mcpb` in Settings → Extensions → Advanced settings → Install Extension. Configure **Store ID** and your own **Personal key** from the OAK dashboard in the extension settings, never in chat. Claude uses its built-in Node runtime; no Docker, Ollama or local database is needed. Memories remain in OAK cloud.
+
+Version 0.2.0 also accepts a sensitive **Stores (JSON)** list of `{name, storeId, personalKey}` entries. Keep the existing single-store pair or use the list alone; each store needs its own key. With multiple stores, `recallMemory` and `listMemories` search all configured stores unless `storeId` is provided, and group results by source. Mutations require an explicit `storeId`. Failed stores remain visible as partial failures. See the [multi-store configuration example](docs/desktop-cloud.md#여러-저장소-연결).
 
 The extension is named `oak-desktop-cloud`. **Allow memory changes** is off by default; enabling it permits mutations subject to server roles, credits and Claude tool approvals. Autosave remains off. Revoke its key in OAK to disconnect. In a fresh chat, enable only this OAK connection and verify `memoryConnectionStatus` and `listMemories`. It never falls back to a local store.
 
