@@ -112,7 +112,8 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
         return text({ profile: next.name, backend: 'cloud', sessionOnly: true, store });
       }
       const supplied = Object.hasOwn(args, 'storeId');
-      const target = supplied ? entries.find(entry => entry.storeId === args.storeId) : undefined;
+      const requestedStoreId = typeof args.storeId === 'string' ? args.storeId.trim().toLowerCase() : undefined;
+      const target = supplied ? entries.find(entry => entry.storeId === requestedStoreId) : undefined;
       if (supplied && !target) return failure(); // Never broaden an invalid explicit target.
       if (name === 'currentMemoryStore') return text(await verify(target ?? active));
       if (searches.has(name)) {

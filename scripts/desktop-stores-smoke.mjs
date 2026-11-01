@@ -12,7 +12,7 @@ import { ToolListChangedNotificationSchema, ResourceListChangedNotificationSchem
 import { build } from 'esbuild';
 import { pathToFileURL } from 'node:url';
 const temp = mkdtempSync(path.join(os.tmpdir(), 'oak-desktop-stores-'));
-const stores = ['1', '2', '3', '4'].map((n, i) => ({ name: `Store ${n}`, storeId: `${n.repeat(8)}-${n.repeat(4)}-4${n.repeat(3)}-8${n.repeat(3)}-${n.repeat(12)}`, personalKey: 'oak_' + 'abcd'[i].repeat(64) }));
+const stores = ['a', 'b', 'c', 'd'].map((n, i) => ({ name: `Store ${i + 1}`, storeId: `${n.repeat(8)}-${n.repeat(4)}-4${n.repeat(3)}-8${n.repeat(3)}-${n.repeat(12)}`, personalKey: 'oak_' + n.repeat(64) }));
 const result = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 const parsed = response => JSON.parse(response.content[0].text);
 let revoked = false, mismatch = false, writes = [], requests = [], wrongKeys = 0;
@@ -87,6 +87,9 @@ try {
         assert.equal(scoped.stores.length, 1); assert(requests.every(id => id === stores[2].storeId));
         assert.equal(scopedResult._meta['oak/view'].storeId, stores[2].storeId);
         assert.equal(scopedResult._meta['oak/view'].memories[0].content, stores[2].name);
+        const normalized = await client.callTool({ name, arguments: { storeId: ` ${stores[2].storeId.toUpperCase()} ` } });
+        assert.equal(normalized.isError, undefined);
+        assert.equal(normalized._meta['oak/view'].storeId, stores[2].storeId);
       }
       requests = []; const before = writes.length;
       assert.equal((await client.callTool({ name: 'createMemory', arguments: {} })).isError, true);
