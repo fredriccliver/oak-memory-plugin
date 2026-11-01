@@ -39,6 +39,15 @@ try {
   await db.query('update memory.memories set strength=.25,retrieval_count=2 where id=$1',[a]);
   await db.query('update memory.memories set strength=.95,retrieval_count=9 where id=$1',[b]);
   const foreign=randomUUID();await db.query("insert into memory.memories(id,entity_id,content) values($1,'foreign','Untouched')",[foreign]);
+  let listing=await ok('listMemories',{limit:1});let page=listing.structuredContent;const listed=[...page.memories];
+  assert.equal(page.totalMemories,3);assert.equal(page.hasMore,true);assert.match(listing.content[0].text,/This page: 1 memories/);
+  while(page.hasMore){listing=await ok('listMemories',{limit:1,cursor:page.nextCursor});page=listing.structuredContent;listed.push(...page.memories);}
+  assert.equal(new Set(listed.map(m=>m.id)).size,3);assert.ok(!listed.some(m=>m.id===foreign));assert.doesNotMatch(JSON.stringify(listed),/embedding/);
+  assert.equal((await call('updateMemory',{memoryId:foreign,content:'must not cross stores'})).isError,true);
+  const beforeCursor=(await ok('listMemories',{limit:1})).structuredContent.nextCursor;
+  await db.query('update memory.memories set content=content where id=$1',[a]);
+  assert.equal((await call('listMemories',{cursor:beforeCursor})).isError,true,'writes invalidate the store snapshot');
+  console.log('PASS real stdio bounded SQL pages, readable compatibility, foreign-store denial and mutation invalidation');
   for(const [from,to,type,strength] of [[a,c,'related',0.4],[b,c,'related',0.9],[b,c,'supports',0.5],[c,b,'contradicts',0.8],[b,a,'related',0.7]]) await db.query("insert into memory.edges(entity_id,from_id,to_id,type,origin,strength) values($1,$2,$3,$4,'conversation',$5)",[entity,from,to,type,strength]);
   const input={targetMemoryId:a,sourceMemoryIds:[b],content:'A and B updated <|endoftext|>',expectedContents:[{memoryId:a,content:'A'},{memoryId:b,content:'B updated'}]};
   const snapshot=async()=> (await db.query('select id,content,outgoing_edges from memory.memories order by id')).rows;

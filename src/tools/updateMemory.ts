@@ -19,7 +19,7 @@ export function updateMemoryDescription(policy: MemoryPolicy): string {
 
 **Why**: ${scopeRule(policy)}
 
-Deletion remains available so the user can remove data even while no write scope is configured.`;
+Deletion is also suspended until this store policy is repaired.`;
   }
   return `Update an existing memory.
 
@@ -46,7 +46,7 @@ export function registerUpdateMemory(server: any, env: Env) {
       if (env.policy.scope === null) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting memory content updates.\n\n` +
-            `Nothing was changed. Deletion remains available. Run the memory configuration workflow or ` +
+            `Nothing was changed. All mutations are suspended. Run the memory configuration workflow or ` +
             `\`npm run setup -- --reconfigure\`, then restart the AI client before retrying.`,
           true,
         );

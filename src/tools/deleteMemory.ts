@@ -24,6 +24,7 @@ export function registerDeleteMemory(server: any, env: Env) {
       inputSchema: deleteMemoryInputSchema,
     },
     async ({ memoryId }: { memoryId: string }) => {
+      if(env.policy.scope===null)return textResult('This store policy is unavailable. No deletion was attempted; repair it before retrying.',true);
       const { toolHandler } = await getMemoryClient(env);
       const result = await toolHandler.handleDeleteMemory({ memoryId });
       if (!result.success) {

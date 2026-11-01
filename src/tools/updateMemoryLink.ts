@@ -13,8 +13,8 @@ export const updateMemoryLinkInputSchema = {
 export function updateMemoryLinkDescription(policy: MemoryPolicy): string {
   const policyNote =
     policy.scope === null
-      ? `\n\nAdding links is currently disabled and will fail because no write scope is configured.\n\n` +
-        `**Why**: ${scopeRule(policy)}\n\nRemoving links remains available for cleanup.`
+      ? `\n\nAdding and removing links are suspended until this existing store policy is repaired.\n\n` +
+        `**Why**: ${scopeRule(policy)}\n\nAll mutations remain suspended until this store policy is repaired.`
       : '';
   return `Add or remove a link between two memories.
 
@@ -48,10 +48,10 @@ export function registerUpdateMemoryLink(server: any, env: Env) {
       toMemoryId: string;
       action: 'add' | 'remove';
     }) => {
-      if (env.policy.scope === null && action === 'add') {
+      if (env.policy.scope === null) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting new memory links.\n\n` +
-            `Nothing was changed. Removing an existing link remains available for cleanup.`,
+            `Nothing was changed. Link addition and removal remain suspended until this store policy is repaired.`,
           true,
         );
       }

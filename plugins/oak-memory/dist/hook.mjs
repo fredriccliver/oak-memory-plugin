@@ -134,7 +134,7 @@ function loadPolicy(warn = console.error) {
   let recall = rawRecall;
   if (!RECALL_LEVELS.includes(recall)) {
     warn(
-      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 using "${DEFAULT_RECALL}".
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 suspending mutations until this store policy is repaired.
   Valid values: ${RECALL_LEVELS.join(", ")}`
     );
     return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };

@@ -25,8 +25,8 @@
  * be prompted for; it has to be structural. This hook injects context and adds
  * no message at all, which is why it is the one that shipped.
  *
- * Emits nothing unless the user's policy leaves it something to say, so it
- * enforces that policy rather than outranking it.
+ * Emits the active store reminder on every prompt. Cloud profiles receive no local
+ * scope rules; unavailable policies keep mutation suspension explicit.
  *
  * Always exits 0, including on its own bugs. Exit 2 here would erase the
  * user's prompt, and no memory reminder is worth eating what they typed.

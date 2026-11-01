@@ -91,6 +91,8 @@ try {
   console.log('unconfigured memory content update guard: passed');
 
   for (const request of [
+    {name:'deleteMemory',arguments:{memoryId:'00000000-0000-4000-8000-000000000001'},label:'deletion'},
+    {name:'updateMemoryLink',arguments:{fromMemoryId:'00000000-0000-4000-8000-000000000001',toMemoryId:'00000000-0000-4000-8000-000000000002',action:'remove'},label:'link removal'},
     {
       name: 'createMemory',
       arguments: { content: 'must not write' },

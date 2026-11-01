@@ -188,7 +188,7 @@ or `/memory-config stop saving unless I ask` inside Claude Code.
 
 A bad policy value is never fatal — unlike a missing `MEMORY_DATABASE_URL`, the server stays readable and
 warns on stderr. Content creation or updates, new links, and link-strength changes fail closed until the scope
-is fixed; deletion and link removal remain available for cleanup. `custom` with a missing or empty rule
+is fixed; deletion and link removal are suspended too. `custom` with a missing or empty rule
 behaves the same way. This means the config file can disagree with what's running, which is why
 `getMemoryPolicy` reports the resolved policy instead of just reading the file back.
 
@@ -267,9 +267,9 @@ supervision or restart-on-boot. So the goal here is making Postgres effortless t
 | `MEMORY_ENTITY_ID` | No (default `fredriccliver`) | The fixed identity all memories are scoped to. See [Entity scoping](#entity-scoping). |
 | `OLLAMA_BASE_URL` | No (default `http://localhost:11434/v1`) | Ollama's OpenAI-compatible endpoint. |
 | `OLLAMA_EMBEDDING_MODEL` | No (default `bge-m3`) | Embedding model to request from Ollama. Must be multilingual if you store memories in a language other than English — see [Local embeddings](#local-embeddings). Changing it invalidates every stored embedding. |
-| `MEMORY_POLICY_SCOPE` | Yes for writes | What may be remembered. If unset or invalid, writes are refused. See [Memory policy](#memory-policy). |
+| `MEMORY_POLICY_SCOPE` | No (default `everything`) | What may be remembered. An absent initial setting uses automatic defaults; an invalid existing policy suspends all mutations. See [Memory policy](#memory-policy). |
 | `MEMORY_POLICY_AUTOSAVE` | No (default `true`) | Whether to save unprompted. |
-| `MEMORY_POLICY_RECALL` | No (default `balanced`) | How hard to search before answering. |
+| `MEMORY_POLICY_RECALL` | No (default `aggressive`) | How hard to search before answering. |
 | `MEMORY_POLICY_FILE` | No (default beside `oak-memory.env`) | Where a `custom` scope's rule text lives. |
 
 `src/env.ts` resolves these in order, first value wins:

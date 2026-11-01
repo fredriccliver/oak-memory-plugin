@@ -30852,7 +30852,7 @@ function loadPolicy(warn = console.error) {
   let recall2 = rawRecall;
   if (!RECALL_LEVELS.includes(recall2)) {
     warn(
-      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 using "${DEFAULT_RECALL}".
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 suspending mutations until this store policy is repaired.
   Valid values: ${RECALL_LEVELS.join(", ")}`
     );
     return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
@@ -34424,6 +34424,102 @@ var OpenAIAdapter = class {
   }
 };
 
+// src/memoryClient.ts
+init_esm();
+
+// src/listPage.ts
+var DEFAULT_LIST_LIMIT = 20;
+var MAX_LIST_LIMIT = 100;
+var MAX_PAGE_BYTES = 32768;
+var ListPageError = class extends Error {
+};
+
+// src/sqlListing.ts
+var uuid2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+async function readSqlPage(pool, store, limit = DEFAULT_LIST_LIMIT, cursor, attribution = false) {
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIST_LIMIT) throw new ListPageError("limit must be an integer from 1 to 100.");
+  let decoded;
+  if (cursor) {
+    try {
+      if (cursor.length > 1e3 || !/^[A-Za-z0-9_-]+$/.test(cursor)) throw new Error();
+      const c = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+      if (c.store !== store || typeof c.snapshot !== "string" || typeof c.memoryDone !== "boolean" || typeof c.edgeDone !== "boolean" || ![c.memoryAfter, c.edgeAfter].every((v) => v === null || typeof v === "string" && uuid2.test(v))) throw new Error();
+      decoded = c;
+    } catch {
+      throw new ListPageError("Cursor is invalid for this store. Restart listing without cursor.");
+    }
+  }
+  const db = await pool.connect();
+  try {
+    await db.query("begin isolation level repeatable read read only");
+    const snapshot = (await db.query("select revision::text from memory.listing_revisions where entity_id=$1", [store])).rows[0]?.revision ?? "empty";
+    if (decoded && decoded.snapshot !== snapshot) throw new ListPageError("The graph changed. Restart listing without cursor; do not claim a complete audit.");
+    const state = decoded ?? { store, snapshot, memoryAfter: null, edgeAfter: null, memoryDone: false, edgeDone: false };
+    const totals = (await db.query(`select (select count(*)::int from memory.memories where entity_id=$1) as "totalMemories",
+   (select count(*)::int from memory.edges e join memory.memories a on a.id=e.from_id and a.entity_id=e.entity_id join memory.memories b on b.id=e.to_id and b.entity_id=e.entity_id where e.entity_id=$1) as "totalEdges"`, [store])).rows[0];
+    const provenance = attribution ? `,p.created_by as "createdBy",p.author_display_name as "authorDisplayName",p.original_content as "originalContent",p.last_edited_by as "lastEditedBy",
+   case when s.source_id is not null then jsonb_build_object('store',s.source_store,'id',s.source_id,'metadata',s.source_metadata) else null end as "importSource"` : "";
+    const joins = attribution ? "left join oak_control.memory_provenance p on p.memory_id=m.id and p.graph_id::text=substring(m.entity_id from 7) left join oak_control.memory_import_sources s on s.memory_id=p.memory_id" : "";
+    const candidates = state.memoryDone ? [] : (await db.query(`select m.id,m.content,m.strength,m.retrieval_count as "retrievalCount",m.created_at as "createdAt"${provenance}
+   from memory.memories m ${joins} where m.entity_id=$1 and ($2::uuid is null or m.id>$2::uuid) order by m.id limit $3`, [store, state.memoryAfter, limit + 1])).rows;
+    const linkCandidates = state.edgeDone ? [] : (await db.query(`select e.id,e.from_id as "fromId",e.to_id as "toId",e.type,e.origin,e.strength
+   from memory.edges e join memory.memories a on a.id=e.from_id and a.entity_id=e.entity_id join memory.memories b on b.id=e.to_id and b.entity_id=e.entity_id
+   where e.entity_id=$1 and ($2::uuid is null or e.id>$2::uuid) order by e.id limit $3`, [store, state.edgeAfter, MAX_LIST_LIMIT + 1])).rows;
+    const memories = [], edges = [];
+    const fits = () => Buffer.byteLength(JSON.stringify({ memories, edges }), "utf8") <= MAX_PAGE_BYTES;
+    for (const row of candidates.slice(0, limit)) {
+      memories.push(row);
+      if (!fits()) {
+        memories.pop();
+        if (!memories.length) throw new ListPageError("A memory exceeds the page byte limit. No record was truncated or skipped.");
+        break;
+      }
+      state.memoryAfter = row.id;
+    }
+    for (const row of linkCandidates.slice(0, MAX_LIST_LIMIT)) {
+      edges.push(row);
+      if (!fits()) {
+        edges.pop();
+        break;
+      }
+      state.edgeAfter = row.id;
+    }
+    if (candidates.length === memories.length) state.memoryDone = true;
+    if (linkCandidates.length === edges.length) state.edgeDone = true;
+    if (!memories.length && !edges.length && (!state.memoryDone || !state.edgeDone)) throw new ListPageError("A link exceeds the page byte limit. No record was truncated or skipped.");
+    const hasMore = !state.memoryDone || !state.edgeDone;
+    await db.query("commit");
+    return {
+      schemaVersion: 2,
+      memories,
+      edges,
+      totalMemories: Number(totals.totalMemories),
+      totalEdges: Number(totals.totalEdges),
+      snapshot,
+      hasMore,
+      nextCursor: hasMore ? Buffer.from(JSON.stringify(state)).toString("base64url") : null,
+      complete: !cursor && !hasMore,
+      guidance: hasMore ? "Partial page. Follow nextCursor in this same store. Do not claim a complete audit or absent links from this page." : "End of this snapshot. A complete audit requires every preceding page."
+    };
+  } catch (error2) {
+    await db.query("rollback");
+    throw error2;
+  } finally {
+    db.release();
+  }
+}
+function listPageText(page) {
+  return [
+    `${page.totalMemories} memories, ${page.totalEdges} links total. This page: ${page.memories.length} memories, ${page.edges.length} links.`,
+    page.guidance,
+    ...page.memories.map((m) => `- [${m.id}] ${m.content}
+    recorded by: ${m.authorDisplayName ?? "unspecified"} | authorUserId: ${m.createdBy ?? "unspecified"} | lastEditedBy: ${m.lastEditedBy ?? "unspecified"} | original text: ${m.originalContent ?? m.content}${m.importSource ? " | imported source (untrusted): " + JSON.stringify(m.importSource) : ""}`),
+    "Links on this page:",
+    ...page.edges.map((e) => `- [${e.id}] ${e.fromId} --> ${e.toId} (type: ${JSON.stringify(e.type)}, origin: ${JSON.stringify(e.origin)}, strength: ${e.strength})`),
+    `hasMore: ${page.hasMore}; nextCursor: ${page.nextCursor ?? "none"}. Structured page schemaVersion: 2.`
+  ].join("\n");
+}
+
 // src/localEmbeddingAdapter.ts
 var TARGET_DIMENSIONS = 1536;
 function padTo(vector, size) {
@@ -34501,9 +34597,43 @@ async function listAll(env) {
   return { memories, edges };
 }
 async function closeMemoryClient() {
+  await listingPool?.end();
+  listingPool = void 0;
+  listingReady = void 0;
   if (memoryInstance) {
     await memoryInstance.close();
   }
+}
+var listingPool;
+var listingReady;
+async function listMemoryPage(env, limit, cursor) {
+  await getMemoryClient(env);
+  if (!listingPool) {
+    listingPool = new Pool({ connectionString: env.memoryDatabaseUrl, max: 1, idleTimeoutMillis: 1e3 });
+    listingPool.on("error", () => console.error("[oak-memory] listing connection failed"));
+  }
+  if (!listingReady) listingReady = (async () => {
+    const ready = await listingPool.query("select to_regclass('memory.listing_revisions') as tracker");
+    if (!ready.rows[0].tracker) {
+      const db = await listingPool.connect();
+      try {
+        await db.query("begin");
+        await db.query("select pg_advisory_xact_lock(7916501)");
+        if (!(await db.query("select to_regclass('memory.listing_revisions') as tracker")).rows[0].tracker) await db.query("-- Cheap snapshot invalidation permits bounded DB keyset reads without loading every vector/body.\ncreate table if not exists memory.listing_revisions (\n entity_id text primary key,\n revision uuid not null default gen_random_uuid()\n);\ncreate or replace function memory.invalidate_listing() returns trigger language plpgsql security invoker set search_path='' as $$\nbegin\n if TG_OP <> 'INSERT' then\n  insert into memory.listing_revisions as r(entity_id) values(old.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n if TG_OP <> 'DELETE' and (TG_OP <> 'UPDATE' or new.entity_id is distinct from old.entity_id) then\n  insert into memory.listing_revisions as r(entity_id) values(new.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n return null;\nend $$;\ndrop trigger if exists invalidate_memory_listing on memory.memories;\ncreate trigger invalidate_memory_listing after insert or update or delete on memory.memories for each row execute function memory.invalidate_listing();\ndrop trigger if exists invalidate_edge_listing on memory.edges;\ncreate trigger invalidate_edge_listing after insert or update or delete on memory.edges for each row execute function memory.invalidate_listing();\ninsert into memory.listing_revisions(entity_id)\n select entity_id from memory.memories union select entity_id from memory.edges\n on conflict(entity_id) do nothing;\n\nalter table memory.listing_revisions enable row level security;\nrevoke all on memory.listing_revisions from public;\nrevoke all on function memory.invalidate_listing() from public;\n");
+        await db.query("commit");
+      } catch (error2) {
+        await db.query("rollback");
+        throw error2;
+      } finally {
+        db.release();
+      }
+    }
+  })().catch((error2) => {
+    listingReady = void 0;
+    throw error2;
+  });
+  await listingReady;
+  return readSqlPage(listingPool, env.memoryEntityId, limit, cursor);
 }
 
 // src/tools/format.ts
@@ -34877,7 +35007,7 @@ function updateMemoryDescription(policy) {
 
 **Why**: ${scopeRule(policy)}
 
-Deletion remains available so the user can remove data even while no write scope is configured.`;
+Deletion is also suspended until this store policy is repaired.`;
   }
   return `Update an existing memory.
 
@@ -34904,7 +35034,7 @@ function registerUpdateMemory(server, env) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting memory content updates.
 
-Nothing was changed. Deletion remains available. Run the memory configuration workflow or \`npm run setup -- --reconfigure\`, then restart the AI client before retrying.`,
+Nothing was changed. All mutations are suspended. Run the memory configuration workflow or \`npm run setup -- --reconfigure\`, then restart the AI client before retrying.`,
           true
         );
       }
@@ -34928,11 +35058,11 @@ var updateMemoryLinkInputSchema = {
 function updateMemoryLinkDescription(policy) {
   const policyNote = policy.scope === null ? `
 
-Adding links is currently disabled and will fail because no write scope is configured.
+Adding and removing links are suspended until this existing store policy is repaired.
 
 **Why**: ${scopeRule(policy)}
 
-Removing links remains available for cleanup.` : "";
+All mutations remain suspended until this store policy is repaired.` : "";
   return `Add or remove a link between two memories.
 
 **Purpose**: linking improves future recall \u2014 memories found via different queries or long chains may not
@@ -34960,11 +35090,11 @@ function registerUpdateMemoryLink(server, env) {
       toMemoryId,
       action
     }) => {
-      if (env.policy.scope === null && action === "add") {
+      if (env.policy.scope === null) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting new memory links.
 
-Nothing was changed. Removing an existing link remains available for cleanup.`,
+Nothing was changed. Link addition and removal remain suspended until this store policy is repaired.`,
           true
         );
       }
@@ -34994,7 +35124,7 @@ function adjustMemoryLinkStrengthDescription(policy) {
 
 **Why**: ${scopeRule(policy)}
 
-Deleting memories and removing links remain available for cleanup.`;
+Deletion and link removal remain suspended until this store policy is repaired.`;
   }
   return `Set the strength of an existing link between two memories.
 
@@ -35031,7 +35161,7 @@ function registerAdjustMemoryLinkStrength(server, env) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting memory link changes.
 
-Nothing was changed. Deleting memories and removing links remain available for cleanup.`,
+Nothing was changed. Deletion and link removal remain suspended until this store policy is repaired.`,
           true
         );
       }
@@ -35087,6 +35217,7 @@ function registerDeleteMemory(server, env) {
       inputSchema: deleteMemoryInputSchema
     },
     async ({ memoryId }) => {
+      if (env.policy.scope === null) return textResult("This store policy is unavailable. No deletion was attempted; repair it before retrying.", true);
       const { toolHandler } = await getMemoryClient(env);
       const result = await toolHandler.handleDeleteMemory({ memoryId });
       if (!result.success) {
@@ -35136,82 +35267,14 @@ ${lines}`);
   );
 }
 
-// src/listPage.ts
-import { createHash } from "node:crypto";
-var DEFAULT_LIST_LIMIT = 20;
-var MAX_LIST_LIMIT = 100;
-var MAX_PAGE_BYTES = 32768;
-var ListPageError = class extends Error {
-};
-function listPage(store, memories, edges, limit = DEFAULT_LIST_LIMIT, cursor) {
-  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIST_LIMIT) throw new ListPageError("limit must be an integer from 1 to 100.");
-  const nodes = [...memories].sort((a, b) => a.id.localeCompare(b.id));
-  const links = [...edges].sort((a, b) => a.id.localeCompare(b.id));
-  const snapshot = createHash("sha256").update(JSON.stringify([nodes, links])).digest("hex");
-  let memoryOffset = 0, edgeOffset = 0;
-  if (cursor) {
-    try {
-      if (cursor.length > 1e3 || !/^[A-Za-z0-9_-]+$/.test(cursor)) throw new Error();
-      const c = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
-      if (c.store !== store || c.snapshot !== snapshot || !Number.isSafeInteger(c.memoryOffset) || !Number.isSafeInteger(c.edgeOffset) || c.memoryOffset < 0 || c.edgeOffset < 0 || c.memoryOffset > nodes.length || c.edgeOffset > links.length) throw new Error();
-      memoryOffset = c.memoryOffset;
-      edgeOffset = c.edgeOffset;
-    } catch {
-      throw new ListPageError("Cursor is invalid for this store or the graph changed. Restart listing without cursor; do not claim a complete audit.");
-    }
-  }
-  const pageMemories = [], pageEdges = [];
-  const fits = () => Buffer.byteLength(JSON.stringify({ memories: pageMemories, edges: pageEdges }), "utf8") <= MAX_PAGE_BYTES;
-  while (memoryOffset < nodes.length && pageMemories.length < limit) {
-    pageMemories.push(nodes[memoryOffset]);
-    if (!fits()) {
-      pageMemories.pop();
-      if (!pageMemories.length) throw new ListPageError("A memory exceeds the page byte limit. No record was truncated or skipped; use a targeted read.");
-      break;
-    }
-    memoryOffset++;
-  }
-  while (edgeOffset < links.length && pageEdges.length < MAX_LIST_LIMIT) {
-    pageEdges.push(links[edgeOffset]);
-    if (!fits()) {
-      pageEdges.pop();
-      break;
-    }
-    edgeOffset++;
-  }
-  if (!pageMemories.length && !pageEdges.length && (memoryOffset < nodes.length || edgeOffset < links.length)) throw new ListPageError("An edge exceeds the page byte limit. No edge was truncated or skipped.");
-  const hasMore = memoryOffset < nodes.length || edgeOffset < links.length;
-  return {
-    memories: pageMemories,
-    edges: pageEdges,
-    totalMemories: nodes.length,
-    totalEdges: links.length,
-    hasMore,
-    nextCursor: hasMore ? Buffer.from(JSON.stringify({ store, snapshot, memoryOffset, edgeOffset })).toString("base64url") : null,
-    snapshot,
-    complete: !cursor && !hasMore,
-    guidance: hasMore ? "Partial page. Continue with nextCursor in the same store; do not claim all memories or incident links have been read." : "End of this snapshot. A complete audit requires every preceding page."
-  };
-}
-
 // src/tools/listMemories.ts
 var listMemoriesDescription = "Browse memories and links in one store without ranking. Returns a bounded page (default 20 memories, maximum 100; links and response bytes are separately bounded), totals, hasMore and nextCursor. Continue with the same storeId and cursor until hasMore=false for a complete audit. Never infer an absent memory or link from one page. A changed graph invalidates the snapshot cursor: restart the audit. Use recallMemory for relevant context. Connection checks should use currentMemoryStore or memoryConnectionStatus without reading memory bodies.";
 var listMemoriesInputSchema = { limit: external_exports.number().int().min(1).max(100).optional().describe("Memories per page: default 20, maximum 100."), cursor: external_exports.string().max(1e3).optional().describe("nextCursor from the previous page in this same store and unchanged snapshot.") };
 function registerListMemories(server, env) {
   server.registerTool("listMemories", { title: "Browse memories", description: listMemoriesDescription, inputSchema: listMemoriesInputSchema }, async ({ limit, cursor }) => {
-    const { memories, edges } = await listAll(env);
-    const nodes = memories.map((m) => ({
-      id: m.id,
-      content: m.content,
-      strength: m.strength,
-      retrievalCount: m.retrievalCount,
-      createdAt: m.createdAt,
-      outgoingEdges: m.outgoingEdges
-    }));
-    const links = edges.map((e) => ({ id: e.id, fromId: e.fromId, toId: e.toId, type: e.type, strength: e.strength, origin: e.origin }));
     try {
-      const page = listPage(env.memoryEntityId, nodes, links, limit, cursor);
-      const text2 = JSON.stringify(page);
+      const page = await listMemoryPage(env, limit, cursor);
+      const text2 = listPageText(page);
       return { ...textResult(text2), structuredContent: page };
     } catch (error2) {
       if (error2 instanceof ListPageError) return textResult(error2.message, true);
@@ -35955,15 +36018,14 @@ If nothing appeared (e.g. no display available), open this file manually: ${file
 
 // src/tools/getMemoryPolicy.ts
 var REASON_HEADLINES = {
-  unset: "The user has never chosen one \u2014 `MEMORY_POLICY_SCOPE` is not set anywhere.",
+  unset: "Legacy unavailable policy state. Current new local stores use automatic defaults; repair this existing store policy.",
   invalid: "An existing local store policy setting is invalid or its configuration could not be read. Repair this store policy; no broader default was substituted.",
   "custom-missing": "`MEMORY_POLICY_SCOPE=custom`, but the file holding the rule is missing or empty. Their rule needs rewriting \u2014 it has not been replaced with a broader one."
 };
 var getMemoryPolicyDescription = `Report the memory policy this server is actually running.
 
 Reads nothing from the database \u2014 it reports the policy the server resolved at startup, which is not
-always what the config files say: a scope that is unset, misspelled, or \`custom\` with its rule file
-missing leaves the server with no policy at all, storing nothing. Use this rather than reading the
+always what the config files say: a missing initial scope uses automatic defaults; invalid settings or \`custom\` with an unreadable rule file suspend every mutation, including deletion and link removal. Use this rather than reading the
 config files when the user asks what is being remembered, or before helping them change it.
 
 **Output**: the effective scope and autosave setting, the exact rules currently given to the model, the
@@ -35989,8 +36051,8 @@ function registerGetMemoryPolicy(server, env) {
           REASON_HEADLINES[policy.reason ?? "unset"],
           "",
           "**Memory creation and changes are restricted.** `createMemory`, `mergeMemories`, content updates, new links, and link-strength",
-          "changes are refused. Memories already stored remain readable; deletion and link removal stay",
-          "available for cleanup. No default scope has been substituted: the user has to choose one."
+          "changes are refused, including deletion and link removal. Authorized reads remain available.",
+          "Repair this existing store policy; no broader default was substituted."
         ] : [
           `- **Scope**: ${policy.scope}`,
           `- **Autosave**: ${policy.autosave ? "on \u2014 saves proactively" : "off \u2014 saves only when asked"}`,
