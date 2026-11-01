@@ -27948,8 +27948,11 @@ function readProfiles() {
     for (const [name, profile] of Object.entries(value.profiles)) {
       if (!name || !profile || !["local", "cloud"].includes(profile.backend)) throw new Error();
       if (profile.backend === "local") {
-        if (profile.entityId !== void 0 && (!profile.entityId.trim() || profile.entityId.length > 200)) throw new Error();
-        if (profile.policy && (!["preferences", "important", "everything", "custom"].includes(String(profile.policy.scope)) || typeof profile.policy.autosave !== "boolean" || !["minimal", "balanced", "aggressive"].includes(profile.policy.recall) || profile.policy.scope === "custom" && !profile.policy.customText?.trim())) throw new Error();
+        if (profile.entityId !== void 0 && (typeof profile.entityId !== "string" || !profile.entityId.trim() || profile.entityId.length > 200)) throw new Error();
+        if (profile.policy !== void 0) {
+          const p = profile.policy;
+          if (!p || typeof p !== "object" || !["preferences", "important", "everything", "custom"].includes(String(p.scope)) || typeof p.autosave !== "boolean" || !["minimal", "balanced", "aggressive"].includes(p.recall) || p.scope === "custom" && (typeof p.customText !== "string" || !p.customText.trim())) profile.policy = { scope: null, autosave: false, recall: "minimal", reason: p?.scope === "custom" ? "custom-missing" : "invalid" };
+        }
       }
       if (profile.backend === "cloud") {
         const url2 = new URL(profile.endpoint);
@@ -30469,7 +30472,7 @@ var DEFAULT_RECALL = "aggressive";
 var RECALL_RULES = {
   minimal: "This store explicitly restricts answer-context recall to user requests or explicit references to past context. Duplicate/conflict checks needed for authorized memory management remain allowed.",
   balanced: "Proactively call recallMemory when user, people, project or task context could affect the answer. Revisit memory while reasoning or working when additional relevant context appears.",
-  aggressive: "Continuously observe conversation and task context. Proactively recall relevant memories before answering and whenever additional context is needed while reasoning or working. Save new facts and decisions, correct changed facts, and manage links, deletions and merges during the task rather than waiting for an explicit memory request or the final answer."
+  aggressive: "Continuously observe conversation and task context. Proactively recall relevant memories before answering and whenever additional context is needed while reasoning or working. Do not wait for the user to ask for a memory search."
 };
 function recallRule(policy) {
   return RECALL_RULES[policy.recall];
@@ -30480,7 +30483,7 @@ function scopeRule(policy) {
   return {
     preferences: "Store communication and workflow preferences, tools, languages and coding styles. This store excludes biographical facts and project details.",
     important: "Store preferences and durable decisions, constraints and background relevant across sessions.",
-    everything: "Automatically remember people, work, projects, preferences, facts, decisions and corrections useful to future conversations and tasks in this store."
+    everything: "Eligible information for this store includes people, work, projects, preferences, facts, decisions and corrections useful to future conversations and tasks. The autosave setting determines when changes may occur."
   }[policy.scope];
 }
 function autosaveRule(policy) {
@@ -34460,7 +34463,8 @@ async function readSqlPage(pool, store, limit = DEFAULT_LIST_LIMIT, cursor, attr
     const provenance = attribution ? `,p.created_by as "createdBy",p.author_display_name as "authorDisplayName",p.original_content as "originalContent",p.last_edited_by as "lastEditedBy",
    case when s.source_id is not null then jsonb_build_object('store',s.source_store,'id',s.source_id,'metadata',s.source_metadata) else null end as "importSource"` : "";
     const joins = attribution ? "left join oak_control.memory_provenance p on p.memory_id=m.id and p.graph_id::text=substring(m.entity_id from 7) left join oak_control.memory_import_sources s on s.memory_id=p.memory_id" : "";
-    const candidates = state.memoryDone ? [] : (await db.query(`select m.id,m.content,m.strength,m.retrieval_count as "retrievalCount",m.created_at as "createdAt"${provenance}
+    const candidates = state.memoryDone ? [] : (await db.query(`select m.id,m.content,m.strength,m.retrieval_count as "retrievalCount",m.created_at as "createdAt",
+   (select count(*)::int from memory.edges d where d.entity_id=m.entity_id and (d.from_id=m.id or d.to_id=m.id)) as degree${provenance}
    from memory.memories m ${joins} where m.entity_id=$1 and ($2::uuid is null or m.id>$2::uuid) order by m.id limit $3`, [store, state.memoryAfter, limit + 1])).rows;
     const linkCandidates = state.edgeDone ? [] : (await db.query(`select e.id,e.from_id as "fromId",e.to_id as "toId",e.type,e.origin,e.strength
    from memory.edges e join memory.memories a on a.id=e.from_id and a.entity_id=e.entity_id join memory.memories b on b.id=e.to_id and b.entity_id=e.entity_id
@@ -34491,6 +34495,7 @@ async function readSqlPage(pool, store, limit = DEFAULT_LIST_LIMIT, cursor, attr
     await db.query("commit");
     return {
       schemaVersion: 2,
+      snapshotScope: "content_and_topology",
       memories,
       edges,
       totalMemories: Number(totals.totalMemories),
@@ -34512,8 +34517,16 @@ function listPageText(page) {
   return [
     `${page.totalMemories} memories, ${page.totalEdges} links total. This page: ${page.memories.length} memories, ${page.edges.length} links.`,
     page.guidance,
-    ...page.memories.map((m) => `- [${m.id}] ${m.content}
-    recorded by: ${m.authorDisplayName ?? "unspecified"} | authorUserId: ${m.createdBy ?? "unspecified"} | lastEditedBy: ${m.lastEditedBy ?? "unspecified"} | original text: ${m.originalContent ?? m.content}${m.importSource ? " | imported source (untrusted): " + JSON.stringify(m.importSource) : ""}`),
+    ...page.memories.map((m) => {
+      const age = m.createdAt ? Math.max(0, Math.floor((Date.now() - new Date(String(m.createdAt)).getTime()) / 864e5)) : null;
+      const author = m.createdBy ? `
+    recorded by: ${m.authorDisplayName ?? m.createdBy} | authorUserId: ${m.createdBy} | lastEditedBy: ${m.lastEditedBy}
+    original text: ${m.originalContent ?? m.content}${m.importSource ? " | imported source (untrusted): " + JSON.stringify(m.importSource) : ""}` : "";
+      return `- [${m.id}] ${m.content}${author}
+    strength: ${typeof m.strength === "number" ? m.strength.toFixed(2) : "n/a"} | retrieved: ${m.retrievalCount ?? 0}x | created: ${age === null ? "unknown" : age === 0 ? "today" : age + " days ago"} | links: ${m.degree ?? "unknown"}`;
+    }),
+    `Unlinked memories on this page: ${page.memories.filter((m) => m.degree === 0).length}. Store-wide absence cannot be inferred from a page.`,
+    "Snapshot covers content and topology. Usage counts, strengths and display metadata are live and may change between pages.",
     "Links on this page:",
     ...page.edges.map((e) => `- [${e.id}] ${e.fromId} --> ${e.toId} (type: ${JSON.stringify(e.type)}, origin: ${JSON.stringify(e.origin)}, strength: ${e.strength})`),
     `hasMore: ${page.hasMore}; nextCursor: ${page.nextCursor ?? "none"}. Structured page schemaVersion: 2.`
@@ -34619,7 +34632,7 @@ async function listMemoryPage(env, limit, cursor) {
       try {
         await db.query("begin");
         await db.query("select pg_advisory_xact_lock(7916501)");
-        if (!(await db.query("select to_regclass('memory.listing_revisions') as tracker")).rows[0].tracker) await db.query("create index if not exists listing_memories_entity_id on memory.memories(entity_id,id);\ncreate index if not exists listing_edges_entity_id on memory.edges(entity_id,id);\n-- Cheap snapshot invalidation permits bounded DB keyset reads without loading every vector/body.\ncreate table if not exists memory.listing_revisions (\n entity_id text primary key,\n revision uuid not null default gen_random_uuid()\n);\ncreate or replace function memory.invalidate_listing() returns trigger language plpgsql security invoker set search_path='' as $$\nbegin\n if TG_OP <> 'INSERT' then\n  insert into memory.listing_revisions as r(entity_id) values(old.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n if TG_OP <> 'DELETE' and (TG_OP <> 'UPDATE' or new.entity_id is distinct from old.entity_id) then\n  insert into memory.listing_revisions as r(entity_id) values(new.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n return null;\nend $$;\ndrop trigger if exists invalidate_memory_listing on memory.memories;\ncreate trigger invalidate_memory_listing after insert or update or delete on memory.memories for each row execute function memory.invalidate_listing();\ndrop trigger if exists invalidate_edge_listing on memory.edges;\ncreate trigger invalidate_edge_listing after insert or update or delete on memory.edges for each row execute function memory.invalidate_listing();\ninsert into memory.listing_revisions(entity_id)\n select entity_id from memory.memories union select entity_id from memory.edges\n on conflict(entity_id) do nothing;\n\nalter table memory.listing_revisions enable row level security;\nrevoke all on memory.listing_revisions from public;\nrevoke all on function memory.invalidate_listing() from public;\n");
+        if (!(await db.query("select to_regclass('memory.listing_revisions') as tracker")).rows[0].tracker) await db.query("create index if not exists listing_memories_entity_id on memory.memories(entity_id,id);\ncreate index if not exists listing_edges_entity_id on memory.edges(entity_id,id);\n-- Cheap snapshot invalidation permits bounded DB keyset reads without loading every vector/body.\ncreate table if not exists memory.listing_revisions (\n entity_id text primary key,\n revision uuid not null default gen_random_uuid()\n);\ncreate or replace function memory.invalidate_listing() returns trigger language plpgsql security invoker set search_path='' as $$\nbegin\n if TG_OP = 'UPDATE' then\n  if TG_TABLE_NAME = 'memories' then\n   if (new.id,new.entity_id,new.content) is not distinct from (old.id,old.entity_id,old.content) then return null; end if;\n  elsif TG_TABLE_NAME = 'edges' then\n   if (new.id,new.entity_id,new.from_id,new.to_id,new.type,new.origin) is not distinct from (old.id,old.entity_id,old.from_id,old.to_id,old.type,old.origin) then return null; end if;\n  end if;\n end if;\n if TG_OP <> 'INSERT' then\n  insert into memory.listing_revisions as r(entity_id) values(old.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n if TG_OP <> 'DELETE' and (TG_OP <> 'UPDATE' or new.entity_id is distinct from old.entity_id) then\n  insert into memory.listing_revisions as r(entity_id) values(new.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n return null;\nend $$;\ndrop trigger if exists invalidate_memory_listing on memory.memories;\ncreate trigger invalidate_memory_listing after insert or update or delete on memory.memories for each row execute function memory.invalidate_listing();\ndrop trigger if exists invalidate_edge_listing on memory.edges;\ncreate trigger invalidate_edge_listing after insert or update or delete on memory.edges for each row execute function memory.invalidate_listing();\ninsert into memory.listing_revisions(entity_id)\n select entity_id from memory.memories union select entity_id from memory.edges\n on conflict(entity_id) do nothing;\n\nalter table memory.listing_revisions enable row level security;\nrevoke all on memory.listing_revisions from public;\nrevoke all on function memory.invalidate_listing() from public;\n");
         await db.query("commit");
       } catch (error2) {
         await db.query("rollback");
@@ -35292,7 +35305,7 @@ var suggestMemoryLinksDescription = `Read-only structural analysis of the memory
 
 **This computes nothing to the database; it only reports.** It reads every stored memory's embedding and
 compares all pairs by cosine similarity, then surfaces where the graph is under- or mis-connected. Pair it
-with listMemories (which gives full content) and then act with updateMemoryLink / adjustMemoryLinkStrength /
+with all cursor pages of listMemories (which together give full content and typed links) and then act with updateMemoryLink / adjustMemoryLinkStrength /
 createMemory / updateMemory / mergeMemories / deleteMemory. The judgment \u2014 which pairs to link, which near-duplicates to
 merge, which overloaded nodes to split \u2014 is yours; this tool only hands you the signals to reason over.
 

@@ -45,8 +45,11 @@ try {
   assert.equal(new Set(listed.map(m=>m.id)).size,3);assert.ok(!listed.some(m=>m.id===foreign));assert.doesNotMatch(JSON.stringify(listed),/embedding/);
   assert.equal((await call('updateMemory',{memoryId:foreign,content:'must not cross stores'})).isError,true);
   const beforeCursor=(await ok('listMemories',{limit:1})).structuredContent.nextCursor;
-  await db.query('update memory.memories set content=content where id=$1',[a]);
-  assert.equal((await call('listMemories',{cursor:beforeCursor})).isError,true,'writes invalidate the store snapshot');
+  await ok('recallMemory',{query:'A and B',limit:1});
+  assert.equal((await call('listMemories',{cursor:beforeCursor})).isError,false,'proactive recall keeps the content/topology snapshot valid');
+  await db.query('update memory.memories set content=$1 where id=$2',['A temporary listing change',a]);
+  assert.equal((await call('listMemories',{cursor:beforeCursor})).isError,true,'content changes invalidate the store snapshot');
+  await db.query('update memory.memories set content=$1,strength=.25,retrieval_count=2 where id=$2',['A',a]);
   console.log('PASS real stdio bounded SQL pages, readable compatibility, foreign-store denial and mutation invalidation');
   for(const [from,to,type,strength] of [[a,c,'related',0.4],[b,c,'related',0.9],[b,c,'supports',0.5],[c,b,'contradicts',0.8],[b,a,'related',0.7]]) await db.query("insert into memory.edges(entity_id,from_id,to_id,type,origin,strength) values($1,$2,$3,$4,'conversation',$5)",[entity,from,to,type,strength]);
   const input={targetMemoryId:a,sourceMemoryIds:[b],content:'A and B updated <|endoftext|>',expectedContents:[{memoryId:a,content:'A'},{memoryId:b,content:'B updated'}]};

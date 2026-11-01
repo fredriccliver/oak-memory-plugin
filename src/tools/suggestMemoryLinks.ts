@@ -23,7 +23,7 @@ export const suggestMemoryLinksDescription = `Read-only structural analysis of t
 
 **This computes nothing to the database; it only reports.** It reads every stored memory's embedding and
 compares all pairs by cosine similarity, then surfaces where the graph is under- or mis-connected. Pair it
-with listMemories (which gives full content) and then act with updateMemoryLink / adjustMemoryLinkStrength /
+with all cursor pages of listMemories (which together give full content and typed links) and then act with updateMemoryLink / adjustMemoryLinkStrength /
 createMemory / updateMemory / mergeMemories / deleteMemory. The judgment — which pairs to link, which near-duplicates to
 merge, which overloaded nodes to split — is yours; this tool only hands you the signals to reason over.
 

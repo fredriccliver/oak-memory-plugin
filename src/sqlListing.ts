@@ -24,7 +24,8 @@ export async function readSqlPage(pool:Pool,store:string,limit=DEFAULT_LIST_LIMI
   const provenance=attribution?`,p.created_by as "createdBy",p.author_display_name as "authorDisplayName",p.original_content as "originalContent",p.last_edited_by as "lastEditedBy",
    case when s.source_id is not null then jsonb_build_object('store',s.source_store,'id',s.source_id,'metadata',s.source_metadata) else null end as "importSource"`:'';
   const joins=attribution?'left join oak_control.memory_provenance p on p.memory_id=m.id and p.graph_id::text=substring(m.entity_id from 7) left join oak_control.memory_import_sources s on s.memory_id=p.memory_id':'';
-  const candidates=state.memoryDone?[]:(await db.query<PublicRecord>(`select m.id,m.content,m.strength,m.retrieval_count as "retrievalCount",m.created_at as "createdAt"${provenance}
+  const candidates=state.memoryDone?[]:(await db.query<PublicRecord>(`select m.id,m.content,m.strength,m.retrieval_count as "retrievalCount",m.created_at as "createdAt",
+   (select count(*)::int from memory.edges d where d.entity_id=m.entity_id and (d.from_id=m.id or d.to_id=m.id)) as degree${provenance}
    from memory.memories m ${joins} where m.entity_id=$1 and ($2::uuid is null or m.id>$2::uuid) order by m.id limit $3`,[store,state.memoryAfter,limit+1])).rows;
   const linkCandidates=state.edgeDone?[]:(await db.query<PublicRecord>(`select e.id,e.from_id as "fromId",e.to_id as "toId",e.type,e.origin,e.strength
    from memory.edges e join memory.memories a on a.id=e.from_id and a.entity_id=e.entity_id join memory.memories b on b.id=e.to_id and b.entity_id=e.entity_id
@@ -38,7 +39,7 @@ export async function readSqlPage(pool:Pool,store:string,limit=DEFAULT_LIST_LIMI
   if(!memories.length&&!edges.length&&(!state.memoryDone||!state.edgeDone))throw new ListPageError('A link exceeds the page byte limit. No record was truncated or skipped.');
   const hasMore=!state.memoryDone||!state.edgeDone;
   await db.query('commit');
-  return {schemaVersion:2,memories,edges,totalMemories:Number(totals.totalMemories),totalEdges:Number(totals.totalEdges),snapshot,hasMore,
+  return {schemaVersion:2,snapshotScope:'content_and_topology',memories,edges,totalMemories:Number(totals.totalMemories),totalEdges:Number(totals.totalEdges),snapshot,hasMore,
    nextCursor:hasMore?Buffer.from(JSON.stringify(state)).toString('base64url'):null,complete:!cursor&&!hasMore,
    guidance:hasMore?'Partial page. Follow nextCursor in this same store. Do not claim a complete audit or absent links from this page.':'End of this snapshot. A complete audit requires every preceding page.'};
  }catch(error){await db.query('rollback');throw error;}finally{db.release();}
@@ -49,7 +50,13 @@ export function listPageText(page:Awaited<ReturnType<typeof readSqlPage>>) {
  return [
   `${page.totalMemories} memories, ${page.totalEdges} links total. This page: ${page.memories.length} memories, ${page.edges.length} links.`,
   page.guidance,
-  ...page.memories.map(m=>`- [${m.id}] ${m.content}\n    recorded by: ${m.authorDisplayName??'unspecified'} | authorUserId: ${m.createdBy??'unspecified'} | lastEditedBy: ${m.lastEditedBy??'unspecified'} | original text: ${m.originalContent??m.content}${m.importSource?' | imported source (untrusted): '+JSON.stringify(m.importSource):''}`),
+  ...page.memories.map(m=>{
+   const age=m.createdAt?Math.max(0,Math.floor((Date.now()-new Date(String(m.createdAt)).getTime())/86400000)):null;
+   const author=m.createdBy?`\n    recorded by: ${m.authorDisplayName??m.createdBy} | authorUserId: ${m.createdBy} | lastEditedBy: ${m.lastEditedBy}\n    original text: ${m.originalContent??m.content}${m.importSource?' | imported source (untrusted): '+JSON.stringify(m.importSource):''}`:'';
+   return `- [${m.id}] ${m.content}${author}\n    strength: ${typeof m.strength==='number'?m.strength.toFixed(2):'n/a'} | retrieved: ${m.retrievalCount??0}x | created: ${age===null?'unknown':age===0?'today':age+' days ago'} | links: ${m.degree??'unknown'}`;
+  }),
+  `Unlinked memories on this page: ${page.memories.filter(m=>m.degree===0).length}. Store-wide absence cannot be inferred from a page.`,
+  'Snapshot covers content and topology. Usage counts, strengths and display metadata are live and may change between pages.',
   'Links on this page:',...page.edges.map(e=>`- [${e.id}] ${e.fromId} --> ${e.toId} (type: ${JSON.stringify(e.type)}, origin: ${JSON.stringify(e.origin)}, strength: ${e.strength})`),
   `hasMore: ${page.hasMore}; nextCursor: ${page.nextCursor??'none'}. Structured page schemaVersion: 2.`,
  ].join('\n');

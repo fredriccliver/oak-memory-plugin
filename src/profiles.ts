@@ -26,7 +26,13 @@ export function readProfiles(): Profiles | undefined {
     if (!value.profiles || typeof value.defaultProfile !== 'string') throw new Error();
     for (const [name, profile] of Object.entries(value.profiles)) {
       if (!name || !profile || !['local', 'cloud'].includes(profile.backend)) throw new Error();
-      if(profile.backend==='local'){if(profile.entityId!==undefined&&(!profile.entityId.trim()||profile.entityId.length>200))throw new Error();if(profile.policy&&(!['preferences','important','everything','custom'].includes(String(profile.policy.scope))||typeof profile.policy.autosave!=='boolean'||!['minimal','balanced','aggressive'].includes(profile.policy.recall)||(profile.policy.scope==='custom'&&!profile.policy.customText?.trim())))throw new Error();}
+      if(profile.backend==='local'){
+        if(profile.entityId!==undefined&&(typeof profile.entityId!=='string'||!profile.entityId.trim()||profile.entityId.length>200))throw new Error();
+        if(profile.policy!==undefined){
+          const p=profile.policy;
+          if(!p||typeof p!=='object'||!['preferences','important','everything','custom'].includes(String(p.scope))||typeof p.autosave!=='boolean'||!['minimal','balanced','aggressive'].includes(p.recall)||(p.scope==='custom'&&(typeof p.customText!=='string'||!p.customText.trim())))profile.policy={scope:null,autosave:false,recall:'minimal',reason:p?.scope==='custom'?'custom-missing':'invalid'};
+        }
+      }
       if (profile.backend === 'cloud') {
         const url = new URL(profile.endpoint);
         if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))) throw new Error();

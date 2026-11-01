@@ -129,7 +129,7 @@ maps those requests to the same MCP tools.
 | Tool | Purpose |
 |---|---|
 | `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
-| `listMemories` | Dump *every* memory and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
+| `listMemories` | Browse bounded pages of memories and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
 | `openMemoryGraph` | Render the same graph as an interactive, force-directed HTML page and open it in the default browser. Backs `/memory-graph-web`. |
 | `suggestMemoryLinks` | Read-only structural analysis: all-pairs embedding similarity surfacing orphans, link candidates (near-duplicates flagged), each edge's stored strength vs. actual similarity, and oversized split candidates. Evidence for a curation pass; writes nothing. Backs `/memory-organise`. |
 | `createMemory` | Store a new fact/preference/experience about you. |
@@ -574,3 +574,10 @@ the dedicated fixture URL and runs as `npm run test:merge-stdio` in CI.
 Multi-store combined search and per-call targets are prepared in the cloud package. Connection/store activation is managed in OAK web settings. This is separate from the local plugin and from portal publication or acceptance of an installed host package. See [cloud setup and compatibility](docs/cloud-plugin.md).
 
 The server prerequisite is already deployed: [backend #71](https://github.com/fredriccliver/openaikits.com/pull/71) and [activation #75 production verification](https://github.com/fredriccliver/openaikits.com/pull/75#issuecomment-6382683719). This does not claim host schema refresh, installed-package acceptance, a new demo or portal publication.
+
+
+### Upgrade note for 0.3.1
+
+An existing installation with no MEMORY_POLICY_SCOPE will now use everything + autosave=true + proactive recall after restart, instead of refusing writes. To retain request-only changes, set MEMORY_POLICY_AUTOSAVE=false before updating; explicit scopes, autosave=false and recall restrictions remain respected. Invalid/unreadable existing custom policies still suspend all mutations. Cloud policies are edited on their Cloud store, not in local settings.
+
+Listing snapshots cover content and link topology. Recall usage counters and strength reinforcement are live metadata and do not invalidate a cursor. Content, record deletion/insertion and typed-link structural changes do invalidate it.
