@@ -30761,9 +30761,34 @@ var ProfileSession = class {
       return listed;
     } catch (error2) {
       const previous = this.toolLists.get(snapshot.name);
-      if (previous) return previous;
+      if (previous) return { ...previous, tools: previous.tools.map((tool) => {
+        const meta = { ...tool._meta };
+        for (const field of ["ui", "ui/resourceUri", "openai/outputTemplate", "openai/widgetAccessible"]) delete meta[field];
+        return { ...tool, _meta: meta };
+      }) };
       throw error2;
     }
+  }
+  async listResources() {
+    const snapshot = this.snapshot();
+    if (snapshot.profile.backend !== "cloud") return { resources: [] };
+    return this.withClient(snapshot, async (client) => {
+      const resources = [];
+      let cursor;
+      do {
+        const page = await client.listResources(cursor ? { cursor } : void 0);
+        resources.push(...page.resources.filter((resource) => resource.uri.startsWith("ui://oak-memory/")));
+        cursor = page.nextCursor;
+      } while (cursor);
+      return { resources };
+    });
+  }
+  async readResource(uri) {
+    const snapshot = this.snapshot();
+    if (snapshot.profile.backend !== "cloud" || !uri.startsWith("ui://oak-memory/")) {
+      throw new McpError(ErrorCode.InvalidParams, "Only OAK cloud UI resources are available.");
+    }
+    return this.withClient(snapshot, (client) => client.readResource({ uri }));
   }
   async callTool(name, args = {}) {
     const snapshot = this.snapshot();
@@ -30777,10 +30802,29 @@ var ProfileSession = class {
 async function startProfileBridge(config2, name, options = {}) {
   const session = new ProfileSession(config2, name);
   const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: "0.3.0" }, {
-    capabilities: { tools: { listChanged: true } },
+    capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}
 
 ${attributionInstructions}${options.readOnly ? "\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings." : ""}`
+  });
+  server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    try {
+      return await session.listResources();
+    } catch (error2) {
+      if (error2 instanceof McpError && error2.code === ErrorCode.MethodNotFound) return { resources: [] };
+      throw new McpError(ErrorCode.InternalError, "OAK UI discovery failed. Check the active cloud profile and connection.");
+    }
+  });
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({ resourceTemplates: [] }));
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    if (session.snapshot().profile.backend !== "cloud" || !request.params.uri.startsWith("ui://oak-memory/")) {
+      throw new McpError(ErrorCode.InvalidParams, "Only OAK cloud UI resources are available.");
+    }
+    try {
+      return await session.readResource(request.params.uri);
+    } catch {
+      throw new McpError(ErrorCode.InternalError, "OAK UI unavailable. Check the active cloud profile and connection.");
+    }
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let remote;
@@ -30843,6 +30887,8 @@ ${attributionInstructions}${options.readOnly ? "\nThis connection permits reads 
         if (typeof name2 !== "string") return errorResult();
         const selected = await session.select(name2);
         await server.notification({ method: "notifications/tools/list_changed" }).catch(() => {
+        });
+        await server.notification({ method: "notifications/resources/list_changed" }).catch(() => {
         });
         return text(selected);
       }

@@ -1,10 +1,13 @@
 # Claude Desktop의 로컬 MCP로 클라우드 저장소 사용하기
 
-2026-10-11 기준 전용 데스크톱 확장은 로컬 stdio 프로그램을 실행하고 OAK의 HTTPS MCP 서버에 개인 저장소 키로 연결한다. 기억은 OAK 클라우드에 남는다. 로컬 데이터베이스, Docker, Ollama와 별도 Node 설치는 필요하지 않다. 원격 OAuth 플러그인 `oak-memory-cloud`, 기존 로컬 플러그인 `oak-memory`와 구분하기 위해 이름은 `oak-desktop-cloud`다.
+2026-11-01 기준 전용 데스크톱 확장은 로컬 stdio 프로그램을 실행하고 OAK의 HTTPS MCP 서버에 개인 저장소 키로 연결한다. 기억은 OAK 클라우드에 남는다. 로컬 데이터베이스, Docker, Ollama와 별도 Node 설치는 필요하지 않다. 원격 OAuth 플러그인 `oak-memory-cloud`, 기존 로컬 플러그인 `oak-memory`와 구분하기 위해 이름은 `oak-desktop-cloud`다.
 
 ## 설치와 설정
 
-[Desktop Cloud 0.1.0 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.0)에서 `oak-desktop-cloud-0.1.0.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
+Desktop Cloud 0.1.1은 MCP Apps 대화형 UI를 지원한다. 기존 0.1.0을 사용하는 경우
+새 설치 파일로 업데이트하거나 원격 OAuth 연결을 사용한다.
+
+[Desktop Cloud 0.1.1 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.1)에서 `oak-desktop-cloud-0.1.1.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
 
 OAK 대시보드에서 연결할 저장소를 선택한다. 저장소의 연결 설정에서 ID를 복사하고 본인 계정의 이름 있는 연결 키를 만든다. 키는 생성할 때 한 번 표시되므로 확장 설정의 Personal key에 직접 입력한다. 채팅이나 저장소 파일에 키를 붙이지 않는다. Store ID에는 같은 저장소의 UUID를 입력한다. Claude는 민감한 설정을 운영체제의 보안 저장소에 보관한다.
 
@@ -20,8 +23,32 @@ Allow memory changes는 기본으로 꺼져 있다. 켠 경우에만 저장, 수
 
 ## 개발과 검증
 
-`npm run package:desktop`은 manifest와 묶인 서버, LICENSE, NOTICE만 포함한 MCPB를 만든다. `npm run test:desktop`은 실제 패키지를 풀고 stdio로 실행해 격리 HTTP 서버와 통신한다. 읽기, 쓰기 선택, 미등록 변경 도구 차단, reader 거부, 키 철회와 저장소 불일치를 검증한다. 테스트 복사본의 주소만 루프백으로 바꾸며 배포본은 운영 HTTPS 주소로 고정된다. 운영 데이터나 크레딧을 사용하지 않는다. 별도로 공식 MCPB 검증기를 로컬에서 실행해 manifest 형식을 확인했다. CI 검사는 패키징과 stdio 시나리오이며 공식 검증기 실행과 구분한다.
+`npm run package:desktop`은 manifest와 묶인 서버, LICENSE, NOTICE만 포함한 MCPB를 만든다. `npm run test:desktop`은 실제 패키지를 풀고 stdio로 실행해 격리 HTTP 서버와 통신한다. 읽기, 쓰기 선택, 미등록 변경 도구 차단, reader 거부, 키 철회와 저장소 불일치, UI 리소스·메타데이터 중계, 임의 URI 거부와 철회 후
+리소스 목록·읽기 실패를 검증한다. 테스트 복사본의 주소만 루프백으로 바꾸며 배포본은 운영 HTTPS 주소로 고정된다. 운영 데이터나 크레딧을 사용하지 않는다. 별도로 공식 MCPB 검증기를 로컬에서 실행해 manifest 형식을 확인했다. CI 검사는 패키징과 stdio 시나리오이며 공식 검증기 실행과 구분한다.
 
 실제 사용자 Desktop의 설치, 보안 저장소 저장과 운영 쓰기 검증은 이 자동 테스트와 별개다. 사용자의 기존 `oak-memory` 읽기 성공을 새 확장 검증으로 기록하지 않는다.
 
 근거는 [Claude 로컬 MCP 안내](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop), [조직 확장 허용 목록](https://support.claude.com/en/articles/12592343-enabling-and-using-the-desktop-extension-allowlist), [MCPB manifest 규약](https://github.com/anthropics/mcpb/blob/main/MANIFEST.md)이다.
+
+
+## MCP Apps 화면 전달
+
+Desktop Cloud 0.1.1은 호스팅 서버의 OAK UI 리소스 목록·읽기와 도구 결과 메타데이터를
+Claude Desktop에 전달한다. 지원되는 Claude 버전에서는 기억 목록·검색 결과와 저장·수정
+완료를 대화 안의 OAK 화면으로 표시할 수 있다. 기존 0.1.0은 리소스를 전달하지 않으므로
+화면을 사용하려면 새 설치 파일로 업데이트하거나 원격 OAuth 연결을 사용한다.
+
+화면 파일을 읽을 때도 매번 현재 cloud profile의 인증을 사용한다. `ui://oak-memory/`
+리소스만 중계하며 로컬 파일, 로컬 저장소 또는 다른 profile로 대체하지 않는다. 서버
+응답의 CSP와 `_meta`를 보존한다. profile 변경 시 리소스 목록 변경도 알린다. 화면에서
+도구를 호출해도 기존 읽기 전용 설정과 현재 저장소 역할 검사를 통과해야 한다.
+패키지 stdio 테스트는 실제 HTTP fixture에서 HTML·메타데이터 전달, 읽기 전용 도구,
+임의 파일 URI 거부와 키 철회 후 리소스 접근 거부를 확인한다. 실제 사용자 Desktop의
+렌더링과 공개 릴리스 여부는 이 검사와 별개다.
+
+UI 리소스 기능 자체가 없는 이전 서버의 `MethodNotFound`만 빈 리소스 목록으로 처리한다.
+인증·네트워크·서버 오류는 연결 실패로 표시하며 숨기지 않는다.
+
+연결 실패로 이전 도구 목록을 표시할 때에는 UI 힌트를 제거한다. 연결이 회복되어
+도구 목록을 다시 조회하면 서버의 UI metadata를 다시 사용한다. 캐시는 접근 권한을
+부여하지 않으며 실제 도구·리소스 호출은 매번 다시 인증한다.

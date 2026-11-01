@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "oak-desktop-cloud",
   "display_name": "OAK.memory Cloud via Desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run OAK MCP locally and use your private cloud store. No local database or Docker required.",
   "author": { "name": "Fredric Cliver", "url": "https://github.com/fredriccliver" },
   "homepage": "https://www.openaikits.com/memory",
