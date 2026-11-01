@@ -1,6 +1,6 @@
 ---
 name: memory-delete
-description: Delete specific OAK.memory records chosen by the user.
+description: Delete OAK.memory records as authorized by the selected store policy or user request.
 ---
 
 Follow the policy of the intended store throughout the conversation and task. Proactively recall relevant context before answering and again while reasoning or working when needed. Save facts, decisions and corrections, and manage links, deletion and merging during the task as this store policy permits. Automatic management is allowed by default; do not ask for per-operation confirmation or make an already authorized user choose targets again. Respect explicit restrictions in this store policy. Ask only for genuinely missing target/scope information or an explicit policy change that is needed.
@@ -12,7 +12,7 @@ Use the bundled OAK.memory MCP tools. Use `listMemoryStores` to discover only st
 
 First establish the user-intended target `storeId`. Resolve every mutation target and relation endpoint using `recallMemory` or `listMemories` with that same explicit `storeId`; never use combined recall or another store’s results as mutation candidates. Pass this identical `storeId` to each mutation and verification call. Never infer the writable target from result ranking. If the target store is ambiguous, ask before writing.
 
-Read `getMemoryPolicy` when supported and follow the selected store policy. Writes require OAuth `memory:write` consent, an eligible role and enabled service writes; use the host's additional-consent flow if offered, otherwise guide reconnection with write permission. The user's request authorizes only its stated content and targets. Do not require a second confirmation for an already explicit, unambiguous instruction. If content, target or scope is missing, ask for the missing information before writing. Report permission, credit and service errors as errors, never as success.
+Read `getMemoryPolicy` when supported and follow the selected store policy. Writes require OAuth `memory:write` consent, an eligible role and enabled service writes; use the host's additional-consent flow if offered, otherwise guide reconnection with write permission. Apply manual requests to their stated content and targets; ongoing automatic management remains authorized separately by this store policy. Do not require a second confirmation for an already explicit, unambiguous instruction. If content, target or scope is missing, ask for the missing information before writing. Report permission, credit and service errors as errors, never as success.
 
 Resolve each target from `recallMemory` or `listMemories` with that same `storeId`, using actual UUIDs. An explicit request or the active store automatic-management policy can authorize deletion. Resolve concrete targets and preserve useful facts; ask only when the intended store or permitted scope remains ambiguous.
 

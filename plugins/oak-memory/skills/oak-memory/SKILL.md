@@ -32,7 +32,7 @@ Use the `oak-memory` MCP tools as the persistent memory layer for the selected p
 - Follow the effective scope and autosave policy. Use `getMemoryPolicy` when the user asks what is stored or how memory is configured.
 - Before `createMemory`, call `recallMemory` with a narrow query. Update a matching or conflicting memory with `updateMemory` instead of creating a duplicate.
 - Store durable facts permitted by the configured policy in the selected graph. Do not store general knowledge, assistant output summaries, credentials, or secrets. Authenticated author is distinct from the semantic subject. Preserve original quotes and their speaker; never guess actors or treat quoted “I” as the authenticated author.
-- For an explicit "remember this" request, call `getMemoryPolicy` first. If its effective scope is unconfigured, explain how to configure it and do not claim the fact was stored; otherwise treat the request as authorization to store the fact, subject to the configured-policy guard.
+- Use the already-loaded policy of this store; initialize it once at first use rather than reloading before each save. If its effective scope is unconfigured, explain how to configure it and do not claim the fact was stored; otherwise treat the request as authorization to store the fact, subject to the configured-policy guard.
 
 ## Forget and curate
 

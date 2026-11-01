@@ -8,6 +8,8 @@ instead and you may report a policy that isn't running.
 
 A newly configured local store uses the automatic-management default (everything, autosave on, proactive recall). A failed or invalid existing policy is different: explain the repair and suspend mutations until it is restored. Cloud settings must be read and updated on that cloud store with its policy tool and required permissions; never edit local environment settings to change a cloud policy.
 
+If getMemoryPolicy identifies a local profile, edit only that profile policy in the reported profiles file (scope, autosave, recall, and customText when needed), preserving other profiles and credential references. Do not write shared environment policy keys for a store-specific profile. Changes apply after restarting the client.
+
 Otherwise, depending on $ARGUMENTS:
 
 **Empty** — show the current policy: the effective scope, autosave, and recall level, one plain-language

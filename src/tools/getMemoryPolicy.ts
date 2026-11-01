@@ -12,7 +12,7 @@ import { textResult } from './format.js';
 /** Says which of the three ways there is no policy, since each has its own fix. */
 const REASON_HEADLINES: Record<UnconfiguredReason, string> = {
   unset: 'The user has never chosen one — `MEMORY_POLICY_SCOPE` is not set anywhere.',
-  invalid: '`MEMORY_POLICY_SCOPE` is set to a value this server does not recognise — likely a typo.',
+  invalid: 'An existing local store policy setting is invalid or its configuration could not be read. Repair this store policy; no broader default was substituted.',
   'custom-missing':
     '`MEMORY_POLICY_SCOPE=custom`, but the file holding the rule is missing or empty. Their rule ' +
     'needs rewriting — it has not been replaced with a broader one.',
@@ -47,6 +47,7 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
       const lines = [
         unset ? '# Local store policy unavailable' : '# Effective memory policy',
         `Selected local store: ${env.memoryEntityId}`,
+        ...(process.env.OAK_LOCAL_PROFILE_NAME?[`Local profile: ${process.env.OAK_LOCAL_PROFILE_NAME}. Policy is store-specific in profiles[profile].policy at ${process.env.OAK_LOCAL_PROFILES_FILE||'the selected profiles configuration'}. Edit that profile only; do not change shared local settings for another store.`]:[]),
         ...(policy.defaulted?['Documented automatic-management defaults apply to this new local store.']:[]),
         '',
         ...(unset

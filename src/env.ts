@@ -32,11 +32,13 @@ import {
   type UnconfiguredReason,
 } from './policy.js';
 
+let policyConfigUnavailable=false;
 function loadEnvFile(filePath: string): void {
   let content: string;
   try {
     content = fs.readFileSync(filePath, 'utf8');
-  } catch {
+  } catch(error) {
+    if((error as NodeJS.ErrnoException).code!=='ENOENT')policyConfigUnavailable=true;
     return;
   }
   for (const rawLine of content.split('\n')) {
@@ -199,6 +201,7 @@ type Warn = (message: string) => void;
 
 /** Resolve this local store policy. Absent configuration uses automatic defaults; invalid existing policy fails closed. */
 export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
+  if(policyConfigUnavailable)return {scope:null,autosave:false,recall:DEFAULT_RECALL,reason:'invalid'};
   const rawRecall = readEnvVar('MEMORY_POLICY_RECALL') ?? DEFAULT_RECALL;
   let recall = rawRecall as RecallLevel;
   if (!RECALL_LEVELS.includes(recall)) {
@@ -206,7 +209,7 @@ export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
       `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" — using "${DEFAULT_RECALL}".\n` +
         `  Valid values: ${RECALL_LEVELS.join(', ')}`,
     );
-    recall = DEFAULT_RECALL;
+    return {scope:null,autosave:false,recall:DEFAULT_RECALL,reason:'invalid'};
   }
   // Recall does get a default: reading back what the user already chose to store
   // costs them nothing but latency, so guessing wrong here is cheap in a way
@@ -221,6 +224,8 @@ export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
     reason,
   });
 
+  const rawAutosave=readEnvVar('MEMORY_POLICY_AUTOSAVE');
+  if(rawAutosave!==undefined&&!['true','1','yes','on','false','0','no','off'].includes(rawAutosave.toLowerCase()))return unconfigured('invalid');
   const rawScope = readEnvVar('MEMORY_POLICY_SCOPE');
   if (rawScope === undefined) return {scope:DEFAULT_SCOPE,autosave:parseBool(readEnvVar('MEMORY_POLICY_AUTOSAVE'),DEFAULT_AUTOSAVE,warn),recall,defaulted:true};
 

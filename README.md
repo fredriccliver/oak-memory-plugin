@@ -46,7 +46,7 @@ Docker, Ollama or API key. The shared skills and host manifests live in
   in Add marketplace. Team/Enterprise organization connectors require an eligible
   owner to register them before members can connect.
 
-In a fresh OAuth cloud conversation, call `listMemoryStores`, select the intended enabled target, then pass its explicit `storeId` to `currentMemoryStore` and `listMemories`. Non-search calls always use `storeId`; combined `recallMemory` omits it after first-use policy initialization for each enabled store. A tool list or
+In a fresh OAuth cloud conversation, call `listMemoryStores`, select the intended enabled target, then pass its explicit `storeId` to `currentMemoryStore`; do not read memory bodies merely to verify a connection. Non-search calls always use `storeId`; combined `recallMemory` omits it after first-use policy initialization for each enabled store. A tool list or
 successful sign-in alone does not prove a working connection. The cloud organisation workflow prefers the exposed atomic `mergeMemories` tool, requires exact originals and verifies results; source deletion, revision history and sequential fallback limits are documented in the shared skill. Initial access is read-only;
 writing requires separate OAK OAuth consent, an eligible store role, credits and host approval.
 
@@ -79,7 +79,7 @@ with `npm run setup` before the plugin works:
 git clone https://github.com/fredriccliver/oak-memory-plugin
 cd oak-memory-plugin
 npm install
-npm run setup     # starts Postgres, pulls the model, writes shared config, asks your memory policy
+npm run setup     # starts Postgres, pulls the model, writes shared config, uses automatic store policy defaults; reconfigure only when desired
 ```
 
 Until `npm run setup` has written `MEMORY_DATABASE_URL` (normally into
@@ -157,63 +157,20 @@ model never supplies or sees an entity/user id.
 | `/memory-save <text>` | Explicitly store a fact right now, without waiting for the model to decide it's worth keeping. |
 | `/memory-graph [filter]` | Show everything stored: a terminal summary plus a rendered node graph (published as an Artifact, since terminals can't draw mermaid) with reciprocal links merged and unlinked memories flagged. |
 | `/memory-graph-web` | Open the same graph as a real webpage instead: a draggable, zoomable, force-directed view in your default browser rather than the terminal or a chat-rendered diagram. |
-| `/memory-organise [scope]` | Curate the graph by reasoning: cluster and link orphans, tune edge strengths, and — with your confirmation — merge duplicates or split overloaded memories. Additive edits apply directly; lossy ones ask first. |
+| `/memory-organise [scope]` | Curate the graph by reasoning: cluster and link orphans, tune edge strengths, and merge duplicates or split overloaded memories as permitted by the selected store policy, without repeated confirmation. |
 | `/memory-config [change]` | Show the effective policy, or change it in words ("only remember my preferences", "stop saving unless I ask"). |
 
 ## Memory policy
 
-Nothing here searches or writes on your behalf. `recallMemory` and `createMemory` are ordinary tools the model
-chooses to call, exactly like reading a file. So what governs memory is what the model is *told*, and the
-policy is how you set that.
+Policies belong to individual stores. Cloud/Desktop profiles read and update their Cloud store policy through the actual server tools; local policy is never substituted for Cloud policy. A local profile may specify its own `entityId` and `policy` object (`scope`, `autosave`, `recall`, optional `customText`). Distinct local entities without an explicit profile policy receive independent automatic defaults. Legacy single-local-store environment settings remain supported for that store.
 
-Your choices are compiled into a rule and handed to the model over three channels: the MCP `instructions`
-field, which the client injects into the system prompt at session start; the tool descriptions themselves;
-and a `UserPromptSubmit` hook, which restates the rule alongside every prompt. The first two are belt and
-braces — a client that ignores `instructions` still renders tool descriptions, and a client that defers tool
-schemas until first use still shows `instructions`.
+New local stores default to `everything`, autosave on and `aggressive` (proactive) recall. The assistant observes context before answering and throughout reasoning/work, retrieves relevant memories when needed, and saves facts, decisions and corrections during the task. Links, deletion and merging follow that store policy. Allowed operations do not need repeated confirmation. Existing explicit restrictions are preserved. Invalid/unreadable existing policies suspend mutations rather than silently using defaults.
 
-The third is there because being told is not the same as acting on it. Both of the other channels are read
-once and then spend the session competing with whatever you actually asked for — and the turn that produces a
-fact worth keeping is precisely the turn the model is busy doing something else. Autosave failed that way in
-practice: not by refusing, but by never coming up. A rule that arrives and loses is indistinguishable from one
-that never arrived. So the fix is timing rather than authority: the hook fires when the harness says so, and
-puts the rule next to the work instead of an hour behind it.
+Use actual discovered tools and schemas; version numbers do not prove a tool exists. Prefer atomic `mergeMemories` when exposed. A timeout may follow a committed write: inspect the same store automatically, retry only after non-application is established, and never report an unknown outcome as unchanged.
 
-It reads the same policy the server does — one `loadPolicy()`, one verdict — and says only what your policy
-actually asks for. Turn `MEMORY_POLICY_AUTOSAVE` off and the saving half disappears; set `MEMORY_POLICY_RECALL`
-to `minimal` and the searching half does; do both and the hook goes silent entirely. It enforces your policy,
-it does not outrank it.
+`listMemories` returns pages: 20 memories by default, 100 maximum, separately bounded links and bytes. Follow `nextCursor` in the same snapshot until `hasMore` is false, including edge-only pages. A changed graph invalidates its cursor. `recallMemory` searches for relevant context (default 10, maximum 50); it does not prove an exhaustive audit. Connection verification uses identity/status tools without reading memory bodies.
 
-> **Why not `Stop`?** It was built and tested first, and it worked — the turn boundary is strictly better
-> timing for saving, since it also catches facts that surface mid-turn from a file or a command, which this
-> hook only sees on your next prompt. It was dropped because blocking a stop forces the model to emit another
-> message, and there is no empty message: every answer picked up a trailing *"No memory-worthy content in this
-> turn."* Under `claude -p`, where only the last message is printed, that line **replaced the answer** —
-> `claude -p "reply with one word: ping"` printed the memory check instead of `ping`. Prompting for silence
-> doesn't fix it; silence has to be structural. This hook adds context and no message, so the same prompt
-> prints `ping`.
-
-Three independent axes, chosen at `npm run setup` and changeable any time:
-
-| Axis | Variable | Values | Setup wizard default |
-|---|---|---|---|
-| **What to remember** | `MEMORY_POLICY_SCOPE` | `preferences`, `important`, `everything`, `custom` | `everything` |
-| **When to save** | `MEMORY_POLICY_AUTOSAVE` | `true` (proactively), `false` (only when explicitly asked) | `true` |
-| **How hard to search** | `MEMORY_POLICY_RECALL` | `minimal`, `balanced`, `aggressive` | `balanced` |
-
-The scope has no runtime default: if `MEMORY_POLICY_SCOPE` is absent or invalid, writes fail closed. The
-`everything` value above is only the choice preselected by the interactive setup wizard.
-
-Reading and writing are separate axes because they have different costs. Writing is the side with the privacy
-question, so it gets its own switch; searching what you already chose to store costs nothing but a lookup.
-That's also why an explicit save or recall request overrides its own axis and not the other — making the
-request *is* the decision the policy exists to make on your behalf. Claude Code also exposes those requests
-as `/memory-save` and `/memory-recall`.
-
-`custom` takes your rule from `oak-memory-policy.md` beside the selected config file (override with
-`MEMORY_POLICY_FILE`).
-Everything outside HTML comments in that file is handed to the model verbatim, so write it as an instruction
-— "Store only my coding preferences and architecture decisions" — not as notes. Edit it any time; no rebuild.
+Local settings remain configurable with `MEMORY_POLICY_SCOPE` (`preferences`, `important`, `everything`, `custom`), `MEMORY_POLICY_AUTOSAVE` and `MEMORY_POLICY_RECALL` (`minimal`, `balanced`, `aggressive`). A custom local rule lives in `oak-memory-policy.md` or `MEMORY_POLICY_FILE`. Store-specific profile settings are edited on that profile, not in another store environment. Claude Code reminders follow the active backend; automatic management does not depend on a hook being available in other hosts.
 
 To change the policy:
 

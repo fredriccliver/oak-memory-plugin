@@ -6,7 +6,7 @@ import type { MemoryPolicy } from './policy.js';
 export type Profile = { backend: 'local'; entityId?:string; policy?:MemoryPolicy } | {
   backend: 'cloud'; endpoint: string; graphId: string; credentialEnv: string;
 };
-export type Profiles = { defaultProfile: string; profiles: Record<string, Profile> };
+export type Profiles = { defaultProfile: string; profiles: Record<string, Profile>; sourceFile?:string };
 export const attributionInstructions = `Memories belong to the selected graph, which may be shared. At connection or profile switch, verify the active graph, role, and authenticated identity using memoryConnectionStatus when available, otherwise cloud currentMemoryStore or local getMemoryPolicy. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
 
 // Claude optional userConfig values can be empty or unexpanded on older clients.
@@ -34,7 +34,7 @@ export function readProfiles(): Profiles | undefined {
       }
     }
     if (!Object.hasOwn(value.profiles, value.defaultProfile)) throw new Error();
-    return value;
+    return {...value,sourceFile:file};
   } catch { throw new Error('Invalid Oak profiles configuration'); }
 }
 

@@ -44,11 +44,13 @@ Recall again while working when needed; record new facts and corrections during 
 }
 
 // src/env.ts
+var policyConfigUnavailable = false;
 function loadEnvFile(filePath) {
   let content;
   try {
     content = fs.readFileSync(filePath, "utf8");
-  } catch {
+  } catch (error) {
+    if (error.code !== "ENOENT") policyConfigUnavailable = true;
     return;
   }
   for (const rawLine of content.split("\n")) {
@@ -127,6 +129,7 @@ function parseBool(value, fallback, warn) {
   return fallback;
 }
 function loadPolicy(warn = console.error) {
+  if (policyConfigUnavailable) return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
   const rawRecall = readEnvVar("MEMORY_POLICY_RECALL") ?? DEFAULT_RECALL;
   let recall = rawRecall;
   if (!RECALL_LEVELS.includes(recall)) {
@@ -134,7 +137,7 @@ function loadPolicy(warn = console.error) {
       `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 using "${DEFAULT_RECALL}".
   Valid values: ${RECALL_LEVELS.join(", ")}`
     );
-    recall = DEFAULT_RECALL;
+    return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
   }
   const unconfigured = (reason) => ({
     scope: null,
@@ -142,6 +145,8 @@ function loadPolicy(warn = console.error) {
     recall,
     reason
   });
+  const rawAutosave = readEnvVar("MEMORY_POLICY_AUTOSAVE");
+  if (rawAutosave !== void 0 && !["true", "1", "yes", "on", "false", "0", "no", "off"].includes(rawAutosave.toLowerCase())) return unconfigured("invalid");
   const rawScope = readEnvVar("MEMORY_POLICY_SCOPE");
   if (rawScope === void 0) return { scope: DEFAULT_SCOPE, autosave: parseBool(readEnvVar("MEMORY_POLICY_AUTOSAVE"), DEFAULT_AUTOSAVE, warn), recall, defaulted: true };
   const scope = rawScope;
@@ -201,7 +206,7 @@ function readProfiles() {
       }
     }
     if (!Object.hasOwn(value.profiles, value.defaultProfile)) throw new Error();
-    return value;
+    return { ...value, sourceFile: file };
   } catch {
     throw new Error("Invalid Oak profiles configuration");
   }
@@ -233,7 +238,7 @@ async function main() {
   const policy = loadPolicy(() => {
   });
   const selection = resolveBackend();
-  const reminder = selection?.profile.backend === "cloud" ? "Follow the selected CLOUD store policy loaded through getMemoryPolicy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation." : buildTurnReminder(selection?.profile.backend === "local" && selection.profile.policy ? selection.profile.policy : policy);
+  const reminder = selection?.profile.backend === "cloud" ? "Follow the selected CLOUD store policy loaded through getMemoryPolicy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation." : buildTurnReminder(selection?.profile.backend === "local" ? selection.profile.policy ?? (selection.profile.entityId ? { scope: "everything", autosave: true, recall: "aggressive" } : policy) : policy);
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {

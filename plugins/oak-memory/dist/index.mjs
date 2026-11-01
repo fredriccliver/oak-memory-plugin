@@ -27958,7 +27958,7 @@ function readProfiles() {
       }
     }
     if (!Object.hasOwn(value.profiles, value.defaultProfile)) throw new Error();
-    return value;
+    return { ...value, sourceFile: file };
   } catch {
     throw new Error("Invalid Oak profiles configuration");
   }
@@ -30554,7 +30554,7 @@ var ProfileSession = class {
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true, applyPolicyToSelectedStore: true }), context, policy };
   }
   async withClient(snapshot, run) {
-    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.3.0" });
+    const client = new Client({ name: "oak-memory-profile-bridge", version: "0.3.1" });
     const profile = snapshot.profile;
     const transport = profile.backend === "cloud" ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
       requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, "X-Oak-Graph": profile.graphId } },
@@ -30563,7 +30563,7 @@ var ProfileSession = class {
     }) : new StdioClientTransport({
       command: process.execPath,
       args: [fileURLToPath(import.meta.url)],
-      env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: "local", OAK_PROFILE: "", ...profile.entityId ? { MEMORY_ENTITY_ID: profile.entityId } : {}, ...profile.policy ? { MEMORY_POLICY_SCOPE: profile.policy.scope ?? "invalid", MEMORY_POLICY_AUTOSAVE: String(profile.policy.autosave), MEMORY_POLICY_RECALL: profile.policy.recall, MEMORY_POLICY_TEXT: profile.policy.customText ?? "" } : {} }).filter((entry) => typeof entry[1] === "string")),
+      env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: "local", OAK_PROFILE: "", ...profile.entityId ? { MEMORY_ENTITY_ID: profile.entityId } : {}, OAK_LOCAL_PROFILE_NAME: snapshot.name, OAK_LOCAL_PROFILES_FILE: this.config.sourceFile ?? "", ...profile.entityId && !profile.policy ? { MEMORY_POLICY_SCOPE: "everything", MEMORY_POLICY_AUTOSAVE: "true", MEMORY_POLICY_RECALL: "aggressive", MEMORY_POLICY_TEXT: "" } : {}, ...profile.policy ? { MEMORY_POLICY_SCOPE: profile.policy.scope ?? "invalid", MEMORY_POLICY_AUTOSAVE: String(profile.policy.autosave), MEMORY_POLICY_RECALL: profile.policy.recall, MEMORY_POLICY_TEXT: profile.policy.customText ?? "" } : {} }).filter((entry) => typeof entry[1] === "string")),
       stderr: "ignore"
     });
     try {
@@ -30628,7 +30628,8 @@ var ProfileSession = class {
     }
     if (["createMemory", "updateMemory", "mergeMemories", "deleteMemory", "updateMemoryLink", "adjustMemoryLinkStrength", "updateMemoryPolicy"].includes(name)) await this.initializePolicy(snapshot);
     const result = await this.withClient(snapshot, (client) => client.callTool({ name, arguments: args }));
-    if (name === "getMemoryPolicy" && !result.isError && args.initialize === true) this.policies.set(snapshot.name, result);
+    if ((name === "getMemoryPolicy" && args.initialize === true || name === "updateMemoryPolicy") && !result.isError) this.policies.set(snapshot.name, result);
+    if (name === "getMemoryPolicy" && result.isError) this.policies.delete(snapshot.name);
     return result;
   }
 };
@@ -30640,7 +30641,7 @@ async function startProfileBridge(config2, name, options = {}) {
   } catch {
     initialPolicy = { error: "Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy." };
   }
-  const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: "0.3.0" }, {
+  const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: "0.3.1" }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
     instructions: `${storeInstructions}
 ${attributionInstructions}
@@ -30749,11 +30750,13 @@ import fs2 from "node:fs";
 import os2 from "node:os";
 import path2 from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
+var policyConfigUnavailable = false;
 function loadEnvFile(filePath) {
   let content;
   try {
     content = fs2.readFileSync(filePath, "utf8");
-  } catch {
+  } catch (error2) {
+    if (error2.code !== "ENOENT") policyConfigUnavailable = true;
     return;
   }
   for (const rawLine of content.split("\n")) {
@@ -30844,6 +30847,7 @@ function parseBool(value, fallback, warn) {
   return fallback;
 }
 function loadPolicy(warn = console.error) {
+  if (policyConfigUnavailable) return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
   const rawRecall = readEnvVar("MEMORY_POLICY_RECALL") ?? DEFAULT_RECALL;
   let recall2 = rawRecall;
   if (!RECALL_LEVELS.includes(recall2)) {
@@ -30851,7 +30855,7 @@ function loadPolicy(warn = console.error) {
       `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 using "${DEFAULT_RECALL}".
   Valid values: ${RECALL_LEVELS.join(", ")}`
     );
-    recall2 = DEFAULT_RECALL;
+    return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
   }
   const unconfigured = (reason) => ({
     scope: null,
@@ -30859,6 +30863,8 @@ function loadPolicy(warn = console.error) {
     recall: recall2,
     reason
   });
+  const rawAutosave = readEnvVar("MEMORY_POLICY_AUTOSAVE");
+  if (rawAutosave !== void 0 && !["true", "1", "yes", "on", "false", "0", "no", "off"].includes(rawAutosave.toLowerCase())) return unconfigured("invalid");
   const rawScope = readEnvVar("MEMORY_POLICY_SCOPE");
   if (rawScope === void 0) return { scope: DEFAULT_SCOPE, autosave: parseBool(readEnvVar("MEMORY_POLICY_AUTOSAVE"), DEFAULT_AUTOSAVE, warn), recall: recall2, defaulted: true };
   const scope = rawScope;
@@ -35950,7 +35956,7 @@ If nothing appeared (e.g. no display available), open this file manually: ${file
 // src/tools/getMemoryPolicy.ts
 var REASON_HEADLINES = {
   unset: "The user has never chosen one \u2014 `MEMORY_POLICY_SCOPE` is not set anywhere.",
-  invalid: "`MEMORY_POLICY_SCOPE` is set to a value this server does not recognise \u2014 likely a typo.",
+  invalid: "An existing local store policy setting is invalid or its configuration could not be read. Repair this store policy; no broader default was substituted.",
   "custom-missing": "`MEMORY_POLICY_SCOPE=custom`, but the file holding the rule is missing or empty. Their rule needs rewriting \u2014 it has not been replaced with a broader one."
 };
 var getMemoryPolicyDescription = `Report the memory policy this server is actually running.
@@ -35976,6 +35982,7 @@ function registerGetMemoryPolicy(server, env) {
       const lines = [
         unset ? "# Local store policy unavailable" : "# Effective memory policy",
         `Selected local store: ${env.memoryEntityId}`,
+        ...process.env.OAK_LOCAL_PROFILE_NAME ? [`Local profile: ${process.env.OAK_LOCAL_PROFILE_NAME}. Policy is store-specific in profiles[profile].policy at ${process.env.OAK_LOCAL_PROFILES_FILE || "the selected profiles configuration"}. Edit that profile only; do not change shared local settings for another store.`] : [],
         ...policy.defaulted ? ["Documented automatic-management defaults apply to this new local store."] : [],
         "",
         ...unset ? [
@@ -36067,7 +36074,7 @@ async function main() {
   }
   const env = loadEnv();
   const server = new McpServer(
-    { name: "oak-memory-plugin", version: "0.3.0" },
+    { name: "oak-memory-plugin", version: "0.3.1" },
     { instructions: buildServerInstructions(env.policy) }
   );
   registerAllTools(server, env);

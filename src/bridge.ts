@@ -57,7 +57,7 @@ export class ProfileSession {
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true,applyPolicyToSelectedStore:true }), context, policy };
   }
   async withClient<T>(snapshot: Selection, run: (client: Client) => Promise<T>): Promise<T> {
-    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.3.0' });
+    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.3.1' });
     const profile = snapshot.profile;
     const transport = profile.backend === 'cloud'
       ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
@@ -67,7 +67,7 @@ export class ProfileSession {
         })
       : new StdioClientTransport({
           command: process.execPath, args: [fileURLToPath(import.meta.url)],
-          env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: 'local', OAK_PROFILE: '', ...(profile.entityId?{MEMORY_ENTITY_ID:profile.entityId}:{}), ...(profile.policy?{MEMORY_POLICY_SCOPE:profile.policy.scope??'invalid',MEMORY_POLICY_AUTOSAVE:String(profile.policy.autosave),MEMORY_POLICY_RECALL:profile.policy.recall,MEMORY_POLICY_TEXT:profile.policy.customText??''}:{}) }).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
+          env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: 'local', OAK_PROFILE: '', ...(profile.entityId?{MEMORY_ENTITY_ID:profile.entityId}:{}), OAK_LOCAL_PROFILE_NAME:snapshot.name,OAK_LOCAL_PROFILES_FILE:this.config.sourceFile??'',...(profile.entityId&&!profile.policy?{MEMORY_POLICY_SCOPE:'everything',MEMORY_POLICY_AUTOSAVE:'true',MEMORY_POLICY_RECALL:'aggressive',MEMORY_POLICY_TEXT:''}:{}),...(profile.policy?{MEMORY_POLICY_SCOPE:profile.policy.scope??'invalid',MEMORY_POLICY_AUTOSAVE:String(profile.policy.autosave),MEMORY_POLICY_RECALL:profile.policy.recall,MEMORY_POLICY_TEXT:profile.policy.customText??''}:{}) }).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
           stderr: 'ignore',
         });
     try { await client.connect(transport); return await run(client); }
@@ -126,7 +126,8 @@ export class ProfileSession {
     }
     if(['createMemory','updateMemory','mergeMemories','deleteMemory','updateMemoryLink','adjustMemoryLinkStrength','updateMemoryPolicy'].includes(name))await this.initializePolicy(snapshot);
     const result=await this.withClient(snapshot,client=>client.callTool({name,arguments:args}));
-    if(name==='getMemoryPolicy'&&!result.isError&&args.initialize===true)this.policies.set(snapshot.name,result);
+    if((name==='getMemoryPolicy'&&args.initialize===true||name==='updateMemoryPolicy')&&!result.isError)this.policies.set(snapshot.name,result);
+    if(name==='getMemoryPolicy'&&result.isError)this.policies.delete(snapshot.name);
     return result;
   }
 }
@@ -135,7 +136,7 @@ export async function startProfileBridge(config: Profiles, name: string, options
   const session = new ProfileSession(config, name);
   let initialPolicy:unknown;
   try{initialPolicy=await session.initializePolicy();}catch{initialPolicy={error:'Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy.'};}
-  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.0' }, {
+  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.1' }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
     instructions: `${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
   });

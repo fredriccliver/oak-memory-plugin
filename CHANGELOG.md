@@ -1,3 +1,7 @@
+# 0.3.1 / Cloud 0.1.6 / Desktop 0.1.2 — 2026-11-01
+
+Store-scoped proactive management throughout tasks; default automatic local policy; Cloud policy forwarding; bounded cursor listing; actual-tool capability checks and uncertain-write verification. Existing explicit store restrictions and host access controls remain enforced.
+
 # Changelog
 
 ## Desktop Cloud 0.1.1 (2026-11-01)
