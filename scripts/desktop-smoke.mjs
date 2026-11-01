@@ -18,6 +18,7 @@ const http = createServer(async (req,res) => {
   if (revoked || req.headers.authorization !== `Bearer ${key}` || req.headers['x-oak-graph'] !== graph) {res.writeHead(401).end();return;}
   const server = new McpServer({name:'fixture',version:'1'});
   server.registerTool('currentMemoryStore',{inputSchema:{}},async()=>result({storeId:wrongStore?'wrong':graph,name:'Fixture',role:reader?'reader':admin?'admin':'owner',authorUserId:'fixture-person'}));
+  server.registerTool('getMemoryPolicy',{inputSchema:{}},async()=>result({policy:{graphId:graph,rules:'Desktop cloud policy',recall:'proactive'},instructions:'Desktop cloud policy'}));
   const uri='ui://oak-memory/explorer-v1.html';
   if(resourcesSupported)server.registerResource('oak-ui',uri,{mimeType:'text/html;profile=mcp-app'},async()=>({contents:[{uri,mimeType:'text/html;profile=mcp-app',text:'<!doctype html><p>OAK UI fixture</p>',_meta:{ui:{csp:{connectDomains:[],resourceDomains:[]}}}}]}));
   server.registerTool('listMemories',{inputSchema:{},_meta:{ui:{resourceUri:uri}}},async()=>({...result({memories:[],graphId:graph}),_meta:{'oak/view':{version:1,kind:'list',memories:[]}}}));

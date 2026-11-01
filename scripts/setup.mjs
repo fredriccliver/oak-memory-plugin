@@ -238,7 +238,7 @@ async function ensureOllama() {
 // Kept in step with src/policy.ts by hand: this script runs before `npm run
 // build`, so it cannot import from the bundle it is about to produce.
 const DEFAULT_SCOPE = 'everything';
-const DEFAULT_RECALL = 'balanced';
+const DEFAULT_RECALL = 'aggressive';
 
 const SCOPES = [
   ['preferences', 'tone, workflow habits, tooling and style choices'],
@@ -332,6 +332,8 @@ async function resolvePolicy() {
   }
 
   const defaults = { scope: DEFAULT_SCOPE, autosave: true, recall: DEFAULT_RECALL };
+
+  if(!RECONFIGURE){info(`using automatic store defaults: ${describe(defaults)}`);return defaults;}
 
   // Piped stdin (CI, `curl | node`) has no one to answer, and blocking on a
   // question nobody sees would hang the install. Take the defaults and say so.

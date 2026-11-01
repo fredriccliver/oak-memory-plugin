@@ -1,90 +1,21 @@
 import type { Env } from '../env.js';
+import { z } from 'zod';
 import { listAll } from '../memoryClient.js';
-import { ageLabel, textResult } from './format.js';
-
-export const listMemoriesDescription = `List every stored memory and every link between them — the whole graph.
-
-**This is a full dump, not a search.** It takes no query and does no ranking; use recallMemory when you want
-the memories *relevant to something*. Use this one when the user wants to see or audit everything they have
-stored, or to inspect how memories are connected.
-
-**When to use**:
-- The user asks what you remember about them in general ("what do you know about me?", "show my memories")
-- The user wants to see the memory graph, its links, or orphaned/unlinked memories
-- Auditing before a cleanup pass
-
-**Output**: every memory with its UUID, content, strength, retrieval count and age, followed by the edge list
-and a summary of how connected the graph is. UUIDs are real and can be passed straight to updateMemory /
-updateMemoryLink / deleteMemory.`;
-
-export function registerListMemories(server: any, env: Env) {
-  server.registerTool(
-    'listMemories',
-    {
-      title: 'List all memories',
-      description: listMemoriesDescription,
-      inputSchema: {},
-    },
-    async () => {
-      const { memories, edges } = await listAll(env);
-
-      if (memories.length === 0) {
-        return textResult('No memories stored yet.');
-      }
-
-      // Undirected view: A->B and B->A are one connection to a reader, so collapse
-      // reciprocal pairs rather than reporting the same link twice.
-      const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
-      const uniquePairs = new Map<string, { from: string; to: string; type: string; mutual: boolean }>();
-      for (const edge of edges) {
-        const key = pairKey(edge.fromId, edge.toId);
-        const existing = uniquePairs.get(key);
-        if (existing) {
-          existing.mutual = true;
-        } else {
-          uniquePairs.set(key, { from: edge.fromId, to: edge.toId, type: edge.type, mutual: false });
-        }
-      }
-
-      const connected = new Set<string>();
-      for (const edge of edges) {
-        connected.add(edge.fromId);
-        connected.add(edge.toId);
-      }
-
-      const shortId = (id: string) => id.slice(0, 8);
-      const byId = new Map(memories.map(m => [m.id, m]));
-
-      const nodeLines = memories.map(memory => {
-        const strength = memory.strength !== undefined ? memory.strength.toFixed(2) : 'n/a';
-        const degree = edges.filter(e => e.fromId === memory.id || e.toId === memory.id).length;
-        return (
-          `- [${memory.id}] ${memory.content}\n` +
-          `    strength: ${strength} | retrieved: ${memory.retrievalCount ?? 0}x | ` +
-          `created: ${ageLabel(memory.createdAt)} | links: ${degree}`
-        );
-      });
-
-      const edgeLines = [...uniquePairs.values()].map(pair => {
-        const fromText = byId.get(pair.from)?.content.slice(0, 40) ?? '(unknown)';
-        const toText = byId.get(pair.to)?.content.slice(0, 40) ?? '(unknown)';
-        const arrow = pair.mutual ? '<->' : '-->';
-        return `- ${shortId(pair.from)} ${arrow} ${shortId(pair.to)} (${pair.type})  "${fromText}" ${arrow} "${toText}"`;
-      });
-
-      const orphans = memories.filter(m => !connected.has(m.id));
-
-      const sections = [
-        `${memories.length} memor${memories.length === 1 ? 'y' : 'ies'}, ${uniquePairs.size} link${uniquePairs.size === 1 ? '' : 's'}:`,
-        '',
-        nodeLines.join('\n'),
-        '',
-        uniquePairs.size > 0 ? `Links:\n${edgeLines.join('\n')}` : 'Links: none — every memory is currently isolated.',
-        '',
-        `Unlinked memories: ${orphans.length === 0 ? 'none' : `${orphans.length} (${orphans.map(o => shortId(o.id)).join(', ')})`}`,
-      ];
-
-      return textResult(sections.join('\n'));
-    },
-  );
+import { listPage, ListPageError } from '../listPage.js';
+import { textResult } from './format.js';
+export const listMemoriesDescription = "Browse memories and links in one store without ranking. Returns a bounded page (default 20 memories, maximum 100; links and response bytes are separately bounded), totals, hasMore and nextCursor. Continue with the same storeId and cursor until hasMore=false for a complete audit. Never infer an absent memory or link from one page. A changed graph invalidates the snapshot cursor: restart the audit. Use recallMemory for relevant context. Connection checks should use currentMemoryStore or memoryConnectionStatus without reading memory bodies.";
+export const listMemoriesInputSchema={limit:z.number().int().min(1).max(100).optional().describe('Memories per page: default 20, maximum 100.'),cursor:z.string().max(1000).optional().describe('nextCursor from the previous page in this same store and unchanged snapshot.')};
+export function registerListMemories(server:any,env:Env) {
+ server.registerTool('listMemories',{title:'Browse memories',description:listMemoriesDescription,inputSchema:listMemoriesInputSchema},async({limit,cursor}:{limit?:number;cursor?:string})=>{
+  const {memories,edges}=await listAll(env);
+  // Public fields only: vectors and private engine data never cross the tool boundary.
+  const nodes=memories.map(m=>({id:m.id,content:m.content,strength:m.strength,retrievalCount:m.retrievalCount,createdAt:m.createdAt,outgoingEdges:m.outgoingEdges,
+   }));
+  const links=edges.map(e=>({id:e.id,fromId:e.fromId,toId:e.toId,type:e.type,strength:e.strength,origin:e.origin}));
+  try {
+   const page=listPage(env.memoryEntityId,nodes,links,limit,cursor);
+   const text=JSON.stringify(page);
+   return {...textResult(text),structuredContent:page};
+  }catch(error){if(error instanceof ListPageError)return textResult(error.message,true);throw error;}
+ });
 }

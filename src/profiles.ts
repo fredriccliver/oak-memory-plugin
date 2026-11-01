@@ -2,11 +2,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-export type Profile = { backend: 'local' } | {
+import type { MemoryPolicy } from './policy.js';
+export type Profile = { backend: 'local'; entityId?:string; policy?:MemoryPolicy } | {
   backend: 'cloud'; endpoint: string; graphId: string; credentialEnv: string;
 };
 export type Profiles = { defaultProfile: string; profiles: Record<string, Profile> };
-export const attributionInstructions = `Memories belong to the selected graph, which may be shared. Before using memories, show the active graph, role, and authenticated identity using memoryConnectionStatus when available, otherwise cloud currentMemoryStore or local getMemoryPolicy. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
+export const attributionInstructions = `Memories belong to the selected graph, which may be shared. At connection or profile switch, verify the active graph, role, and authenticated identity using memoryConnectionStatus when available, otherwise cloud currentMemoryStore or local getMemoryPolicy. Authenticated author is provenance, not the semantic subject of a memory. Preserve original quotes verbatim; quoted "I" refers to its original speaker. Never guess actors or turn someone else's statement into the authenticated author's fact. After switching profiles, check context again. Never silently fall back to a local store.`;
 
 // Claude optional userConfig values can be empty or unexpanded on older clients.
 function optionalEnv(name: string): string | undefined {
@@ -25,6 +26,7 @@ export function readProfiles(): Profiles | undefined {
     if (!value.profiles || typeof value.defaultProfile !== 'string') throw new Error();
     for (const [name, profile] of Object.entries(value.profiles)) {
       if (!name || !profile || !['local', 'cloud'].includes(profile.backend)) throw new Error();
+      if(profile.backend==='local'){if(profile.entityId!==undefined&&(!profile.entityId.trim()||profile.entityId.length>200))throw new Error();if(profile.policy&&(!['preferences','important','everything','custom'].includes(String(profile.policy.scope))||typeof profile.policy.autosave!=='boolean'||!['minimal','balanced','aggressive'].includes(profile.policy.recall)||(profile.policy.scope==='custom'&&!profile.policy.customText?.trim())))throw new Error();}
       if (profile.backend === 'cloud') {
         const url = new URL(profile.endpoint);
         if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))) throw new Error();

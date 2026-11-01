@@ -45,7 +45,9 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
       // decision gets mistaken for a made one.
       const unset = policy.scope === null;
       const lines = [
-        unset ? '# No memory policy is set' : '# Effective memory policy',
+        unset ? '# Local store policy unavailable' : '# Effective memory policy',
+        `Selected local store: ${env.memoryEntityId}`,
+        ...(policy.defaulted?['Documented automatic-management defaults apply to this new local store.']:[]),
         '',
         ...(unset
           ? [

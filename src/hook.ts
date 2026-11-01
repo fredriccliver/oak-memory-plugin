@@ -33,7 +33,7 @@
  */
 
 import { loadPolicy } from './env.js';
-import { attributionInstructions } from './profiles.js';
+import { attributionInstructions, resolveBackend } from './profiles.js';
 import { buildTurnReminder } from './policy.js';
 
 async function readStdin(): Promise<string> {
@@ -54,7 +54,10 @@ async function main(): Promise<void> {
   // someone who was looking. Repeating it here would republish it every prompt.
   const policy = loadPolicy(() => {});
 
-  const reminder = buildTurnReminder(policy);
+  const selection=resolveBackend();
+  const reminder = selection?.profile.backend==='cloud'
+    ? 'Follow the selected CLOUD store policy loaded through getMemoryPolicy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation.'
+    : buildTurnReminder(selection?.profile.backend==='local'&&selection.profile.policy?selection.profile.policy:policy);
 
   process.stdout.write(
     JSON.stringify({
