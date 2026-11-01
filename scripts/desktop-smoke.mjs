@@ -85,8 +85,10 @@ try {
       const beforeMismatch=mutationRequests;assert.equal((await client.callTool({name:'createMemory',arguments:{}})).isError,true);assert.equal(mutationRequests,beforeMismatch);wrongStore=false;
       revoked=true;
       assert.equal((await client.callTool({name:'listMemories',arguments:{}})).isError,true);
+      const unavailableTool=(await client.listTools()).tools.find(t=>t.name==='listMemories');assert(unavailableTool);assert.equal(unavailableTool._meta?.ui,undefined);
       await assert.rejects(()=>client.listResources(),/OAK UI discovery failed/);
       await assert.rejects(()=>client.readResource({uri:'ui://oak-memory/explorer-v1.html'}));revoked=false;
+      assert.equal((await client.listTools()).tools.find(t=>t.name==='listMemories')._meta.ui.resourceUri,'ui://oak-memory/explorer-v1.html');
       assert(!stderr.includes(key));
     } finally {await client.close();}
   }

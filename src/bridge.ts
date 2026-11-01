@@ -79,7 +79,12 @@ export class ProfileSession {
     } catch (error) {
       // Discovery cache grants no access: every call still authenticates anew.
       const previous = this.toolLists.get(snapshot.name);
-      if (previous) return previous;
+      if (previous) return { ...previous, tools: previous.tools.map(tool => {
+        // Keep safe discovery available during an outage, without advertising an unreadable UI.
+        const meta = { ...tool._meta };
+        for (const field of ['ui', 'ui/resourceUri', 'openai/outputTemplate', 'openai/widgetAccessible']) delete meta[field];
+        return { ...tool, _meta: meta };
+      }) };
       throw error;
     }
   }

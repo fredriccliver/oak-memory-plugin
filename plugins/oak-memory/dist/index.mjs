@@ -30761,7 +30761,11 @@ var ProfileSession = class {
       return listed;
     } catch (error2) {
       const previous = this.toolLists.get(snapshot.name);
-      if (previous) return previous;
+      if (previous) return { ...previous, tools: previous.tools.map((tool) => {
+        const meta = { ...tool._meta };
+        for (const field of ["ui", "ui/resourceUri", "openai/outputTemplate", "openai/widgetAccessible"]) delete meta[field];
+        return { ...tool, _meta: meta };
+      }) };
       throw error2;
     }
   }

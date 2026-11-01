@@ -1,6 +1,6 @@
 # Claude Desktop의 로컬 MCP로 클라우드 저장소 사용하기
 
-2026-10-11 기준 전용 데스크톱 확장은 로컬 stdio 프로그램을 실행하고 OAK의 HTTPS MCP 서버에 개인 저장소 키로 연결한다. 기억은 OAK 클라우드에 남는다. 로컬 데이터베이스, Docker, Ollama와 별도 Node 설치는 필요하지 않다. 원격 OAuth 플러그인 `oak-memory-cloud`, 기존 로컬 플러그인 `oak-memory`와 구분하기 위해 이름은 `oak-desktop-cloud`다.
+2026-11-01 기준 전용 데스크톱 확장은 로컬 stdio 프로그램을 실행하고 OAK의 HTTPS MCP 서버에 개인 저장소 키로 연결한다. 기억은 OAK 클라우드에 남는다. 로컬 데이터베이스, Docker, Ollama와 별도 Node 설치는 필요하지 않다. 원격 OAuth 플러그인 `oak-memory-cloud`, 기존 로컬 플러그인 `oak-memory`와 구분하기 위해 이름은 `oak-desktop-cloud`다.
 
 ## 설치와 설정
 
@@ -48,3 +48,7 @@ Claude Desktop에 전달한다. 지원되는 Claude 버전에서는 기억 목�
 
 UI 리소스 기능 자체가 없는 이전 서버의 `MethodNotFound`만 빈 리소스 목록으로 처리한다.
 인증·네트워크·서버 오류는 연결 실패로 표시하며 숨기지 않는다.
+
+연결 실패로 이전 도구 목록을 표시할 때에는 UI 힌트를 제거한다. 연결이 회복되어
+도구 목록을 다시 조회하면 서버의 UI metadata를 다시 사용한다. 캐시는 접근 권한을
+부여하지 않으며 실제 도구·리소스 호출은 매번 다시 인증한다.
