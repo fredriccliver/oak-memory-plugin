@@ -583,3 +583,11 @@ The server prerequisite is already deployed: [backend #71](https://github.com/fr
 An existing installation with no MEMORY_POLICY_SCOPE will now use everything + autosave=true + proactive recall after restart, instead of refusing writes. To retain request-only changes, set MEMORY_POLICY_AUTOSAVE=false before updating; explicit scopes, autosave=false and recall restrictions remain respected. Invalid/unreadable existing custom policies still suspend all mutations. Cloud policies are edited on their Cloud store, not in local settings.
 
 Listing snapshots cover content and link topology. Recall usage counters and strength reinforcement are live metadata and do not invalidate a cursor. Content, record deletion/insertion and typed-link structural changes do invalidate it.
+
+### Upgrading local stores to 0.3.1
+
+An absent policy now defaults to automatic management (`everything`, autosave enabled, aggressive recall). Existing explicit restrictions remain. To retain manual saving, set `MEMORY_POLICY_AUTOSAVE=false` before upgrading. A local profile with its own `entityId` has an independent `policy`; put restrictions there rather than relying on another store’s environment policy.
+
+The local database connection must own the memory schema and be permitted to create tables, functions, indexes and triggers, as required by local engine setup. The first bounded listing installs its revision tracker in that same local schema. Restricted hosted database roles need the schema owner to provision it first; failure is reported without a fallback full dump. Cloud stores use the separate hosted migration path.
+
+Refresh the host’s MCP tools after upgrading. `listMemories` is paginated: follow `nextCursor` until `hasMore=false`, targeting the same store. One page is not a complete inventory.
