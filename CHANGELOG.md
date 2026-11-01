@@ -9,7 +9,7 @@
 
 - Relay hosted OAK MCP Apps resources and tool metadata into Claude Desktop.
 
-# Desktop Cloud 0.2.0 preparation (2026-10-29)
+## Desktop Cloud 0.2.0 preparation (2026-10-29)
 
 - Accept a sensitive Stores JSON list alongside the existing single-store pair, with duplicate and malformed configuration rejected before startup.
 - Search configured stores together or route to an explicit store ID, preserving per-store MCP content and source attribution; disclose partial failures.
@@ -17,7 +17,7 @@
 - Preserve the existing single-store bridge, read-only default, disabled autosave, and no-local-fallback behavior.
 - Verify the packaged extension with four-store tests plus existing regression tests and official MCPB manifest validation. Actual Claude installation and authenticated production calls remain separate verification steps; this entry describes a prepared package.
 
-# Desktop Cloud 0.1.0 (2026-10-11)
+## Desktop Cloud 0.1.0 (2026-10-11)
 
 - Add an installable MCPB for local stdio access to OAK cloud stores, with secure personal-key settings and explicit write opt-in.
 - Hide mutation tools for reader stores and keep unexpected optional settings read-only.

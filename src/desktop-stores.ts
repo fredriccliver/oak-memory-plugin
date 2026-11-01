@@ -107,6 +107,7 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
         const store = await verify(next);
         if (attempt !== revision) return failure();
         active = next;
+        await server.notification({ method: 'notifications/tools/list_changed' }).catch(() => {});
         await server.notification({ method: 'notifications/resources/list_changed' }).catch(() => {});
         return text({ profile: next.name, backend: 'cloud', sessionOnly: true, store });
       }

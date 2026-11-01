@@ -8,6 +8,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { ToolListChangedNotificationSchema, ResourceListChangedNotificationSchema } from '@modelcontextprotocol/sdk/types.js';
 import { build } from 'esbuild';
 import { pathToFileURL } from 'node:url';
 const temp = mkdtempSync(path.join(os.tmpdir(), 'oak-desktop-stores-'));
@@ -54,6 +55,9 @@ try {
   writeFileSync(entry, readFileSync(entry, 'utf8').replaceAll('https://www.openaikits.com/api/mcp', `http://127.0.0.1:${http.address().port}/api/mcp`));
   for (const allow of [false, true]) {
     const client = new Client({ name: 'desktop-stores-test', version: '1' });
+    let toolChanges = 0, resourceChanges = 0;
+    client.setNotificationHandler(ToolListChangedNotificationSchema, () => { toolChanges++; });
+    client.setNotificationHandler(ResourceListChangedNotificationSchema, () => { resourceChanges++; });
     const transport = new StdioClientTransport({ command: process.execPath, args: [entry], env: { PATH: process.env.PATH, HOME: temp, OAK_CONFIG_DIR: temp, OAK_DESKTOP_STORES: JSON.stringify(stores), OAK_DESKTOP_ALLOW_CHANGES: String(allow), MEMORY_DATABASE_URL: 'postgres://must-not-be-used' }, stderr: 'pipe' });
     let stderr = ''; transport.stderr?.on('data', chunk => stderr += chunk);
     try {
@@ -100,6 +104,7 @@ try {
         assert.equal(writes.length, previous + (allow ? 1 : 0));
       }
       await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: stores[1].name } });
+      assert.equal(toolChanges, 1); assert.equal(resourceChanges, 1);
       assert.equal(parsed(await client.callTool({ name: 'currentMemoryStore', arguments: {} })).storeId, stores[1].storeId);
       assert.equal(parsed(await client.callTool({ name: 'recallMemory', arguments: {} })).stores.length, 4);
       revoked = true; mismatch = true;
