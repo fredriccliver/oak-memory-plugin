@@ -131,7 +131,7 @@ function parseBool(value, fallback, warn) {
   return fallback;
 }
 function loadPolicy(warn = console.error) {
-  if (policyConfigUnavailable) return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
+  if (policyConfigUnavailable) return { scope: null, autosave: false, recall: "minimal", reason: "invalid" };
   const rawRecall = readEnvVar("MEMORY_POLICY_RECALL") ?? DEFAULT_RECALL;
   let recall = rawRecall;
   if (!RECALL_LEVELS.includes(recall)) {
@@ -139,7 +139,7 @@ function loadPolicy(warn = console.error) {
       `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 suspending mutations until this store policy is repaired.
   Valid values: ${RECALL_LEVELS.join(", ")}`
     );
-    return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
+    return { scope: null, autosave: false, recall: "minimal", reason: "invalid" };
   }
   const unconfigured = (reason) => ({
     scope: null,
@@ -243,7 +243,7 @@ async function main() {
   const policy = loadPolicy(() => {
   });
   const selection = resolveBackend();
-  const reminder = selection?.profile.backend === "cloud" ? "Follow the selected CLOUD store policy loaded through getMemoryPolicy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation." : buildTurnReminder(selection?.profile.backend === "local" ? selection.profile.policy ?? (selection.profile.entityId ? { scope: "everything", autosave: true, recall: "aggressive" } : policy) : policy);
+  const reminder = selection?.profile.backend === "cloud" ? "Before any mutation, initialize this CLOUD store policy with getMemoryPolicy(initialize=true) if it has not been loaded in this session. Follow only that store policy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation." : buildTurnReminder(selection?.profile.backend === "local" ? selection.profile.policy ?? (selection.profile.entityId ? { scope: "everything", autosave: true, recall: "aggressive" } : policy) : policy);
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {

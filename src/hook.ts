@@ -56,7 +56,7 @@ async function main(): Promise<void> {
 
   const selection=resolveBackend();
   const reminder = selection?.profile.backend==='cloud'
-    ? 'Follow the selected CLOUD store policy loaded through getMemoryPolicy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation.'
+    ? 'Before any mutation, initialize this CLOUD store policy with getMemoryPolicy(initialize=true) if it has not been loaded in this session. Follow only that store policy. Proactively recall and manage memory throughout the task as that policy permits; never apply local policy settings to cloud stores. After switching, load the target store policy. If policy is unavailable, suspend mutations without substituting a default. Allowed work needs no repeated confirmation.'
     : buildTurnReminder(selection?.profile.backend==='local'?(selection.profile.policy??(selection.profile.entityId?{scope:'everything',autosave:true,recall:'aggressive'}:policy)):policy);
 
   process.stdout.write(

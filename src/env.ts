@@ -201,7 +201,7 @@ type Warn = (message: string) => void;
 
 /** Resolve this local store policy. Absent configuration uses automatic defaults; invalid existing policy fails closed. */
 export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
-  if(policyConfigUnavailable)return {scope:null,autosave:false,recall:DEFAULT_RECALL,reason:'invalid'};
+  if(policyConfigUnavailable)return {scope:null,autosave:false,recall:'minimal',reason:'invalid'};
   const rawRecall = readEnvVar('MEMORY_POLICY_RECALL') ?? DEFAULT_RECALL;
   let recall = rawRecall as RecallLevel;
   if (!RECALL_LEVELS.includes(recall)) {
@@ -209,11 +209,9 @@ export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
       `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" — suspending mutations until this store policy is repaired.\n` +
         `  Valid values: ${RECALL_LEVELS.join(', ')}`,
     );
-    return {scope:null,autosave:false,recall:DEFAULT_RECALL,reason:'invalid'};
+    return {scope:null,autosave:false,recall:'minimal',reason:'invalid'};
   }
-  // Recall does get a default: reading back what the user already chose to store
-  // costs them nothing but latency, so guessing wrong here is cheap in a way
-  // guessing a scope is not.
+  // Only absent recall settings receive the default. Invalid settings use minimal recall.
 
   // autosave is forced off alongside a null scope rather than defaulted, so
   // anything that reads the flag without checking the scope still fails closed.

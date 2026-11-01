@@ -1,6 +1,6 @@
 # 0.3.1 / Cloud 0.1.6 / Desktop 0.2.2 — 2026-11-01
 
-Store-scoped proactive management throughout tasks; default automatic local policy; Cloud policy forwarding; bounded cursor listing; actual-tool capability checks and uncertain-write verification. Existing explicit store restrictions and host access controls remain enforced.
+Store-scoped proactive management throughout tasks; default automatic local policy; Cloud policy forwarding; bounded cursor listing; actual-tool capability checks and uncertain-write verification. Existing explicit store restrictions and host access controls remain enforced. Upgrade note: absent local scope now enables automatic management; set MEMORY_POLICY_AUTOSAVE=false before upgrading to retain manual saving.
 
 # Changelog
 

@@ -30850,7 +30850,7 @@ function parseBool(value, fallback, warn) {
   return fallback;
 }
 function loadPolicy(warn = console.error) {
-  if (policyConfigUnavailable) return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
+  if (policyConfigUnavailable) return { scope: null, autosave: false, recall: "minimal", reason: "invalid" };
   const rawRecall = readEnvVar("MEMORY_POLICY_RECALL") ?? DEFAULT_RECALL;
   let recall2 = rawRecall;
   if (!RECALL_LEVELS.includes(recall2)) {
@@ -30858,7 +30858,7 @@ function loadPolicy(warn = console.error) {
       `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" \u2014 suspending mutations until this store policy is repaired.
   Valid values: ${RECALL_LEVELS.join(", ")}`
     );
-    return { scope: null, autosave: false, recall: DEFAULT_RECALL, reason: "invalid" };
+    return { scope: null, autosave: false, recall: "minimal", reason: "invalid" };
   }
   const unconfigured = (reason) => ({
     scope: null,
