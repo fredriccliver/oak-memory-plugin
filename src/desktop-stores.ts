@@ -1,0 +1,148 @@
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode, type Tool } from '@modelcontextprotocol/sdk/types.js';
+import { ProfileSession } from './bridge.js';
+import { attributionInstructions, type Profiles } from './profiles.js';
+import { storeInstructions, recoveryInstructions } from './policy.js';
+
+const text = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
+const failure = () => ({ ...text({ error: 'Store request failed. Check configuration, key, membership and connectivity. No fallback was used.' }), isError: true });
+const reads = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks', 'getMemoryPolicy']);
+const searches = new Set(['recallMemory', 'listMemories']);
+const localNames = new Set(['listMemoryStores', 'currentMemoryStore', 'getMemoryPolicy', 'listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus']);
+
+// A fixed session per store prevents selection changes from rerouting a pending call.
+export async function startDesktopStoresBridge(config: Profiles, allowChanges: boolean) {
+  const entries = Object.entries(config.profiles).map(([name, profile]) => {
+    if (profile.backend !== 'cloud') throw new Error('Desktop requires cloud stores');
+    return { name, storeId: profile.graphId, session: new ProfileSession(config, name) };
+  });
+  type Entry = typeof entries[number];
+  let active = entries.find(entry => entry.name === config.defaultProfile)!;
+  let revision = 0;
+  const verify = async (entry: Entry) => {
+    const result = await entry.session.callTool('currentMemoryStore');
+    if (result.isError || !Array.isArray(result.content)) throw new Error('Store unavailable');
+    const store = JSON.parse(result.content.filter(item => item.type === 'text').map(item => item.text).join(''));
+    if (store.storeId !== entry.storeId || !['owner', 'admin', 'editor', 'reader'].includes(store.role) || typeof store.authorUserId !== 'string') throw new Error('Store mismatch');
+    return store;
+  };
+  const status = async (entry: Entry) => {
+    try { return { profile: entry.name, storeId: entry.storeId, verified: true, store: await verify(entry) }; }
+    catch { return { profile: entry.name, storeId: entry.storeId, verified: false, error: 'Check this store’s key, membership and connectivity. No fallback was used.' }; }
+  };
+  const route = async (entry: Entry, name: string, args: Record<string, unknown>) => {
+    try {
+      if (!reads.has(name) && !allowChanges) return { ...text({ error: 'This desktop extension is read-only. Enable Allow memory changes in its settings to permit changes.' }), isError: true };
+      const store = await verify(entry);
+      if (!reads.has(name) && !['owner', 'admin', 'editor'].includes(store.role)) return { ...text({ error: 'The selected store role does not permit memory changes.' }), isError: true };
+      return await entry.session.callTool(name, { ...args, storeId: entry.storeId });
+    } catch { return failure(); }
+  };
+  const policies = await Promise.all(entries.map(async entry => {
+    try { return { storeId: entry.storeId, policy: await entry.session.initializePolicy() }; }
+    catch { return { storeId: entry.storeId, error: 'Store policy unavailable. Authorized reads may continue; suspend mutations for this store. Never substitute another policy.' }; }
+  }));
+  const server = new Server({ name: 'oak-desktop-cloud', version: '0.2.2' }, {
+    capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
+    instructions: `${storeInstructions}\n${recoveryInstructions}\nStore-scoped cloud policies: ${JSON.stringify(policies)}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
+  });
+  server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    const entry = active;
+    try { return await entry.session.listResources(); }
+    catch (error) {
+      if (error instanceof McpError && error.code === ErrorCode.MethodNotFound) return { resources: [] };
+      throw new McpError(ErrorCode.InternalError, 'OAK UI discovery failed. Check the selected cloud store and connection.');
+    }
+  });
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({ resourceTemplates: [] }));
+  server.setRequestHandler(ReadResourceRequestSchema, async request => {
+    if (!request.params.uri.startsWith('ui://oak-memory/')) throw new McpError(ErrorCode.InvalidParams, 'Only OAK cloud UI resources are available.');
+    const entry = active;
+    try { return await entry.session.readResource(request.params.uri); }
+    catch { throw new McpError(ErrorCode.InternalError, 'OAK UI unavailable. Check the selected cloud store and connection.'); }
+  });
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    const discovered = await Promise.all(entries.map(async entry => {
+      try {
+        const listed = await entry.session.listTools();
+        let writable = false;
+        if (allowChanges) {
+          try { writable = ['owner', 'admin', 'editor'].includes((await verify(entry)).role); } catch { /* Fail closed for this store. */ }
+        }
+        return listed.tools.filter(tool => !localNames.has(tool.name) && (reads.has(tool.name) || writable));
+      } catch { return []; }
+    }));
+    const tools = new Map<string, Tool>();
+    for (const tool of discovered.flat()) {
+      const { outputSchema: _outputSchema, ...rest } = tool; // Search output is grouped by store.
+      const required = (tool.inputSchema.required ?? []).filter(field => field !== 'storeId');
+      if (!searches.has(tool.name)) required.push('storeId');
+      tools.set(tool.name, { ...rest,
+        description: `${tool.description ?? ''}\n${searches.has(tool.name) ? 'Omit storeId to search all configured stores; results are grouped and attributed by store.' : 'Provide the configured storeId. Only that store is contacted.'}`,
+        inputSchema: { ...tool.inputSchema, properties: { ...tool.inputSchema.properties, storeId: { type: 'string', enum: entries.map(entry => entry.storeId), description: 'Target cloud store ID.' } }, required },
+      });
+    }
+    const empty = { type: 'object' as const, properties: {}, additionalProperties: false };
+    return { tools: [...tools.values(),
+      { name: 'listMemoryStores', description: 'List only configured stores, verifying each store’s identity and role. Failed stores remain visible with verified:false; credentials are never returned.', inputSchema: empty },
+      { name: 'listMemoryProfiles', description: 'List configured cloud profiles and store IDs without credentials.', inputSchema: empty },
+      { name: 'memoryConnectionStatus', description: 'Verify every configured store and show the selected profile.', inputSchema: empty },
+      { name: 'getMemoryPolicy', description: 'Read or initialize the selected cloud store policy. Supply storeId to choose a configured store; no local policy is applied.', inputSchema: { type: 'object', properties: { storeId: { type: 'string', enum: entries.map(entry => entry.storeId) }, initialize: { type: 'boolean' }, history: { type: 'boolean' } }, additionalProperties: false } },
+      { name: 'currentMemoryStore', description: 'Verify the specified store, or the selected profile when storeId is omitted.', inputSchema: { type: 'object', properties: { storeId: { type: 'string', enum: entries.map(entry => entry.storeId) } }, additionalProperties: false } },
+      { name: 'selectMemoryProfile', description: 'Verify and select a profile for status and single-store reads in this session. Searches without storeId still search all configured stores; mutations require storeId.', inputSchema: { type: 'object', properties: { profile: { type: 'string', enum: entries.map(entry => entry.name) } }, required: ['profile'], additionalProperties: false } },
+    ] };
+  });
+  server.setRequestHandler(CallToolRequestSchema, async request => {
+    const name = request.params.name;
+    const args = request.params.arguments ?? {};
+    try {
+      if (name === 'listMemoryProfiles') return text(entries.map(entry => ({ name: entry.name, backend: 'cloud', graphId: entry.storeId, active: entry === active })));
+      if (name === 'listMemoryStores' || name === 'memoryConnectionStatus') {
+        const stores = await Promise.all(entries.map(status));
+        return { ...text({ profile: active.name, backend: 'cloud', stores, partialFailure: stores.some(store => !store.verified) }), ...(stores.every(store => !store.verified) ? { isError: true } : {}) };
+      }
+      if (name === 'selectMemoryProfile') {
+        const attempt = ++revision;
+        const next = entries.find(entry => entry.name === args.profile);
+        if (!next) return failure();
+        const store = await verify(next);
+        if (attempt !== revision) return failure();
+        const policy = await next.session.initializePolicy();
+        if (attempt !== revision) return failure();
+        active = next;
+        await server.notification({ method: 'notifications/tools/list_changed' }).catch(() => {});
+        await server.notification({ method: 'notifications/resources/list_changed' }).catch(() => {});
+        return text({ profile: next.name, backend: 'cloud', sessionOnly: true, store, policy });
+      }
+      const supplied = Object.hasOwn(args, 'storeId');
+      const requestedStoreId = typeof args.storeId === 'string' ? args.storeId.trim().toLowerCase() : undefined;
+      const target = supplied ? entries.find(entry => entry.storeId === requestedStoreId) : undefined;
+      if (supplied && !target) return failure(); // Never broaden an invalid explicit target.
+      if (name === 'currentMemoryStore') return text(await verify(target ?? active));
+      if (name === 'getMemoryPolicy') return await route(target ?? active, name, args);
+      if (name === 'listMemories' && args.cursor && !target) return { ...text({ error: 'A listing cursor requires its explicit storeId. No store was contacted.' }), isError: true };
+      if (searches.has(name)) {
+        const stores = await Promise.all((target ? [target] : entries).map(async entry => {
+          const result = await route(entry, name, args);
+          return { storeId: entry.storeId, profile: entry.name, isError: result.isError === true, result };
+        }));
+        const partialFailure = stores.some(store => store.isError);
+        // Preserve the existing grouped text contract. Graphical browsing is scoped
+        // to one store, so edges and memories never acquire another store's identity.
+        const sourceMeta = target && '_meta' in stores[0].result ? stores[0].result._meta : undefined;
+        const sourceView = sourceMeta?.['oak/view'];
+        const scope = { version: 1, kind: 'scope', memories: [], partial: partialFailure };
+        const view = sourceView && typeof sourceView === 'object' && !Array.isArray(sourceView) ? sourceView : scope;
+        return { ...text({ stores, partialFailure }),
+          _meta: { ...sourceMeta, 'oak/view': { ...view, stores: entries.map(entry => ({ id: entry.storeId, name: entry.name })) } },
+          ...(stores.every(store => store.isError) ? { isError: true } : {}),
+        };
+      }
+      if (!target) return { ...text({ error: 'An explicit configured storeId is required for this tool. No store was contacted.' }), isError: true };
+      return await route(target, name, args);
+    } catch { return failure(); }
+  });
+  await server.connect(new StdioServerTransport());
+  return server;
+}

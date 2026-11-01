@@ -2,8 +2,8 @@
   "manifest_version": "0.3",
   "name": "oak-desktop-cloud",
   "display_name": "OAK.memory Cloud via Desktop",
-  "version": "0.1.2",
-  "description": "Run OAK MCP locally and use your private cloud store. No local database or Docker required.",
+  "version": "0.2.2",
+  "description": "Run OAK MCP locally and search your private cloud stores. No local database or Docker required.",
   "author": {
     "name": "Fredric Cliver",
     "url": "https://github.com/fredriccliver"
@@ -36,7 +36,8 @@
       "env": {
         "OAK_DESKTOP_STORE_ID": "${user_config.store_id}",
         "OAK_DESKTOP_PERSONAL_KEY": "${user_config.personal_key}",
-        "OAK_DESKTOP_ALLOW_CHANGES": "${user_config.allow_changes}"
+        "OAK_DESKTOP_ALLOW_CHANGES": "${user_config.allow_changes}",
+        "OAK_DESKTOP_STORES": "${user_config.stores}"
       }
     }
   },
@@ -44,21 +45,28 @@
     "store_id": {
       "type": "string",
       "title": "Store ID",
-      "description": "Copy the store UUID from your OAK dashboard. This must match the store for your personal key.",
-      "required": true
+      "description": "Optional single-store UUID. Keep an existing setting, or configure Stores below.",
+      "required": false
     },
     "personal_key": {
       "type": "string",
       "title": "Personal key",
       "description": "Create a named connection key for this store in OAK. Enter it only here, never in chat. Claude stores this sensitive setting securely.",
-      "required": true,
+      "required": false,
       "sensitive": true
     },
     "allow_changes": {
       "type": "boolean",
       "title": "Allow memory changes",
-      "description": "Off by default. Turn on only to permit creating, editing, merging, deleting and policy changes in this store. Server roles, credits and Claude approvals still apply. Autosave stays off.",
+      "description": "Off by default. Turn on only to permit creating, editing, merging, deleting and policy changes in configured stores. Server roles, credits and Claude approvals still apply. Automatic management then follows each cloud store policy.",
       "default": false
+    },
+    "stores": {
+      "type": "string",
+      "title": "Stores (JSON)",
+      "description": "Optional list of cloud stores: [{\"name\":\"Personal\",\"storeId\":\"STORE_UUID\",\"personalKey\":\"STORE_KEY\"}]. Use each store\u2019s own key. Existing Store ID and Personal key may stay configured; do not repeat that store here. Enter keys only in these settings, never in chat.",
+      "sensitive": true,
+      "required": false
     }
   }
 }
