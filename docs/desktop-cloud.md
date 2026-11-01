@@ -4,12 +4,10 @@
 
 ## 설치와 설정
 
-대화형 UI를 지원하는 이번 변경은 **Desktop Cloud 0.1.1 공개 릴리스 준비본**이다.
-`npm run package:desktop`으로 `oak-desktop-cloud-0.1.1.mcpb`를 만들 수 있다. 아래
-0.1.0 링크는 기존 공개판이며 대화형 UI 리소스를 중계하지 않는다. 새 공개 릴리스가
-게시되기 전에는 배포된 0.1.1 파일 또는 원격 OAuth 연결로 UI를 사용한다.
+Desktop Cloud 0.1.1은 MCP Apps 대화형 UI를 지원한다. 기존 0.1.0을 사용하는 경우
+새 설치 파일로 업데이트하거나 원격 OAuth 연결을 사용한다.
 
-[Desktop Cloud 0.1.0 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.0)에서 `oak-desktop-cloud-0.1.0.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
+[Desktop Cloud 0.1.1 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.1)에서 `oak-desktop-cloud-0.1.1.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
 
 OAK 대시보드에서 연결할 저장소를 선택한다. 저장소의 연결 설정에서 ID를 복사하고 본인 계정의 이름 있는 연결 키를 만든다. 키는 생성할 때 한 번 표시되므로 확장 설정의 Personal key에 직접 입력한다. 채팅이나 저장소 파일에 키를 붙이지 않는다. Store ID에는 같은 저장소의 UUID를 입력한다. Claude는 민감한 설정을 운영체제의 보안 저장소에 보관한다.
 
@@ -47,3 +45,6 @@ Claude Desktop에 전달한다. 지원되는 Claude 버전에서는 기억 목�
 패키지 stdio 테스트는 실제 HTTP fixture에서 HTML·메타데이터 전달, 읽기 전용 도구,
 임의 파일 URI 거부와 키 철회 후 리소스 접근 거부를 확인한다. 실제 사용자 Desktop의
 렌더링과 공개 릴리스 여부는 이 검사와 별개다.
+
+UI 리소스 기능 자체가 없는 이전 서버의 `MethodNotFound`만 빈 리소스 목록으로 처리한다.
+인증·네트워크·서버 오류는 연결 실패로 표시하며 숨기지 않는다.
