@@ -4,6 +4,11 @@
 
 ## 설치와 설정
 
+대화형 UI를 지원하는 이번 변경은 **Desktop Cloud 0.1.1 공개 릴리스 준비본**이다.
+`npm run package:desktop`으로 `oak-desktop-cloud-0.1.1.mcpb`를 만들 수 있다. 아래
+0.1.0 링크는 기존 공개판이며 대화형 UI 리소스를 중계하지 않는다. 새 공개 릴리스가
+게시되기 전에는 배포된 0.1.1 파일 또는 원격 OAuth 연결로 UI를 사용한다.
+
 [Desktop Cloud 0.1.0 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases/tag/desktop-cloud-v0.1.0)에서 `oak-desktop-cloud-0.1.0.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
 
 OAK 대시보드에서 연결할 저장소를 선택한다. 저장소의 연결 설정에서 ID를 복사하고 본인 계정의 이름 있는 연결 키를 만든다. 키는 생성할 때 한 번 표시되므로 확장 설정의 Personal key에 직접 입력한다. 채팅이나 저장소 파일에 키를 붙이지 않는다. Store ID에는 같은 저장소의 UUID를 입력한다. Claude는 민감한 설정을 운영체제의 보안 저장소에 보관한다.
@@ -20,7 +25,8 @@ Allow memory changes는 기본으로 꺼져 있다. 켠 경우에만 저장, 수
 
 ## 개발과 검증
 
-`npm run package:desktop`은 manifest와 묶인 서버, LICENSE, NOTICE만 포함한 MCPB를 만든다. `npm run test:desktop`은 실제 패키지를 풀고 stdio로 실행해 격리 HTTP 서버와 통신한다. 읽기, 쓰기 선택, 미등록 변경 도구 차단, reader 거부, 키 철회와 저장소 불일치를 검증한다. 테스트 복사본의 주소만 루프백으로 바꾸며 배포본은 운영 HTTPS 주소로 고정된다. 운영 데이터나 크레딧을 사용하지 않는다. 별도로 공식 MCPB 검증기를 로컬에서 실행해 manifest 형식을 확인했다. CI 검사는 패키징과 stdio 시나리오이며 공식 검증기 실행과 구분한다.
+`npm run package:desktop`은 manifest와 묶인 서버, LICENSE, NOTICE만 포함한 MCPB를 만든다. `npm run test:desktop`은 실제 패키지를 풀고 stdio로 실행해 격리 HTTP 서버와 통신한다. 읽기, 쓰기 선택, 미등록 변경 도구 차단, reader 거부, 키 철회와 저장소 불일치, UI 리소스·메타데이터 중계, 임의 URI 거부와 철회 후
+리소스 목록·읽기 실패를 검증한다. 테스트 복사본의 주소만 루프백으로 바꾸며 배포본은 운영 HTTPS 주소로 고정된다. 운영 데이터나 크레딧을 사용하지 않는다. 별도로 공식 MCPB 검증기를 로컬에서 실행해 manifest 형식을 확인했다. CI 검사는 패키징과 stdio 시나리오이며 공식 검증기 실행과 구분한다.
 
 실제 사용자 Desktop의 설치, 보안 저장소 저장과 운영 쓰기 검증은 이 자동 테스트와 별개다. 사용자의 기존 `oak-memory` 읽기 성공을 새 확장 검증으로 기록하지 않는다.
 

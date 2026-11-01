@@ -30806,16 +30806,20 @@ ${attributionInstructions}${options.readOnly ? "\nThis connection permits reads 
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     try {
       return await session.listResources();
-    } catch {
-      return { resources: [] };
+    } catch (error2) {
+      if (error2 instanceof McpError && error2.code === ErrorCode.MethodNotFound) return { resources: [] };
+      throw new McpError(ErrorCode.InternalError, "OAK UI discovery failed. Check the active cloud profile and connection.");
     }
   });
   server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({ resourceTemplates: [] }));
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    if (session.snapshot().profile.backend !== "cloud" || !request.params.uri.startsWith("ui://oak-memory/")) {
+      throw new McpError(ErrorCode.InvalidParams, "Only OAK cloud UI resources are available.");
+    }
     try {
       return await session.readResource(request.params.uri);
     } catch {
-      throw new McpError(ErrorCode.InvalidParams, "OAK UI unavailable. Check the active cloud profile and connection.");
+      throw new McpError(ErrorCode.InternalError, "OAK UI unavailable. Check the active cloud profile and connection.");
     }
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => {

@@ -122,12 +122,18 @@ export async function startProfileBridge(config: Profiles, name: string, options
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     try { return await session.listResources(); }
-    catch { return { resources: [] }; }
+    catch (error) {
+      if (error instanceof McpError && error.code === ErrorCode.MethodNotFound) return { resources: [] };
+      throw new McpError(ErrorCode.InternalError, 'OAK UI discovery failed. Check the active cloud profile and connection.');
+    }
   });
   server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({ resourceTemplates: [] }));
   server.setRequestHandler(ReadResourceRequestSchema, async request => {
+    if (session.snapshot().profile.backend !== 'cloud' || !request.params.uri.startsWith('ui://oak-memory/')) {
+      throw new McpError(ErrorCode.InvalidParams, 'Only OAK cloud UI resources are available.');
+    }
     try { return await session.readResource(request.params.uri); }
-    catch { throw new McpError(ErrorCode.InvalidParams, 'OAK UI unavailable. Check the active cloud profile and connection.'); }
+    catch { throw new McpError(ErrorCode.InternalError, 'OAK UI unavailable. Check the active cloud profile and connection.'); }
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let remote;
