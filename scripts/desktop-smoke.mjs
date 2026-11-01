@@ -18,7 +18,9 @@ const http = createServer(async (req,res) => {
   if (revoked || req.headers.authorization !== `Bearer ${key}` || req.headers['x-oak-graph'] !== graph) {res.writeHead(401).end();return;}
   const server = new McpServer({name:'fixture',version:'1'});
   server.registerTool('currentMemoryStore',{inputSchema:{}},async()=>result({storeId:wrongStore?'wrong':graph,name:'Fixture',role:reader?'reader':admin?'admin':'owner',authorUserId:'fixture-person'}));
-  server.registerTool('listMemories',{inputSchema:{}},async()=>result({memories:[],graphId:graph}));
+  const uri='ui://oak-memory/explorer-v1.html';
+  server.registerResource('oak-ui',uri,{mimeType:'text/html;profile=mcp-app'},async()=>({contents:[{uri,mimeType:'text/html;profile=mcp-app',text:'<!doctype html><p>OAK UI fixture</p>',_meta:{ui:{csp:{connectDomains:[],resourceDomains:[]}}}}]}));
+  server.registerTool('listMemories',{inputSchema:{},_meta:{ui:{resourceUri:uri}}},async()=>({...result({memories:[],graphId:graph}),_meta:{'oak/view':{version:1,kind:'list',memories:[]}}}));
   for (const name of ['createMemory','updateMemoryPolicy','futureWriteTool']) server.registerTool(name,{inputSchema:{}},async()=>{ mutationRequests++; if(reader)return {...result({error:'Reader denied'}),isError:true}; writes++;return result({created:true});});
   const transport = new StreamableHTTPServerTransport({sessionIdGenerator:undefined});
   res.on('close',()=>{void transport.close();void server.close();});
@@ -60,7 +62,15 @@ try {
       admin=true;
       assert.equal((await client.callTool({name:'memoryConnectionStatus',arguments:{}})).isError,undefined);admin=false;
       assert.equal((await client.callTool({name:'memoryConnectionStatus',arguments:{}})).isError,undefined);
-      assert.equal((await client.callTool({name:'listMemories',arguments:{}})).isError,undefined);
+      const listed=await client.callTool({name:'listMemories',arguments:{}});
+      assert.equal(listed.isError,undefined);assert.equal(listed._meta['oak/view'].version,1);
+      assert.equal(tools.find(t=>t.name==='listMemories')._meta.ui.resourceUri,'ui://oak-memory/explorer-v1.html');
+      const resources=await client.listResources();assert.equal(resources.resources[0].uri,'ui://oak-memory/explorer-v1.html');
+      assert.deepEqual(await client.listResourceTemplates(),{resourceTemplates:[]});
+      const ui=(await client.readResource({uri:resources.resources[0].uri})).contents[0];
+      assert.equal(ui.mimeType,'text/html;profile=mcp-app');assert.match(ui.text,/OAK UI fixture/);
+      assert.deepEqual(ui._meta.ui.csp,{connectDomains:[],resourceDomains:[]});
+      await assert.rejects(()=>client.readResource({uri:'file:///private/secret'}));
       for(const name of ['createMemory','updateMemoryPolicy','futureWriteTool']) {
         const count=writes;const response=await client.callTool({name,arguments:{}});
         assert.equal(!!response.isError,!allow);assert.equal(writes,count+(allow?1:0));
@@ -73,9 +83,11 @@ try {
       assert.equal((await client.callTool({name:'memoryConnectionStatus',arguments:{}})).isError,true);
       const beforeMismatch=mutationRequests;assert.equal((await client.callTool({name:'createMemory',arguments:{}})).isError,true);assert.equal(mutationRequests,beforeMismatch);wrongStore=false;
       revoked=true;
-      assert.equal((await client.callTool({name:'listMemories',arguments:{}})).isError,true);revoked=false;
+      assert.equal((await client.callTool({name:'listMemories',arguments:{}})).isError,true);
+      assert.deepEqual(await client.listResources(),{resources:[]});
+      await assert.rejects(()=>client.readResource({uri:'ui://oak-memory/explorer-v1.html'}));revoked=false;
       assert(!stderr.includes(key));
     } finally {await client.close();}
   }
-  console.log('Desktop packaged stdio/cloud tests passed: reads, write opt-in, unknown mutation denial, reader denial, revocation, graph mismatch, no database fallback.');
+  console.log('Desktop packaged stdio/cloud tests passed: reads, write opt-in, unknown mutation denial, reader denial, revocation, graph mismatch, UI resource and metadata relay, revoked resource denial, no database fallback.');
 } finally {await new Promise(resolve=>http.close(resolve));rmSync(temp,{recursive:true,force:true});}

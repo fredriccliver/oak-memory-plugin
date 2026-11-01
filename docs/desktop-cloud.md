@@ -25,3 +25,19 @@ Allow memory changes는 기본으로 꺼져 있다. 켠 경우에만 저장, 수
 실제 사용자 Desktop의 설치, 보안 저장소 저장과 운영 쓰기 검증은 이 자동 테스트와 별개다. 사용자의 기존 `oak-memory` 읽기 성공을 새 확장 검증으로 기록하지 않는다.
 
 근거는 [Claude 로컬 MCP 안내](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop), [조직 확장 허용 목록](https://support.claude.com/en/articles/12592343-enabling-and-using-the-desktop-extension-allowlist), [MCPB manifest 규약](https://github.com/anthropics/mcpb/blob/main/MANIFEST.md)이다.
+
+
+## MCP Apps 화면 전달
+
+Desktop Cloud 0.1.1은 호스팅 서버의 OAK UI 리소스 목록·읽기와 도구 결과 메타데이터를
+Claude Desktop에 전달한다. 지원되는 Claude 버전에서는 기억 목록·검색 결과와 저장·수정
+완료를 대화 안의 OAK 화면으로 표시할 수 있다. 기존 0.1.0은 리소스를 전달하지 않으므로
+화면을 사용하려면 새 설치 파일로 업데이트하거나 원격 OAuth 연결을 사용한다.
+
+화면 파일을 읽을 때도 매번 현재 cloud profile의 인증을 사용한다. `ui://oak-memory/`
+리소스만 중계하며 로컬 파일, 로컬 저장소 또는 다른 profile로 대체하지 않는다. 서버
+응답의 CSP와 `_meta`를 보존한다. profile 변경 시 리소스 목록 변경도 알린다. 화면에서
+도구를 호출해도 기존 읽기 전용 설정과 현재 저장소 역할 검사를 통과해야 한다.
+패키지 stdio 테스트는 실제 HTTP fixture에서 HTML·메타데이터 전달, 읽기 전용 도구,
+임의 파일 URI 거부와 키 철회 후 리소스 접근 거부를 확인한다. 실제 사용자 Desktop의
+렌더링과 공개 릴리스 여부는 이 검사와 별개다.

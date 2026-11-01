@@ -3,7 +3,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { fileURLToPath } from 'node:url';
 import { attributionInstructions, credential, type Profile, type Profiles } from './profiles.js';
 import { loadPolicy } from './env.js';
@@ -83,6 +83,28 @@ export class ProfileSession {
       throw error;
     }
   }
+  async listResources() {
+    const snapshot = this.snapshot();
+    if (snapshot.profile.backend !== 'cloud') return { resources: [] };
+    return this.withClient(snapshot, async client => {
+      const resources = [];
+      let cursor: string | undefined;
+      do {
+        const page = await client.listResources(cursor ? { cursor } : undefined);
+        resources.push(...page.resources.filter(resource => resource.uri.startsWith('ui://oak-memory/')));
+        cursor = page.nextCursor;
+      } while (cursor);
+      return { resources };
+    });
+  }
+  async readResource(uri: string) {
+    const snapshot = this.snapshot();
+    if (snapshot.profile.backend !== 'cloud' || !uri.startsWith('ui://oak-memory/')) {
+      throw new McpError(ErrorCode.InvalidParams, 'Only OAK cloud UI resources are available.');
+    }
+    // Authenticate each resource read against the captured profile. No cache or fallback.
+    return this.withClient(snapshot, client => client.readResource({ uri }));
+  }
   async callTool(name: string, args: Record<string, unknown> = {}) {
     const snapshot = this.snapshot(); // capture before the first await
     if (snapshot.profile.backend === 'cloud' && ['createMemory', 'updateMemory', 'mergeMemories', 'deleteMemory', 'updateMemoryLink', 'adjustMemoryLinkStrength'].includes(name) && loadPolicy(() => {}).scope === null) {
@@ -95,8 +117,17 @@ export class ProfileSession {
 export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string; respectStoreRole?: boolean } = {}) {
   const session = new ProfileSession(config, name);
   const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.0' }, {
-    capabilities: { tools: { listChanged: true } },
+    capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
     instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
+  });
+  server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    try { return await session.listResources(); }
+    catch { return { resources: [] }; }
+  });
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({ resourceTemplates: [] }));
+  server.setRequestHandler(ReadResourceRequestSchema, async request => {
+    try { return await session.readResource(request.params.uri); }
+    catch { throw new McpError(ErrorCode.InvalidParams, 'OAK UI unavailable. Check the active cloud profile and connection.'); }
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let remote;
@@ -146,6 +177,7 @@ export async function startProfileBridge(config: Profiles, name: string, options
         if (typeof name !== 'string') return errorResult();
         const selected = await session.select(name);
         await server.notification({ method: 'notifications/tools/list_changed' }).catch(() => {});
+        await server.notification({ method: 'notifications/resources/list_changed' }).catch(() => {});
         return text(selected);
       }
       if (options.readOnly && !cloudReadTools.has(request.params.name)) {
