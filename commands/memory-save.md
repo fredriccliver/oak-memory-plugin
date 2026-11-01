@@ -1,15 +1,9 @@
 ---
-description: Explicitly save a fact to long-term memory
+description: Save a fact using the selected store policy
 ---
 
-The user wants this remembered explicitly, right now — don't wait for your own judgment about whether it's worth storing.
+Read the selected store policy with the actual getMemoryPolicy tool. Cloud uses the cloud store policy; local uses that local store policy. New local stores default to automatic management. An invalid or unavailable existing policy suspends mutations; do not replace it with a default. An explicit save request needs no repeated approval within that store policy. Do not silently override a store restriction; update that store policy only when the user requests it and permissions allow.
 
-This overrides the configured memory policy on both axes: store it even when autosave is off, and even when
-the fact falls outside the configured scope. Asking for something to be remembered *is* the decision the
-policy exists to make on their behalf — running this command means they've made it themselves.
-
-1. Call `recallMemory` with a short query derived from the text below to check whether a similar or conflicting memory already exists.
-2. If a similar memory exists, call `updateMemory` on it. Otherwise call `createMemory` with the text below as `content`.
-3. Confirm briefly what was stored.
+Use the actual exposed tool schemas. Check recallMemory for duplicates in this same store, then update the matching fact or create it. Report confirmed results only. If a response is uncertain, automatically inspect the store before retrying. Do not assume failure means unchanged.
 
 Text to remember: $ARGUMENTS

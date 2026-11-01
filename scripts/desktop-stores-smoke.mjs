@@ -26,6 +26,7 @@ const http = createServer(async (req, res) => {
   const role = store === stores[1] ? 'reader' : 'owner';
   server.registerResource('oak-ui', uiUri, { mimeType: 'text/html;profile=mcp-app' }, async () => ({ contents: [{ uri: uiUri, mimeType: 'text/html;profile=mcp-app', text: '<!doctype html><p>OAK UI fixture</p>', _meta: { ui: { csp: { connectDomains: [], resourceDomains: [] } } } }] }));
   server.registerTool('currentMemoryStore', { inputSchema: {} }, async () => result({ storeId: mismatch && store === stores[3] ? 'wrong' : store.storeId, name: store.name, role, authorUserId: `user-${store.name}` }));
+  server.registerTool('getMemoryPolicy', { inputSchema: {} }, async () => result({ storeId: store.storeId, policy: { rules: `Cloud policy for ${store.name}`, recall: 'proactive' } }));
   for (const name of ['recallMemory', 'listMemories']) server.registerTool(name, { inputSchema: {}, _meta: { ui: { resourceUri: uiUri } } }, async () => ({ ...result({ memories: [{ content: store.name }], storeId: store.storeId }), _meta: { 'oak/view': { version: 1, kind: 'list', storeId: store.storeId, memories: [{ id: 'same-id', content: store.name, storeId: store.storeId }], edges: [] } } }));
   for (const name of ['createMemory', 'futureWriteTool']) server.registerTool(name, { inputSchema: {} }, async () => { writes.push(store.storeId); return result({ storeId: store.storeId }); });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
@@ -62,6 +63,11 @@ try {
     let stderr = ''; transport.stderr?.on('data', chunk => stderr += chunk);
     try {
       await client.connect(transport);
+      assert(client.getInstructions().includes('Cloud policy for Store 1'));
+      assert(!client.getInstructions().includes('Autosave stays off'));
+      const ownPolicy = parsed(await client.callTool({ name: 'getMemoryPolicy', arguments: { storeId: stores[2].storeId } }));
+      assert.equal(ownPolicy.storeId, stores[2].storeId);
+      assert.equal(ownPolicy.policy.rules, 'Cloud policy for Store 3');
       const tools = (await client.listTools()).tools;
       assert.equal(tools.find(tool => tool.name === 'listMemories')._meta.ui.resourceUri, uiUri);
       assert.equal((await client.listResources()).resources[0].uri, uiUri);

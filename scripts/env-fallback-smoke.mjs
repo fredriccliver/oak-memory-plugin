@@ -68,7 +68,7 @@ fs.writeFileSync(
   path.join(unconfiguredRoot, '.config', 'oak-memory', 'oak-memory.env'),
   'MEMORY_DATABASE_URL=postgresql://unused\n',
 );
-const unconfiguredEnv = { ...childEnv, HOME: unconfiguredRoot };
+const unconfiguredEnv = { ...childEnv, HOME: unconfiguredRoot, MEMORY_POLICY_SCOPE:'invalid' };
 const unconfiguredTransport = new StdioClientTransport({
   command: 'node',
   args: [new URL('../dist/index.mjs', import.meta.url).pathname],
@@ -79,7 +79,7 @@ const unconfiguredClient = new Client({ name: 'oak-unconfigured-write-smoke', ve
 try {
   await unconfiguredClient.connect(unconfiguredTransport);
   const deniedMerge = await unconfiguredClient.callTool({name: 'mergeMemories', arguments: {targetMemoryId: '00000000-0000-4000-8000-000000000001', sourceMemoryIds: ['00000000-0000-4000-8000-000000000002'], content: 'Merged', expectedContents: [{memoryId: '00000000-0000-4000-8000-000000000001', content: 'A'}, {memoryId: '00000000-0000-4000-8000-000000000002', content: 'B'}]}});
-  if (!deniedMerge.isError || !deniedMerge.content[0].text.includes('no memory policy scope')) throw new Error('Unconfigured merge was not refused');
+  if (!deniedMerge.isError || !deniedMerge.content[0].text.includes('policy is unavailable')) throw new Error('Unconfigured merge was not refused');
   const result = await unconfiguredClient.callTool({
     name: 'updateMemory',
     arguments: { memoryId: '00000000-0000-0000-0000-000000000000', content: 'must not write' },
@@ -91,6 +91,8 @@ try {
   console.log('unconfigured memory content update guard: passed');
 
   for (const request of [
+    {name:'deleteMemory',arguments:{memoryId:'00000000-0000-4000-8000-000000000001'},label:'deletion'},
+    {name:'updateMemoryLink',arguments:{fromMemoryId:'00000000-0000-4000-8000-000000000001',toMemoryId:'00000000-0000-4000-8000-000000000002',action:'remove'},label:'link removal'},
     {
       name: 'createMemory',
       arguments: { content: 'must not write' },

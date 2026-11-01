@@ -18,6 +18,8 @@ import {
 // (imported above), which would shadow this interface in the type namespace.
 // Same collision `tools/format.ts` documents, resolved by renaming instead.
 import type { Memory as MemoryNode, MemoryEdge } from '@openaikits/memory/types';
+import {Pool} from 'pg';
+import {readSqlPage} from './sqlListing.js';
 import type { Env } from './env.js';
 import { LocalOllamaEmbeddingAdapter } from './localEmbeddingAdapter.js';
 
@@ -86,7 +88,28 @@ export async function listAll(env: Env): Promise<{ memories: MemoryNode[]; edges
 }
 
 export async function closeMemoryClient(): Promise<void> {
+  await listingPool?.end();listingPool=undefined;listingReady=undefined;
   if (memoryInstance) {
     await memoryInstance.close();
   }
+}
+
+let listingPool:Pool|undefined;
+let listingReady:Promise<void>|undefined;
+/** Existing local stores install the small revision tracker once; reads thereafter use keyset pages. */
+export async function listMemoryPage(env:Env,limit?:number,cursor?:string) {
+ await getMemoryClient(env);
+ if(!listingPool){listingPool=new Pool({connectionString:env.memoryDatabaseUrl,max:1,idleTimeoutMillis:1000});listingPool.on('error',()=>console.error('[oak-memory] listing connection failed'));}
+ if(!listingReady)listingReady=(async()=>{
+  const ready=await listingPool!.query("select to_regclass('memory.listing_revisions') as tracker");
+  if(!ready.rows[0].tracker) {
+   const db=await listingPool!.connect();
+   try{await db.query('begin');await db.query('select pg_advisory_xact_lock(7916501)');
+    if(!(await db.query("select to_regclass('memory.listing_revisions') as tracker")).rows[0].tracker)await db.query("create index if not exists listing_memories_entity_id on memory.memories(entity_id,id);\ncreate index if not exists listing_edges_entity_id on memory.edges(entity_id,id);\n-- Cheap snapshot invalidation permits bounded DB keyset reads without loading every vector/body.\ncreate table if not exists memory.listing_revisions (\n entity_id text primary key,\n revision uuid not null default gen_random_uuid()\n);\ncreate or replace function memory.invalidate_listing() returns trigger language plpgsql security invoker set search_path='' as $$\nbegin\n if TG_OP = 'UPDATE' then\n  if TG_TABLE_NAME = 'memories' then\n   if (new.id,new.entity_id,new.content) is not distinct from (old.id,old.entity_id,old.content) then return null; end if;\n  elsif TG_TABLE_NAME = 'edges' then\n   if (new.id,new.entity_id,new.from_id,new.to_id,new.type,new.origin) is not distinct from (old.id,old.entity_id,old.from_id,old.to_id,old.type,old.origin) then return null; end if;\n  end if;\n end if;\n if TG_OP <> 'INSERT' then\n  insert into memory.listing_revisions as r(entity_id) values(old.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n if TG_OP <> 'DELETE' and (TG_OP <> 'UPDATE' or new.entity_id is distinct from old.entity_id) then\n  insert into memory.listing_revisions as r(entity_id) values(new.entity_id)\n   on conflict(entity_id) do update set revision=gen_random_uuid();\n end if;\n return null;\nend $$;\ndrop trigger if exists invalidate_memory_listing on memory.memories;\ncreate trigger invalidate_memory_listing after insert or update or delete on memory.memories for each row execute function memory.invalidate_listing();\ndrop trigger if exists invalidate_edge_listing on memory.edges;\ncreate trigger invalidate_edge_listing after insert or update or delete on memory.edges for each row execute function memory.invalidate_listing();\ninsert into memory.listing_revisions(entity_id)\n select entity_id from memory.memories union select entity_id from memory.edges\n on conflict(entity_id) do nothing;\n\nalter table memory.listing_revisions enable row level security;\nrevoke all on memory.listing_revisions from public;\nrevoke all on function memory.invalidate_listing() from public;\n");
+    await db.query('commit');
+   }catch(error){await db.query('rollback');throw error;}finally{db.release();}
+  }
+ })().catch(error=>{listingReady=undefined;throw error;});
+ await listingReady;
+ return readSqlPage(listingPool,env.memoryEntityId,limit,cursor);
 }

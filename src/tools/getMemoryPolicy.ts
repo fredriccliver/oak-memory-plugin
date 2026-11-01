@@ -11,8 +11,8 @@ import { textResult } from './format.js';
 
 /** Says which of the three ways there is no policy, since each has its own fix. */
 const REASON_HEADLINES: Record<UnconfiguredReason, string> = {
-  unset: 'The user has never chosen one — `MEMORY_POLICY_SCOPE` is not set anywhere.',
-  invalid: '`MEMORY_POLICY_SCOPE` is set to a value this server does not recognise — likely a typo.',
+  unset: 'Legacy unavailable policy state. Current new local stores use automatic defaults; repair this existing store policy.',
+  invalid: 'An existing local store policy setting is invalid or its configuration could not be read. Repair this store policy; no broader default was substituted.',
   'custom-missing':
     '`MEMORY_POLICY_SCOPE=custom`, but the file holding the rule is missing or empty. Their rule ' +
     'needs rewriting — it has not been replaced with a broader one.',
@@ -21,8 +21,7 @@ const REASON_HEADLINES: Record<UnconfiguredReason, string> = {
 export const getMemoryPolicyDescription = `Report the memory policy this server is actually running.
 
 Reads nothing from the database — it reports the policy the server resolved at startup, which is not
-always what the config files say: a scope that is unset, misspelled, or \`custom\` with its rule file
-missing leaves the server with no policy at all, storing nothing. Use this rather than reading the
+always what the config files say: a missing initial scope uses automatic defaults; invalid settings or \`custom\` with an unreadable rule file suspend every mutation, including deletion and link removal. Use this rather than reading the
 config files when the user asks what is being remembered, or before helping them change it.
 
 **Output**: the effective scope and autosave setting, the exact rules currently given to the model, the
@@ -45,15 +44,18 @@ export function registerGetMemoryPolicy(server: any, env: Env) {
       // decision gets mistaken for a made one.
       const unset = policy.scope === null;
       const lines = [
-        unset ? '# No memory policy is set' : '# Effective memory policy',
+        unset ? '# Local store policy unavailable' : '# Effective memory policy',
+        `Selected local store: ${env.memoryEntityId}`,
+        ...(process.env.OAK_LOCAL_PROFILE_NAME?[`Local profile: ${process.env.OAK_LOCAL_PROFILE_NAME}. Policy is store-specific in profiles[profile].policy at ${process.env.OAK_LOCAL_PROFILES_FILE||'the selected profiles configuration'}. Edit that profile only; do not change shared local settings for another store.`]:[]),
+        ...(policy.defaulted?['Documented automatic-management defaults apply to this new local store.']:[]),
         '',
         ...(unset
           ? [
               REASON_HEADLINES[policy.reason ?? 'unset'],
               '',
               '**Memory creation and changes are restricted.** `createMemory`, `mergeMemories`, content updates, new links, and link-strength',
-              'changes are refused. Memories already stored remain readable; deletion and link removal stay',
-              'available for cleanup. No default scope has been substituted: the user has to choose one.',
+              'changes are refused, including deletion and link removal. Authorized reads remain available.',
+              'Repair this existing store policy; no broader default was substituted.',
             ]
           : [
               `- **Scope**: ${policy.scope}`,

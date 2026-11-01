@@ -28,7 +28,7 @@ export function adjustMemoryLinkStrengthDescription(policy: MemoryPolicy): strin
 
 **Why**: ${scopeRule(policy)}
 
-Deleting memories and removing links remain available for cleanup.`;
+Deletion and link removal remain suspended until this store policy is repaired.`;
   }
   return `Set the strength of an existing link between two memories.
 
@@ -70,7 +70,7 @@ export function registerAdjustMemoryLinkStrength(server: any, env: Env) {
       if (env.policy.scope === null) {
         return textResult(
           `Refused: no memory policy is set, so there is no scope permitting memory link changes.\n\n` +
-            `Nothing was changed. Deleting memories and removing links remain available for cleanup.`,
+            `Nothing was changed. Deletion and link removal remain suspended until this store policy is repaired.`,
           true,
         );
       }

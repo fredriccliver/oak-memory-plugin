@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "oak-desktop-cloud",
   "display_name": "OAK.memory Cloud via Desktop",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Run OAK MCP locally and search your private cloud stores. No local database or Docker required.",
   "author": {
     "name": "Fredric Cliver",
@@ -58,7 +58,7 @@
     "allow_changes": {
       "type": "boolean",
       "title": "Allow memory changes",
-      "description": "Off by default. Turn on only to permit creating, editing, merging, deleting and policy changes in configured stores. Server roles, credits and Claude approvals still apply. Autosave stays off.",
+      "description": "Off by default. Turn on only to permit creating, editing, merging, deleting and policy changes in configured stores. Server roles, credits and Claude approvals still apply. Automatic management then follows each cloud store policy.",
       "default": false
     },
     "stores": {

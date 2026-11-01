@@ -22,6 +22,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_AUTOSAVE,
+  DEFAULT_SCOPE,
   DEFAULT_RECALL,
   MEMORY_SCOPES,
   RECALL_LEVELS,
@@ -31,11 +32,13 @@ import {
   type UnconfiguredReason,
 } from './policy.js';
 
+let policyConfigUnavailable=false;
 function loadEnvFile(filePath: string): void {
   let content: string;
   try {
     content = fs.readFileSync(filePath, 'utf8');
-  } catch {
+  } catch(error) {
+    if((error as NodeJS.ErrnoException).code!=='ENOENT')policyConfigUnavailable=true;
     return;
   }
   for (const rawLine of content.split('\n')) {
@@ -196,38 +199,19 @@ function parseBool(value: string | undefined, fallback: boolean, warn: Warn): bo
  */
 type Warn = (message: string) => void;
 
-/**
- * Never fatal, unlike a missing database URL — exiting would strand the user
- * with no tools and an explanation only in a log they will never open. The
- * server stays up, keeps serving the memories they already have, and refuses
- * to write until it knows what it is allowed to write.
- *
- * No path here falls back to a scope. Every way of arriving without one — never
- * set, misspelled, or a custom rule whose file went missing — resolves to
- * scope: null, which reads to the model as "store nothing, go ask them". The
- * temptation is to keep the plugin useful by assuming a scope, but the only
- * assumption broad enough to be useful is also the one that collects the most,
- * so an unanswered question would quietly resolve into the answer the user was
- * least likely to have given. Better visibly inert than silently maximal.
- *
- * Exported because the Stop hook has to reach the same verdict as the server:
- * it fires on turns the server never sees, and a hook that read the policy its
- * own way could prompt for a write the user configured off. One reader, one
- * answer.
- */
+/** Resolve this local store policy. Absent configuration uses automatic defaults; invalid existing policy fails closed. */
 export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
+  if(policyConfigUnavailable)return {scope:null,autosave:false,recall:'minimal',reason:'invalid'};
   const rawRecall = readEnvVar('MEMORY_POLICY_RECALL') ?? DEFAULT_RECALL;
   let recall = rawRecall as RecallLevel;
   if (!RECALL_LEVELS.includes(recall)) {
     warn(
-      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" — using "${DEFAULT_RECALL}".\n` +
+      `[oak-memory-plugin] Unknown MEMORY_POLICY_RECALL "${rawRecall}" — suspending mutations until this store policy is repaired.\n` +
         `  Valid values: ${RECALL_LEVELS.join(', ')}`,
     );
-    recall = DEFAULT_RECALL;
+    return {scope:null,autosave:false,recall:'minimal',reason:'invalid'};
   }
-  // Recall does get a default: reading back what the user already chose to store
-  // costs them nothing but latency, so guessing wrong here is cheap in a way
-  // guessing a scope is not.
+  // Only absent recall settings receive the default. Invalid settings use minimal recall.
 
   // autosave is forced off alongside a null scope rather than defaulted, so
   // anything that reads the flag without checking the scope still fails closed.
@@ -238,15 +222,10 @@ export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
     reason,
   });
 
+  const rawAutosave=readEnvVar('MEMORY_POLICY_AUTOSAVE');
+  if(rawAutosave!==undefined&&!['true','1','yes','on','false','0','no','off'].includes(rawAutosave.toLowerCase()))return unconfigured('invalid');
   const rawScope = readEnvVar('MEMORY_POLICY_SCOPE');
-  if (rawScope === undefined) {
-    warn(
-      `[oak-memory-plugin] No MEMORY_POLICY_SCOPE set — storing nothing until there is one.\n` +
-        `  Run the memory configuration workflow, or \`npm run setup -- --reconfigure\`,\n` +
-        `  or set it in ${userEnvFile}. Valid values: ${MEMORY_SCOPES.join(', ')}`,
-    );
-    return unconfigured('unset');
-  }
+  if (rawScope === undefined) return {scope:DEFAULT_SCOPE,autosave:parseBool(readEnvVar('MEMORY_POLICY_AUTOSAVE'),DEFAULT_AUTOSAVE,warn),recall,defaulted:true};
 
   const scope = rawScope as MemoryScope;
   if (!MEMORY_SCOPES.includes(scope)) {
@@ -262,12 +241,12 @@ export function loadPolicy(warn: Warn = console.error): MemoryPolicy {
   if (scope !== 'custom') return { scope, autosave, recall };
 
   const policyFile = resolvePolicyFile();
-  let customText = '';
+  let customText = readEnvVar('MEMORY_POLICY_TEXT') ?? '';
   try {
     // The file's contents become the rule verbatim, so its own explanatory
     // header has to go — otherwise setup's instructions to the user get handed
     // to the model as if they were the user's policy.
-    customText = fs
+    customText ||= fs
       .readFileSync(policyFile, 'utf8')
       .replace(/<!--[\s\S]*?-->/g, '')
       .trim();

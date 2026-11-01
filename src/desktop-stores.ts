@@ -3,12 +3,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode, type Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ProfileSession } from './bridge.js';
 import { attributionInstructions, type Profiles } from './profiles.js';
-import { loadPolicy } from './env.js';
-import { buildServerInstructions } from './policy.js';
+import { storeInstructions, recoveryInstructions } from './policy.js';
 
 const text = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
 const failure = () => ({ ...text({ error: 'Store request failed. Check configuration, key, membership and connectivity. No fallback was used.' }), isError: true });
-const reads = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks']);
+const reads = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks', 'getMemoryPolicy']);
 const searches = new Set(['recallMemory', 'listMemories']);
 const localNames = new Set(['listMemoryStores', 'currentMemoryStore', 'getMemoryPolicy', 'listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus']);
 
@@ -40,9 +39,13 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
       return await entry.session.callTool(name, { ...args, storeId: entry.storeId });
     } catch { return failure(); }
   };
-  const server = new Server({ name: 'oak-desktop-cloud', version: '0.2.1' }, {
+  const policies = await Promise.all(entries.map(async entry => {
+    try { return { storeId: entry.storeId, policy: await entry.session.initializePolicy() }; }
+    catch { return { storeId: entry.storeId, error: 'Store policy unavailable. Authorized reads may continue; suspend mutations for this store. Never substitute another policy.' }; }
+  }));
+  const server = new Server({ name: 'oak-desktop-cloud', version: '0.2.2' }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
+    instructions: `${storeInstructions}\n${recoveryInstructions}\nStore-scoped cloud policies: ${JSON.stringify(policies)}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     const entry = active;
@@ -85,7 +88,7 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
       { name: 'listMemoryStores', description: 'List only configured stores, verifying each store’s identity and role. Failed stores remain visible with verified:false; credentials are never returned.', inputSchema: empty },
       { name: 'listMemoryProfiles', description: 'List configured cloud profiles and store IDs without credentials.', inputSchema: empty },
       { name: 'memoryConnectionStatus', description: 'Verify every configured store and show the selected profile.', inputSchema: empty },
-      { name: 'getMemoryPolicy', description: 'Read the desktop client memory policy and selected profile. Autosave stays off.', inputSchema: empty },
+      { name: 'getMemoryPolicy', description: 'Read or initialize the selected cloud store policy. Supply storeId to choose a configured store; no local policy is applied.', inputSchema: { type: 'object', properties: { storeId: { type: 'string', enum: entries.map(entry => entry.storeId) }, initialize: { type: 'boolean' }, history: { type: 'boolean' } }, additionalProperties: false } },
       { name: 'currentMemoryStore', description: 'Verify the specified store, or the selected profile when storeId is omitted.', inputSchema: { type: 'object', properties: { storeId: { type: 'string', enum: entries.map(entry => entry.storeId) } }, additionalProperties: false } },
       { name: 'selectMemoryProfile', description: 'Verify and select a profile for status and single-store reads in this session. Searches without storeId still search all configured stores; mutations require storeId.', inputSchema: { type: 'object', properties: { profile: { type: 'string', enum: entries.map(entry => entry.name) } }, required: ['profile'], additionalProperties: false } },
     ] };
@@ -99,23 +102,26 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
         const stores = await Promise.all(entries.map(status));
         return { ...text({ profile: active.name, backend: 'cloud', stores, partialFailure: stores.some(store => !store.verified) }), ...(stores.every(store => !store.verified) ? { isError: true } : {}) };
       }
-      if (name === 'getMemoryPolicy') return text({ policy: loadPolicy(() => {}), profile: active.name, backend: 'cloud', allowChanges });
       if (name === 'selectMemoryProfile') {
         const attempt = ++revision;
         const next = entries.find(entry => entry.name === args.profile);
         if (!next) return failure();
         const store = await verify(next);
         if (attempt !== revision) return failure();
+        const policy = await next.session.initializePolicy();
+        if (attempt !== revision) return failure();
         active = next;
         await server.notification({ method: 'notifications/tools/list_changed' }).catch(() => {});
         await server.notification({ method: 'notifications/resources/list_changed' }).catch(() => {});
-        return text({ profile: next.name, backend: 'cloud', sessionOnly: true, store });
+        return text({ profile: next.name, backend: 'cloud', sessionOnly: true, store, policy });
       }
       const supplied = Object.hasOwn(args, 'storeId');
       const requestedStoreId = typeof args.storeId === 'string' ? args.storeId.trim().toLowerCase() : undefined;
       const target = supplied ? entries.find(entry => entry.storeId === requestedStoreId) : undefined;
       if (supplied && !target) return failure(); // Never broaden an invalid explicit target.
       if (name === 'currentMemoryStore') return text(await verify(target ?? active));
+      if (name === 'getMemoryPolicy') return await route(target ?? active, name, args);
+      if (name === 'listMemories' && args.cursor && !target) return { ...text({ error: 'A listing cursor requires its explicit storeId. No store was contacted.' }), isError: true };
       if (searches.has(name)) {
         const stores = await Promise.all((target ? [target] : entries).map(async entry => {
           const result = await route(entry, name, args);

@@ -6,11 +6,9 @@ Call the `getMemoryPolicy` MCP tool (from the `oak-memory` server) first, always
 server actually resolved at startup, which is not necessarily what the config files say — read the files
 instead and you may report a policy that isn't running.
 
-**If it reports no policy set**, that outranks whatever $ARGUMENTS says — nothing is being stored, and the
-only thing worth doing is getting them to choose. Say so in a sentence, say which of the three reasons it is,
-and ask them for a scope, offering the four by name with what each one means. Don't editorialize about a
-default being in force; there isn't one. Then take their answer and apply it as a change below. If $ARGUMENTS
-already names a scope, just apply it — they've answered.
+A newly configured local store uses the automatic-management default (everything, autosave on, proactive recall). A failed or invalid existing policy is different: explain the repair and suspend mutations until it is restored. Cloud settings must be read and updated on that cloud store with its policy tool and required permissions; never edit local environment settings to change a cloud policy.
+
+If getMemoryPolicy identifies a local profile, edit only that profile policy in the reported profiles file (scope, autosave, recall, and customText when needed), preserving other profiles and credential references. Do not write shared environment policy keys for a store-specific profile. Changes apply after restarting the client.
 
 Otherwise, depending on $ARGUMENTS:
 
@@ -42,9 +40,7 @@ Requested change: $ARGUMENTS
 
 Notes:
 - Never edit `MEMORY_DATABASE_URL` or any other key here; this command is only about the policy.
-- Never pick a scope for them, however obvious it seems or however much they defer to you — an unset scope
-  is the one thing here you cannot supply on their behalf. Recommending one is fine; recording an answer
-  they never gave is not.
+- Use the documented automatic-management default for new local stores. Preserve explicit store restrictions and never substitute a default for an invalid or unavailable existing policy.
 - Changing the policy never touches stored memories. If they want to *remove* what's already there, that's
   `deleteMemory` — and say so explicitly rather than letting them assume a narrower scope retroactively
   forgets anything.

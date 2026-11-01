@@ -6,12 +6,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { fileURLToPath } from 'node:url';
 import { attributionInstructions, credential, type Profile, type Profiles } from './profiles.js';
-import { loadPolicy } from './env.js';
-import { buildServerInstructions } from './policy.js';
+import { storeInstructions, recoveryInstructions } from './policy.js';
 
 type Selection = Readonly<{ name: string; profile: Profile }>;
 const text = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
-const errorResult = () => ({ ...text({ error: 'Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used.' }), isError: true });
+const errorResult = () => ({ ...text({ error: 'Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used. If this was a mutation, its outcome is unverified: inspect this same store before any retry.' }), isError: true });
 const cloudReadTools = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks']);
 
 function verifiedCloudStore(context: Awaited<ReturnType<Client['callTool']>>, profile: Extract<Profile, { backend: 'cloud' }>) {
@@ -23,6 +22,13 @@ function verifiedCloudStore(context: Awaited<ReturnType<Client['callTool']>>, pr
 
 export class ProfileSession {
   private selection: Selection;
+  private policies=new Map<string,unknown>();
+  async initializePolicy(snapshot=this.snapshot()) {
+    if(this.policies.has(snapshot.name))return this.policies.get(snapshot.name);
+    const result=await this.withClient(snapshot,client=>client.callTool({name:'getMemoryPolicy',arguments:snapshot.profile.backend==='cloud'?{storeId:snapshot.profile.graphId,initialize:true}:{}}));
+    if(result.isError)throw new Error('Selected store policy unavailable');
+    this.policies.set(snapshot.name,result);return result;
+  }
   private switchRevision = 0;
   private toolLists = new Map<string, Awaited<ReturnType<Client['listTools']>>>();
   constructor(private config: Profiles, name: string) {
@@ -45,11 +51,13 @@ export class ProfileSession {
     if (context.isError) throw new Error('Memory profile verification failed');
     if (next.profile.backend === 'cloud') verifiedCloudStore(context, next.profile);
     if (revision !== this.switchRevision) throw new Error('Memory profile switch superseded by a newer request');
+    const policy=await this.initializePolicy(next);
+    if(revision!==this.switchRevision)throw new Error('Memory profile switch superseded by a newer request');
     this.selection = next;
-    return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true }), context };
+    return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true,applyPolicyToSelectedStore:true }), context, policy };
   }
   async withClient<T>(snapshot: Selection, run: (client: Client) => Promise<T>): Promise<T> {
-    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.3.0' });
+    const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.3.1' });
     const profile = snapshot.profile;
     const transport = profile.backend === 'cloud'
       ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
@@ -59,7 +67,7 @@ export class ProfileSession {
         })
       : new StdioClientTransport({
           command: process.execPath, args: [fileURLToPath(import.meta.url)],
-          env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: 'local', OAK_PROFILE: '' }).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
+          env: Object.fromEntries(Object.entries({ ...process.env, OAK_BACKEND: 'local', OAK_PROFILE: '', ...(profile.entityId?{MEMORY_ENTITY_ID:profile.entityId}:{}), OAK_LOCAL_PROFILE_NAME:snapshot.name,OAK_LOCAL_PROFILES_FILE:this.config.sourceFile??'',...(profile.entityId&&!profile.policy?{MEMORY_POLICY_SCOPE:'everything',MEMORY_POLICY_AUTOSAVE:'true',MEMORY_POLICY_RECALL:'aggressive',MEMORY_POLICY_TEXT:''}:{}),...(profile.policy?{MEMORY_POLICY_SCOPE:profile.policy.scope??'invalid',MEMORY_POLICY_AUTOSAVE:String(profile.policy.autosave),MEMORY_POLICY_RECALL:profile.policy.recall,MEMORY_POLICY_TEXT:profile.policy.customText??''}:{}) }).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
           stderr: 'ignore',
         });
     try { await client.connect(transport); return await run(client); }
@@ -72,7 +80,7 @@ export class ProfileSession {
       const tools = [];
       let cursor: string | undefined;
       do { const page = await client.listTools(cursor ? { cursor } : undefined); tools.push(...page.tools); cursor = page.nextCursor; } while (cursor);
-      return { tools: tools.filter(t => !['listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus', ...(snapshot.profile.backend === 'cloud' ? ['getMemoryPolicy'] : [])].includes(t.name)) };
+      return { tools: tools.filter(t => !['listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus', ...[]].includes(t.name)) };
       });
       this.toolLists.set(snapshot.name, listed);
       return listed;
@@ -112,18 +120,25 @@ export class ProfileSession {
   }
   async callTool(name: string, args: Record<string, unknown> = {}) {
     const snapshot = this.snapshot(); // capture before the first await
-    if (snapshot.profile.backend === 'cloud' && ['createMemory', 'updateMemory', 'mergeMemories', 'deleteMemory', 'updateMemoryLink', 'adjustMemoryLinkStrength'].includes(name) && loadPolicy(() => {}).scope === null) {
-      return { ...text({ error: 'Configure the client memory policy before changing memories.' }), isError: true };
+    if(snapshot.profile.backend==='cloud') {
+      if(args.storeId!==undefined&&args.storeId!==snapshot.profile.graphId)return {...text({error:'Tool target differs from the selected profile store.'}),isError:true};
+      args={...args,...(name==='listMemoryStores'?{}:{storeId:snapshot.profile.graphId})};
     }
-    return this.withClient(snapshot, client => client.callTool({ name, arguments: args }));
+    if(['createMemory','updateMemory','mergeMemories','deleteMemory','updateMemoryLink','adjustMemoryLinkStrength','updateMemoryPolicy'].includes(name))await this.initializePolicy(snapshot);
+    const result=await this.withClient(snapshot,client=>client.callTool({name,arguments:args}));
+    if((name==='getMemoryPolicy'&&args.initialize===true||name==='updateMemoryPolicy')&&!result.isError)this.policies.set(snapshot.name,result);
+    if(name==='getMemoryPolicy'&&result.isError)this.policies.delete(snapshot.name);
+    return result;
   }
 }
 
 export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string; respectStoreRole?: boolean } = {}) {
   const session = new ProfileSession(config, name);
-  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.0' }, {
+  let initialPolicy:unknown;
+  try{initialPolicy=await session.initializePolicy();}catch{initialPolicy={error:'Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy.'};}
+  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.1' }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${buildServerInstructions(loadPolicy())}\n\n${attributionInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
+    instructions: `${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     try { return await session.listResources(); }
@@ -152,9 +167,7 @@ export async function startProfileBridge(config: Profiles, name: string, options
         canChange = ['owner', 'admin', 'editor'].includes(verifiedCloudStore(context, snapshot.profile).role);
       } catch { canChange = false; }
     }
-    return { tools: [...remote.tools.filter(tool => canChange || cloudReadTools.has(tool.name)), ...(session.snapshot().profile.backend === 'cloud' ? [{
-      name: 'getMemoryPolicy', description: 'Read the client-selected memory policy and active profile. Server access roles are obtained from currentMemoryStore.', inputSchema: { type: 'object' as const, properties: {} },
-    }] : []), {
+    return { tools: [...remote.tools.filter(tool => canChange || cloudReadTools.has(tool.name)), {
       name: 'memoryConnectionStatus', description: 'Verify and show the active profile, backend, server-authorized graph, role and recording identity. Returns safe setup errors without exposing credentials or changing stores.', inputSchema: { type: 'object', properties: {} },
     }, {
       name: 'listMemoryProfiles', description: 'List configured local/cloud profiles without revealing credentials.', inputSchema: { type: 'object', properties: {} },
@@ -176,11 +189,8 @@ export async function startProfileBridge(config: Profiles, name: string, options
           }
           return text({ profile: snapshot.name, backend: 'local', verified: true, verificationScope: 'local configuration only; database connectivity is not checked', context });
         } catch {
-          return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: 'Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used.' }), isError: true };
+          return { ...text({ profile: snapshot.name, backend: snapshot.profile.backend, verified: false, error: 'Check the profile configuration, personal graph key, membership, and connectivity, then reconnect. No fallback was used. If this was a mutation, its outcome is unverified: inspect this same store before any retry.' }), isError: true };
         }
-      }
-      if (request.params.name === 'getMemoryPolicy' && session.snapshot().profile.backend === 'cloud') {
-        return text({ policy: loadPolicy(() => {}), profile: session.snapshot().name, backend: 'cloud' });
       }
       if (request.params.name === 'listMemoryProfiles') return text(session.profiles());
       if (request.params.name === 'selectMemoryProfile') {

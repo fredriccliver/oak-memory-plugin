@@ -41,6 +41,7 @@ const http = createServer(async (req, res) => {
     }
     return result({ storeId: mismatchedContext ? 'wrong-graph' : graph, name: graph === a ? 'Personal' : 'Team', role: graph === a ? 'owner' : 'reader', authorUserId: 'person-1', authorDisplayName: 'Person' });
   });
+  server.registerTool('getMemoryPolicy',{inputSchema:{}},async()=>result({policy:{graphId:graph,rules:graph===a?'Personal cloud rules':'Team cloud rules',recall:'proactive'},instructions:'Apply only this cloud store policy',policyScope:'store'}));
   server.registerTool('listMemoryStores', { inputSchema: {} }, async () => result({ graphs: [a, b] }));
   server.registerTool('recallMemory', { inputSchema: {} }, async () => {
     await new Promise(resolve => setTimeout(resolve, 50)); return result({ graphId: graph });
@@ -120,8 +121,8 @@ try {
   const session = new ProfileSession(config, 'personal');
   delete process.env.MEMORY_POLICY_SCOPE;
   const requestsBeforePolicy = requests.length;
-  assert.equal((await session.callTool('mergeMemories')).isError, true, 'unconfigured client policy blocks cloud merges');
-  assert.equal(requests.length, requestsBeforePolicy, 'policy denial must not contact cloud');
+  assert.equal((await session.callTool('mergeMemories')).isError, undefined, 'local policy must not block cloud merges');
+  assert.ok(requests.length>requestsBeforePolicy,'cloud policy is obtained from the cloud store');
   process.env.MEMORY_POLICY_SCOPE = 'important';
   assert.ok((await session.listTools()).tools.some(t => t.name === 'currentMemoryStore'));
   const pending = session.callTool('recallMemory');
@@ -147,6 +148,8 @@ try {
   let stderr = ''; transport.stderr?.on('data', chunk => { stderr += chunk; });
   try {
     await client.connect(transport);
+    assert.match(client.getInstructions(),/Personal cloud rules/);
+    assert.doesNotMatch(client.getInstructions(),/Store preferences and durable/);
     assert.ok((await client.listTools()).tools.some(t => t.name === 'selectMemoryProfile'));
     assert.equal((await client.listTools()).tools.find(t => t.name === 'mergeMemories').annotations.destructiveHint, true);
     assert.equal(JSON.parse((await client.callTool({ name: 'mergeMemories', arguments: {} })).content[0].text).merged, true);
@@ -154,7 +157,7 @@ try {
     const connected = JSON.parse((await client.callTool({ name: 'memoryConnectionStatus', arguments: {} })).content[0].text);
     assert.equal(connected.verified, true); assert.equal(connected.store.storeId, a); assert.equal(connected.store.role, 'owner');
     assert.equal(identity.storeId, a); assert.equal(identity.authorUserId, 'person-1'); assert.equal(identity.role, 'owner');
-    assert.equal(JSON.parse((await client.callTool({ name: 'getMemoryPolicy', arguments: {} })).content[0].text).policy.scope, 'important');
+    assert.equal(JSON.parse((await client.callTool({ name: 'getMemoryPolicy', arguments: {} })).content[0].text).policy.rules, 'Personal cloud rules');
     assert.equal((await client.callTool({ name: 'selectMemoryProfile', arguments: { profile: 'team' } })).isError, undefined);
     assert.equal((await client.callTool({ name: 'mergeMemories', arguments: {} })).isError, true, 'cloud reader merge denied');
     writeFileSync(file, JSON.stringify({ ...config, defaultProfile: 'personal' }));

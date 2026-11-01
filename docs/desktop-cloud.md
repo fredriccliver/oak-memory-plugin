@@ -4,7 +4,7 @@
 
 ## 설치와 설정
 
-[Desktop Cloud 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases)에서 `oak-desktop-cloud-0.2.1.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
+[Desktop Cloud 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases)에서 `oak-desktop-cloud-0.2.2.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
 
 OAK 대시보드에서 연결할 저장소를 선택한다. 저장소의 연결 설정에서 ID를 복사하고 본인 계정의 이름 있는 연결 키를 만든다. 키는 생성할 때 한 번 표시되므로 확장 설정의 Personal key에 직접 입력한다. 채팅이나 저장소 파일에 키를 붙이지 않는다. Store ID에는 같은 저장소의 UUID를 입력한다. Claude는 민감한 설정을 운영체제의 보안 저장소에 보관한다.
 
@@ -50,7 +50,7 @@ Store ID와 Personal key를 모두 비우고 Stores도 비워 두면 설치는 �
 
 ## MCP Apps 화면 전달
 
-Desktop Cloud 0.2.1은 기존 다중 저장소 설정을 보존하면서 호스팅 서버의 OAK UI 리소스 목록·읽기와 도구 결과 메타데이터를
+Desktop Cloud 0.2.2은 기존 다중 저장소 설정을 보존하면서 호스팅 서버의 OAK UI 리소스 목록·읽기와 도구 결과 메타데이터를
 Claude Desktop에 전달한다. 지원되는 Claude 버전에서는 기억 목록·검색 결과와 저장·수정
 완료를 대화 안의 OAK 화면으로 표시할 수 있다. 기존 0.1.0은 리소스를 전달하지 않으므로
 화면을 사용하려면 새 설치 파일로 업데이트하거나 원격 OAuth 연결을 사용한다. 0.2.0 설치도 업데이트가 필요하다.

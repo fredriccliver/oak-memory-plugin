@@ -2,7 +2,7 @@
 description: Show all stored memories and how they link together as a graph
 ---
 
-Call the `listMemories` MCP tool (from the `oak-memory` server) to get every stored memory and every link
+Read every cursor page from the actual `listMemories` MCP tool, including edge-only pages, until hasMore=false in the same store snapshot. Do not treat one page as the full graph. If the snapshot changes or output is truncated, disclose incomplete coverage and restart before a whole-store audit. Use the tool (from the `oak-memory` server) to get every stored memory and every link
 between them, then show the user their memory graph.
 
 Present it in two parts:

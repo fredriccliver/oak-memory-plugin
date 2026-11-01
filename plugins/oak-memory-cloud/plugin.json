@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "oak-memory",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Connect enabled OAK.memory stores, search together and choose an explicit target per call to save, edit and organise memories.",
   "author": {
     "name": "OAK",
@@ -24,7 +24,7 @@
         "privacyPolicyURL": "https://www.openaikits.com/privacy",
         "termsOfServiceURL": "https://www.openaikits.com/terms",
         "defaultPrompt": [
-          "Check my authorized OAK.memory stores and search them together, preserving the source of each result."
+          "Verify my intended OAK.memory store name and role using identity/status tools without reading memory bodies. Show the available memory workflows and follow each store policy for ongoing proactive management."
         ],
         "supportURL": "https://www.openaikits.com/#contact",
         "logo": "./assets/icon.svg",
