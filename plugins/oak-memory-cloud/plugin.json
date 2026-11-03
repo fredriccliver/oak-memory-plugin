@@ -82,8 +82,7 @@
               "expected_behavior": "Explain that explicit write consent is required. If a write tool is attempted, the server must reject it before storing memory or requesting an embedding. Do not elevate scope silently."
             }
           ]
-        },
-        "demo_recording_url": "https://www.openaikits.com/review/oak-memory-20261009-18b7655f0cd3cef8.mp4"
+        }
       },
       "publication": {
         "release_notes": "0.1.6: Add ten memory workflows for connection, store selection, recall, listing, saving, updating, deletion, links, organisation and policy. Preserve explicit store targets, consent scopes and source attribution. The hosted server provides compact memory cards and expanded exploration in supporting clients. Existing connections retain their permissions; adding stores requires new OAuth consent. Search credits apply per searched store."
