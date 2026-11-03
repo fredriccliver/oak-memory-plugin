@@ -24,7 +24,7 @@
         "privacyPolicyURL": "https://www.openaikits.com/privacy",
         "termsOfServiceURL": "https://www.openaikits.com/terms",
         "defaultPrompt": [
-          "Verify my intended OAK.memory store name and role using identity/status tools without reading memory bodies. Show the available memory workflows and follow each store policy for ongoing proactive management."
+          "Check my connected OAK.memory stores and access, then show available memory workflows and follow each store's policy."
         ],
         "supportURL": "https://www.openaikits.com/#contact",
         "logo": "./assets/icon.svg",

@@ -38,6 +38,15 @@ const shared = files(path.join(source, 'skills'), 'skills').concat(files(path.jo
 const skills = shared.filter(f => f.endsWith('/SKILL.md'));
 assert.equal(skills.length, 10);
 const openai = portable.extensions['com.openai'];
+// Enforce public listing limits before producing an upload candidate.
+for (const [field, limit] of Object.entries({displayName:30,shortDescription:30,longDescription:4000,developerName:80,websiteURL:1024,supportURL:1024,privacyPolicyURL:1024,termsOfServiceURL:1024})) {
+  assert.equal(typeof openai.interface[field], 'string', field + ' must be a string');
+  assert(openai.interface[field].length <= limit, field + ' exceeds the public listing limit');
+}
+const prompts = typeof openai.interface.defaultPrompt === 'string' ? [openai.interface.defaultPrompt] : openai.interface.defaultPrompt;
+assert(Array.isArray(prompts) && prompts.length <= 3, 'Use at most three starter prompts');
+for (const prompt of prompts) assert(typeof prompt === 'string' && prompt.length <= 128, 'Starter prompts must fit 128 characters');
+
 assert.equal(openai.review.test_cases.positive.length, 5, 'OpenAI requires exactly five positive review cases');
 assert.equal(openai.review.test_cases.negative.length, 3, 'OpenAI requires exactly three negative review cases');
 for (const relative of [openai.onboardingSkill, openai.interface.logo, openai.interface.composerIcon]) {
