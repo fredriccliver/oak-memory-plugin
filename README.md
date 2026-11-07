@@ -535,6 +535,12 @@ claude plugin install oak-memory
 ```
 (Exact subcommand behavior may vary by Claude Code version — `claude plugin --help` is authoritative.)
 
+## Plugin updates
+
+See the [OAK.memory update guide](https://www.openaikits.com/docs/plugin-updates) for the latest published builds. In Claude Code, open `/plugin` → Marketplaces → oak-memory and turn on auto-update to receive new marketplace releases. For an immediate update, refresh the marketplace and choose Update now for the installed plugin. Start a fresh session or reload plugins to apply it. Local and cloud profiles installed through the same plugin follow the same update path.
+
+Claude Desktop bundles installed from GitHub are updated by opening the new `.mcpb` in Claude Desktop. Desktop 0.2.3 and later can show an update link in the OAK widget when a newer bundle is available. The widget request includes the extension version.
+
 ## License
 
 [PolyForm Shield License 1.0.0](https://polyformproject.org/licenses/shield/1.0.0) — see `LICENSE` and `NOTICE`.

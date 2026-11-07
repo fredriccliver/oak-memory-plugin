@@ -17,6 +17,7 @@ const result = value => ({ content: [{ type: 'text', text: JSON.stringify(value)
 const parsed = response => JSON.parse(response.content[0].text);
 let revoked = false, mismatch = false, writes = [], requests = [], wrongKeys = 0;
 const uiUri = 'ui://oak-memory/explorer-v1.html';
+let resourceDesktopVersion;
 const http = createServer(async (req, res) => {
   const store = stores.find(store => store.storeId === req.headers['x-oak-graph']);
   if (!store || req.headers.authorization !== `Bearer ${store.personalKey}`) { wrongKeys++; res.writeHead(401).end(); return; }
@@ -24,7 +25,7 @@ const http = createServer(async (req, res) => {
   if (revoked && store === stores[2]) { res.writeHead(401).end(); return; }
   const server = new McpServer({ name: 'fixture', version: '1' });
   const role = store === stores[1] ? 'reader' : 'owner';
-  server.registerResource('oak-ui', uiUri, { mimeType: 'text/html;profile=mcp-app' }, async () => ({ contents: [{ uri: uiUri, mimeType: 'text/html;profile=mcp-app', text: '<!doctype html><p>OAK UI fixture</p>', _meta: { ui: { csp: { connectDomains: [], resourceDomains: [] } } } }] }));
+  server.registerResource('oak-ui', uiUri, { mimeType: 'text/html;profile=mcp-app' }, async () => { resourceDesktopVersion = req.headers['x-oak-desktop-version']; return { contents: [{ uri: uiUri, mimeType: 'text/html;profile=mcp-app', text: '<!doctype html><p>OAK UI fixture</p>', _meta: { ui: { csp: { connectDomains: [], resourceDomains: [] } } } }] }; });
   server.registerTool('currentMemoryStore', { inputSchema: {} }, async () => result({ storeId: mismatch && store === stores[3] ? 'wrong' : store.storeId, name: store.name, role, authorUserId: `user-${store.name}` }));
   server.registerTool('getMemoryPolicy', { inputSchema: {} }, async () => result({ storeId: store.storeId, policy: { rules: `Cloud policy for ${store.name}`, recall: 'proactive' } }));
   for (const name of ['recallMemory', 'listMemories']) server.registerTool(name, { inputSchema: {}, _meta: { ui: { resourceUri: uiUri } } }, async () => ({ ...result({ memories: [{ content: store.name }], storeId: store.storeId }), _meta: { 'oak/view': { version: 1, kind: 'list', storeId: store.storeId, memories: [{ id: 'same-id', content: store.name, storeId: store.storeId }], edges: [] } } }));
@@ -72,6 +73,8 @@ try {
       assert.equal(tools.find(tool => tool.name === 'listMemories')._meta.ui.resourceUri, uiUri);
       assert.equal((await client.listResources()).resources[0].uri, uiUri);
       const resource = (await client.readResource({ uri: uiUri })).contents[0];
+      assert.equal(client.getServerVersion()?.version, manifest.version);
+      assert.equal(resourceDesktopVersion, manifest.version);
       assert.equal(resource.mimeType, 'text/html;profile=mcp-app');
       assert.deepEqual(resource._meta.ui.csp.connectDomains, []);
       await assert.rejects(() => client.readResource({ uri: 'file:///private/secret' }), /Only OAK cloud UI resources/);
