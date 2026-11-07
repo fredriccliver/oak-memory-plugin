@@ -14,13 +14,14 @@ const temp = mkdtempSync(path.join(os.tmpdir(), 'oak-desktop-test-'));
 const graph = '11111111-1111-4111-8111-111111111111', key = 'oak_' + 'a'.repeat(64);
 let revoked = false, reader = false, admin = false, wrongStore = false, writes = 0, mutationRequests = 0, resourcesSupported = true;
 const result = value => ({content:[{type:'text',text:JSON.stringify(value)}]});
+let resourceDesktopVersion;
 const http = createServer(async (req,res) => {
   if (revoked || req.headers.authorization !== `Bearer ${key}` || req.headers['x-oak-graph'] !== graph) {res.writeHead(401).end();return;}
   const server = new McpServer({name:'fixture',version:'1'});
   server.registerTool('currentMemoryStore',{inputSchema:{}},async()=>result({storeId:wrongStore?'wrong':graph,name:'Fixture',role:reader?'reader':admin?'admin':'owner',authorUserId:'fixture-person'}));
   server.registerTool('getMemoryPolicy',{inputSchema:{}},async()=>result({policy:{graphId:graph,rules:'Desktop cloud policy',recall:'proactive'},instructions:'Desktop cloud policy'}));
   const uri='ui://oak-memory/explorer-v1.html';
-  if(resourcesSupported)server.registerResource('oak-ui',uri,{mimeType:'text/html;profile=mcp-app'},async()=>({contents:[{uri,mimeType:'text/html;profile=mcp-app',text:'<!doctype html><p>OAK UI fixture</p>',_meta:{ui:{csp:{connectDomains:[],resourceDomains:[]}}}}]}));
+  if(resourcesSupported)server.registerResource('oak-ui',uri,{mimeType:'text/html;profile=mcp-app'},async()=>{resourceDesktopVersion=req.headers['x-oak-desktop-version'];return {contents:[{uri,mimeType:'text/html;profile=mcp-app',text:'<!doctype html><p>OAK UI fixture</p>',_meta:{ui:{csp:{connectDomains:[],resourceDomains:[]}}}}]};});
   server.registerTool('listMemories',{inputSchema:{},_meta:{ui:{resourceUri:uri}}},async()=>({...result({memories:[],graphId:graph}),_meta:{'oak/view':{version:1,kind:'list',memories:[]}}}));
   for (const name of ['createMemory','updateMemoryPolicy','futureWriteTool']) server.registerTool(name,{inputSchema:{}},async()=>{ mutationRequests++; if(reader)return {...result({error:'Reader denied'}),isError:true}; writes++;return result({created:true});});
   const transport = new StreamableHTTPServerTransport({sessionIdGenerator:undefined});
@@ -57,6 +58,7 @@ try {
     let stderr='';transport.stderr?.on('data',chunk=>stderr+=chunk);
     try {
       await client.connect(transport);
+      assert.equal(client.getServerVersion()?.version, manifest.version);
       const tools=(await client.listTools()).tools;
       assert(tools.some(t=>t.name==='listMemories'));
       assert.equal(tools.some(t=>t.name==='createMemory'),allow);
@@ -69,6 +71,7 @@ try {
       const resources=await client.listResources();assert.equal(resources.resources[0].uri,'ui://oak-memory/explorer-v1.html');
       assert.deepEqual(await client.listResourceTemplates(),{resourceTemplates:[]});
       const ui=(await client.readResource({uri:resources.resources[0].uri})).contents[0];
+      assert.equal(resourceDesktopVersion, manifest.version);
       assert.equal(ui.mimeType,'text/html;profile=mcp-app');assert.match(ui.text,/OAK UI fixture/);
       assert.deepEqual(ui._meta.ui.csp,{connectDomains:[],resourceDomains:[]});
       await assert.rejects(()=>client.readResource({uri:'file:///private/secret'}),/Only OAK cloud UI resources/);

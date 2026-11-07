@@ -4,7 +4,7 @@
 
 ## 설치와 설정
 
-[Desktop Cloud 릴리스](https://github.com/fredriccliver/oak-memory-plugin/releases)에서 `oak-desktop-cloud-0.2.2.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
+[OAK 업데이트 안내](https://www.openaikits.com/docs/plugin-updates#desktop)에서 최신 `.mcpb`를 내려받는다. Claude Desktop의 Settings, Extensions, Advanced settings, Install Extension에서 파일을 선택한다. 메뉴 이름은 앱 버전에 따라 달라질 수 있다.
 
 OAK 대시보드에서 연결할 저장소를 선택한다. 저장소의 연결 설정에서 ID를 복사하고 본인 계정의 이름 있는 연결 키를 만든다. 키는 생성할 때 한 번 표시되므로 확장 설정의 Personal key에 직접 입력한다. 채팅이나 저장소 파일에 키를 붙이지 않는다. Store ID에는 같은 저장소의 UUID를 입력한다. Claude는 민감한 설정을 운영체제의 보안 저장소에 보관한다.
 
@@ -39,6 +39,12 @@ Store ID와 Personal key를 모두 비우고 Stores도 비워 두면 설치는 �
 
 이 방식은 Claude Desktop용이다. 웹 Claude나 ChatGPT에 로컬 MCPB를 설치하는 안내로 사용하지 않는다. 로컬 DB를 사용하는 기존 플러그인과 클라우드 확장을 자동 동기화하지 않는다.
 
+## 업데이트
+
+0.2.3부터 위젯을 열 때 Desktop 확장 버전을 운영 서버에 전달한다. 더 새로 공개된 번들이 있으면 위젯에 업데이트 링크가 뜬다. 버전은 UI 리소스 요청의 `X-Oak-Desktop-Version` 헤더에만 포함하며 설치 안내에 사용한다. MCP 초기화에서 보고하는 버전도 Desktop 확장 버전이다. Claude Code의 로컬 플러그인은 별도 릴리스 번호를 사용한다.
+
+수동 설치본은 안내 페이지에서 새 `.mcpb`를 내려받아 기존 확장과 같은 경로로 설치한다. 위젯에서 버전을 확인할 수 없는 이전 설치본은 [GitHub 릴리스 알림](https://github.com/fredriccliver/oak-memory-plugin) 또는 [릴리스 피드](https://github.com/fredriccliver/oak-memory-plugin/releases.atom)를 사용할 수 있다.
+
 ## 개발과 검증
 
 `npm run package:desktop`은 manifest와 묶인 서버, LICENSE, NOTICE만 포함한 MCPB를 만든다. `npm run test:desktop`은 실제 패키지를 풀고 stdio로 실행해 격리 HTTP 서버와 통신한다. 읽기, 쓰기 선택, 미등록 변경 도구 차단, reader 거부, 키 철회와 저장소 불일치를 검증한다. 네 저장소를 설정한 패키지에서 전체·지정 검색, 결과 출처, 키 격리, 변경 대상 필수 입력, 부분 실패와 복구, 실패한 프로필 전환 후 기존 선택 유지도 검증한다. 테스트 복사본의 주소만 루프백으로 바꾸며 배포본은 운영 HTTPS 주소로 고정된다. 운영 데이터나 크레딧을 사용하지 않는다. 별도로 공식 MCPB 검증기를 로컬에서 실행해 manifest 형식을 확인했다. CI 검사는 패키징과 stdio 시나리오이며 공식 검증기 실행과 구분한다.
@@ -50,7 +56,7 @@ Store ID와 Personal key를 모두 비우고 Stores도 비워 두면 설치는 �
 
 ## MCP Apps 화면 전달
 
-Desktop Cloud 0.2.2은 기존 다중 저장소 설정을 보존하면서 호스팅 서버의 OAK UI 리소스 목록·읽기와 도구 결과 메타데이터를
+Desktop Cloud 0.2.2부터 기존 다중 저장소 설정을 보존하면서 호스팅 서버의 OAK UI 리소스 목록·읽기와 도구 결과 메타데이터를
 Claude Desktop에 전달한다. 지원되는 Claude 버전에서는 기억 목록·검색 결과와 저장·수정
 완료를 대화 안의 OAK 화면으로 표시할 수 있다. 기존 0.1.0은 리소스를 전달하지 않으므로
 화면을 사용하려면 새 설치 파일로 업데이트하거나 원격 OAuth 연결을 사용한다. 0.2.0 설치도 업데이트가 필요하다.

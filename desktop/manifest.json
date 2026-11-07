@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "oak-desktop-cloud",
   "display_name": "OAK.memory Cloud via Desktop",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Run OAK MCP locally and search your private cloud stores. No local database or Docker required.",
   "author": {
     "name": "Fredric Cliver",

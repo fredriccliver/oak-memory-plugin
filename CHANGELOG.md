@@ -1,3 +1,8 @@
+## Desktop Cloud 0.2.3 (2026-11-07)
+
+- Send the Desktop package version with hosted widget resource requests so the widget can link to a newer published bundle when available.
+- Report the same package version in MCP initialization for single-store and multi-store setups.
+
 # 0.3.1 / Cloud 0.1.6 / Desktop 0.2.2 — 2026-11-01
 
 Store-scoped proactive management throughout tasks; default automatic local policy; Cloud policy forwarding; bounded cursor listing; actual-tool capability checks and uncertain-write verification. Existing explicit store restrictions and host access controls remain enforced. Upgrade note: absent local scope now enables automatic management; set MEMORY_POLICY_AUTOSAVE=false before upgrading to retain manual saving.

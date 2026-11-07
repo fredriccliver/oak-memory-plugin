@@ -31,7 +31,7 @@ export class ProfileSession {
   }
   private switchRevision = 0;
   private toolLists = new Map<string, Awaited<ReturnType<Client['listTools']>>>();
-  constructor(private config: Profiles, name: string) {
+  constructor(private config: Profiles, name: string, private desktopVersion?: string) {
     this.selection = this.resolve(name);
   }
   private resolve(name: string): Selection {
@@ -56,12 +56,12 @@ export class ProfileSession {
     this.selection = next;
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true,applyPolicyToSelectedStore:true }), context, policy };
   }
-  async withClient<T>(snapshot: Selection, run: (client: Client) => Promise<T>): Promise<T> {
+  async withClient<T>(snapshot: Selection, run: (client: Client) => Promise<T>, uiResource = false): Promise<T> {
     const client = new Client({ name: 'oak-memory-profile-bridge', version: '0.3.1' });
     const profile = snapshot.profile;
     const transport = profile.backend === 'cloud'
       ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
-          requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, 'X-Oak-Graph': profile.graphId } },
+          requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, 'X-Oak-Graph': profile.graphId, ...(uiResource && this.desktopVersion ? { 'X-Oak-Desktop-Version': this.desktopVersion } : {}) } },
           // Credentials must never follow redirects to another origin.
           fetch: (url, init) => fetch(url, { ...init, redirect: 'error' }),
         })
@@ -116,7 +116,7 @@ export class ProfileSession {
       throw new McpError(ErrorCode.InvalidParams, 'Only OAK cloud UI resources are available.');
     }
     // Authenticate each resource read against the captured profile. No cache or fallback.
-    return this.withClient(snapshot, client => client.readResource({ uri }));
+    return this.withClient(snapshot, client => client.readResource({ uri }), true);
   }
   async callTool(name: string, args: Record<string, unknown> = {}) {
     const snapshot = this.snapshot(); // capture before the first await
@@ -132,11 +132,11 @@ export class ProfileSession {
   }
 }
 
-export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string; respectStoreRole?: boolean } = {}) {
-  const session = new ProfileSession(config, name);
+export async function startProfileBridge(config: Profiles, name: string, options: { readOnly?: boolean; serverName?: string; respectStoreRole?: boolean; desktopVersion?: string } = {}) {
+  const session = new ProfileSession(config, name, options.desktopVersion);
   let initialPolicy:unknown;
   try{initialPolicy=await session.initializePolicy();}catch{initialPolicy={error:'Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy.'};}
-  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: '0.3.1' }, {
+  const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: options.desktopVersion ?? '0.3.1' }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
     instructions: `${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
   });

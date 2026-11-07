@@ -30517,11 +30517,13 @@ function verifiedCloudStore(context, profile) {
   return store;
 }
 var ProfileSession = class {
-  constructor(config2, name) {
+  constructor(config2, name, desktopVersion) {
     this.config = config2;
+    this.desktopVersion = desktopVersion;
     this.selection = this.resolve(name);
   }
   config;
+  desktopVersion;
   selection;
   policies = /* @__PURE__ */ new Map();
   async initializePolicy(snapshot = this.snapshot()) {
@@ -30556,11 +30558,11 @@ var ProfileSession = class {
     this.selection = next;
     return { ...text({ profile: next.name, backend: next.profile.backend, sessionOnly: true, applyPolicyToSelectedStore: true }), context, policy };
   }
-  async withClient(snapshot, run) {
+  async withClient(snapshot, run, uiResource = false) {
     const client = new Client({ name: "oak-memory-profile-bridge", version: "0.3.1" });
     const profile = snapshot.profile;
     const transport = profile.backend === "cloud" ? new StreamableHTTPClientTransport(new URL(profile.endpoint), {
-      requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, "X-Oak-Graph": profile.graphId } },
+      requestInit: { headers: { Authorization: `Bearer ${credential(profile)}`, "X-Oak-Graph": profile.graphId, ...uiResource && this.desktopVersion ? { "X-Oak-Desktop-Version": this.desktopVersion } : {} } },
       // Credentials must never follow redirects to another origin.
       fetch: (url2, init2) => fetch(url2, { ...init2, redirect: "error" })
     }) : new StdioClientTransport({
@@ -30621,7 +30623,7 @@ var ProfileSession = class {
     if (snapshot.profile.backend !== "cloud" || !uri.startsWith("ui://oak-memory/")) {
       throw new McpError(ErrorCode.InvalidParams, "Only OAK cloud UI resources are available.");
     }
-    return this.withClient(snapshot, (client) => client.readResource({ uri }));
+    return this.withClient(snapshot, (client) => client.readResource({ uri }), true);
   }
   async callTool(name, args = {}) {
     const snapshot = this.snapshot();
@@ -30637,14 +30639,14 @@ var ProfileSession = class {
   }
 };
 async function startProfileBridge(config2, name, options = {}) {
-  const session = new ProfileSession(config2, name);
+  const session = new ProfileSession(config2, name, options.desktopVersion);
   let initialPolicy;
   try {
     initialPolicy = await session.initializePolicy();
   } catch {
     initialPolicy = { error: "Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy." };
   }
-  const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: "0.3.1" }, {
+  const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: options.desktopVersion ?? "0.3.1" }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
     instructions: `${storeInstructions}
 ${attributionInstructions}
