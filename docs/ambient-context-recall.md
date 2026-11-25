@@ -424,8 +424,7 @@ can be re-measured.
 retrieved" along with strength. Context recall runs every turn, so if it recorded usage, every
 memory would permanently look freshly used and **recency would lose all discriminating power** —
 ranking quality would degrade precisely because recall got more frequent. So **context recall
-records no usage** (decided by Fredric). It is an observation, not a use. Usage stays with query
-recall and explicit tool calls.
+records no usage** (decided by Fredric). It is an observation, not a use. For current MCP query recall and traversal, usage is recorded separately through `recordMemoryUse` when the work applies a returned memory.
 
 **Token cost.** Two memories per turn at most, and zero on turns that do not clear the floor.
 

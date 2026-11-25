@@ -19,3 +19,5 @@ Manage each OAK connection and its individual consented stores at https://www.op
 For this cloud skill, always pass the intended `storeId` on every non-search tool call, even when only one store is enabled. Omission compatibility is only for older, preexisting single-store callers. Preparatory reads and duplicate checks for writes stay in the intended target store.
 
 Adjust recall with topK for vector starting points, hops for graph depth, and limit for returned memories when the selected store exposes those inputs. Use traverseMemory to inspect paths from a known memory. Recall and traversal do not reinforce links. When recordMemoryUse is exposed and receipts are returned, submit the receipts of memories actually used in an output once per task and store.
+
+When results are truncated, refine recall or traverse a returned memory. Use the receipt actually returned for the chosen path. Include permitted link adjustments in the initial usage report. Shortcuts require an applied multi-hop path. Weaken or unlink only an unused and inspected `related` edge.

@@ -131,7 +131,7 @@ try {
   assert.deepEqual((await ok('recordMemoryUse',report)).structuredContent,
     {alreadyRecorded:false,memories:1,reinforced:2,shortcuts:1,weakened:1,unlinked:1});
   assert.deepEqual((await ok('recordMemoryUse',report)).structuredContent,
-    {alreadyRecorded:true,memories:0,reinforced:0,shortcuts:0,weakened:0,unlinked:0});
+    {alreadyRecorded:true,memories:0,reinforced:0,shortcuts:0,weakened:0,unlinked:0,linkChangesIgnored:true});
   console.log('PASS real stdio recall, traversal, errors and work-scoped link changes');
 
 } finally {

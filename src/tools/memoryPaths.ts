@@ -34,7 +34,7 @@ export function registerMemoryPathTools(server: any, env: Env) {
   });
   server.registerTool('recordMemoryUse', {
     title: 'Record memories used in work',
-    description: 'Submit once per task and store with receipts for memories actually used in an output. Exploring a path does not count. Include any linkChanges in the initial report. Reusing a work ID never applies further changes.',
+    description: 'Submit once per task and store with receipts for memories actually used in an output. Exploring a path does not count. Include any linkChanges in the initial report. Reusing a work ID never applies further changes and reports linkChangesIgnored when adjustments were supplied on replay. Shortcuts require a used multi-hop path. Only inspected, unused related edges can be weakened or unlinked.',
     inputSchema: {
       workId: z.string().trim().min(1).max(160),
       uses: z.array(z.object({receipt:z.string().min(1).max(1600),output:z.string().trim().min(1).max(300)})).min(1).max(20),
@@ -47,7 +47,11 @@ export function registerMemoryPathTools(server: any, env: Env) {
   }, async ({workId,uses,linkChanges}: {workId:string;uses:{receipt:string;output:string}[];linkChanges?:MemoryLinkChange[]}) => {
     try {
       const result=await recordWorkMemoryUse(env,workId,uses,linkChanges);
-      return {...textResult(result.alreadyRecorded ? 'This work was already recorded. This call applied no new link changes.' : 'Memory use recorded.'),structuredContent:result};
+      const linkChangesIgnored = result.alreadyRecorded && Boolean(linkChanges?.length);
+      return {
+        ...textResult(result.alreadyRecorded ? 'This work was already recorded. This call applied no new link changes.' : 'Memory use recorded.'),
+        structuredContent: { ...result, ...(linkChangesIgnored ? { linkChangesIgnored } : {}) },
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
       if (/receipt|memory use report|Invalid memory link action|contributing multi-hop path|inspected, unused edge|A used path has changed/.test(message) &&
