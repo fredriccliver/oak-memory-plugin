@@ -123,7 +123,7 @@ let workUsagePool: Pool | undefined;
 let workUsageReady: Promise<void> | undefined;
 
 export function memoryUseScope(env: Env) {
-  return { entityId: env.memoryEntityId, actorId: env.memoryEntityId, secret: env.memoryDatabaseUrl };
+  return { entityId: env.memoryEntityId, actorId: env.memoryEntityId, secret: env.memoryDatabaseUrl, decayLambda: normalizeMemoryTuning().decayLambda };
 }
 
 export async function recordWorkMemoryUse(env: Env, workId: string, uses: {receipt:string;output:string}[], linkChanges?:MemoryLinkChange[]) {

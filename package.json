@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
-    "@openaikits/memory": "https://codeload.github.com/fredriccliver/Memory/tar.gz/9b128c4b98360bb98a2a234c5f353574f8b805fd",
+    "@openaikits/memory": "https://codeload.github.com/fredriccliver/Memory/tar.gz/0cbbd7a236da3b3840e73d0d5d436ff9666d19ce",
     "zod": "^3.24.0",
     "pg": "^8.23.1",
     "js-tiktoken": "^1.0.21"

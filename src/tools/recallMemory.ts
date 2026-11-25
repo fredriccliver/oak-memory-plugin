@@ -52,7 +52,7 @@ export function registerRecallMemory(server: any, env: Env) {
       const ranked = await recall(env, query, limit, {topK,hops});
       const { memories }=ranked;
       if (memories.length === 0) {
-        return textResult('No memories found for this query.');
+        return { ...textResult('No memories found for this query.'), structuredContent: { memories: [], paths: [], truncated: false } };
       }
       const lines = memories.map(formatMemory).join('\n');
       const result = textResult(`Found ${memories.length} memor${memories.length === 1 ? 'y' : 'ies'}:\n${lines}`);

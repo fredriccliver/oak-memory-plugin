@@ -130,7 +130,9 @@ maps those requests to the same MCP tools.
 
 | Tool | Purpose |
 |---|---|
-| `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
+| `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. Accepts independent `topK`, `hops`, and `limit`. |
+| `traverseMemory` | Follow the selected memory's links in the same store and return the connections and paths. |
+| `recordMemoryUse` | Record one batch per task and store with receipts for memories applied to the work. Include any link adjustments in that first batch. A replay applies zero new changes. |
 | `listMemories` | Browse bounded pages of memories and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
 | `openMemoryGraph` | Render the same graph as an interactive, force-directed HTML page and open it in the default browser. Backs `/memory-graph-web`. |
 | `suggestMemoryLinks` | Read-only structural analysis: all-pairs embedding similarity surfacing orphans, link candidates (near-duplicates flagged), each edge's stored strength vs. actual similarity, and oversized split candidates. Evidence for a curation pass; writes nothing. Backs `/memory-organise`. |
