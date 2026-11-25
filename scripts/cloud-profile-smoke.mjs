@@ -149,6 +149,8 @@ try {
   try {
     await client.connect(transport);
     assert.match(client.getInstructions(),/Personal cloud rules/);
+    assert.doesNotMatch(client.getInstructions(),/recordMemoryUse/);
+    assert.ok(!(await client.listTools()).tools.some(tool => tool.name === 'recordMemoryUse'));
     assert.doesNotMatch(client.getInstructions(),/Store preferences and durable/);
     assert.ok((await client.listTools()).tools.some(t => t.name === 'selectMemoryProfile'));
     assert.equal((await client.listTools()).tools.find(t => t.name === 'mergeMemories').annotations.destructiveHint, true);

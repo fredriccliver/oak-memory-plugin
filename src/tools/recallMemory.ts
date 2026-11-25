@@ -36,7 +36,7 @@ to search.
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory — never invent a UUID or
 use a display index.
 
-Recall does not reinforce links. The result identifies how each memory was reached. If this store
+Set topK for starting points, hops for connection depth (zero is vector-only), and limit for the number returned. Recall does not reinforce links. The result identifies how each memory was reached. If this store
 exposes recordMemoryUse, use the returned receipt only for a memory actually applied to a concrete work output.`;
 }
 

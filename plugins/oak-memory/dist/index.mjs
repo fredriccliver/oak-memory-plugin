@@ -30505,6 +30505,7 @@ ${autosaveRule(policy)}
 An explicit store restriction controls its scope; do not silently broaden it. Change this store policy only when the user requests it.
 ${recoveryInstructions}`;
 }
+var cloudMemoryCapabilityInstructions = "Follow the capabilities advertised for the selected server and store. When a tool or its response fields are absent, continue with the available read and write tools.";
 var memorySystemInstructions = "Recall and traversal do not strengthen links. After discovering the tools of the selected profile, call recordMemoryUse only if it is exposed and the recall or traversal result supplied a use receipt. Record once per task and store, with receipts for memories actually used in a decision, action, or artifact and a brief description of that output. Include any linkChanges in the initial report. Older servers may omit the tool or receipts. Continue normal memory work in that case. Before updating links, inspect existing paths. Add a shortcut only when useful context is not lost, weaken noisy associations, and unlink obsolete connections as the current store policy permits.";
 
 // src/bridge.ts
@@ -30649,7 +30650,7 @@ async function startProfileBridge(config2, name, options = {}) {
   }
   const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: options.desktopVersion ?? "0.3.1" }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${memorySystemInstructions}
+    instructions: `${cloudMemoryCapabilityInstructions}
 ${storeInstructions}
 ${attributionInstructions}
 Selected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}
@@ -35640,7 +35641,7 @@ to search.
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory \u2014 never invent a UUID or
 use a display index.
 
-Recall does not reinforce links. The result identifies how each memory was reached. If this store
+Set topK for starting points, hops for connection depth (zero is vector-only), and limit for the number returned. Recall does not reinforce links. The result identifies how each memory was reached. If this store
 exposes recordMemoryUse, use the returned receipt only for a memory actually applied to a concrete work output.`;
 }
 function registerRecallMemory(server, env) {
