@@ -6,12 +6,12 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { fileURLToPath } from 'node:url';
 import { attributionInstructions, credential, type Profile, type Profiles } from './profiles.js';
-import { storeInstructions, recoveryInstructions } from './policy.js';
+import { storeInstructions, recoveryInstructions, cloudMemoryCapabilityInstructions } from './policy.js';
 
 type Selection = Readonly<{ name: string; profile: Profile }>;
 const text = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
 const errorResult = () => ({ ...text({ error: 'Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used. If this was a mutation, its outcome is unverified: inspect this same store before any retry.' }), isError: true });
-const cloudReadTools = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks']);
+const cloudReadTools = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'traverseMemory', 'suggestMemoryLinks']);
 
 function verifiedCloudStore(context: Awaited<ReturnType<Client['callTool']>>, profile: Extract<Profile, { backend: 'cloud' }>) {
   if (context.isError || !Array.isArray(context.content)) throw new Error('Context unavailable');
@@ -124,7 +124,7 @@ export class ProfileSession {
       if(args.storeId!==undefined&&args.storeId!==snapshot.profile.graphId)return {...text({error:'Tool target differs from the selected profile store.'}),isError:true};
       args={...args,...(name==='listMemoryStores'?{}:{storeId:snapshot.profile.graphId})};
     }
-    if(['createMemory','updateMemory','mergeMemories','deleteMemory','updateMemoryLink','adjustMemoryLinkStrength','updateMemoryPolicy'].includes(name))await this.initializePolicy(snapshot);
+    if(['createMemory','updateMemory','mergeMemories','deleteMemory','updateMemoryLink','adjustMemoryLinkStrength','updateMemoryPolicy','recordMemoryUse'].includes(name))await this.initializePolicy(snapshot);
     const result=await this.withClient(snapshot,client=>client.callTool({name,arguments:args}));
     if((name==='getMemoryPolicy'&&args.initialize===true||name==='updateMemoryPolicy')&&!result.isError)this.policies.set(snapshot.name,result);
     if(name==='getMemoryPolicy'&&result.isError)this.policies.delete(snapshot.name);
@@ -138,7 +138,7 @@ export async function startProfileBridge(config: Profiles, name: string, options
   try{initialPolicy=await session.initializePolicy();}catch{initialPolicy={error:'Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy.'};}
   const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: options.desktopVersion ?? '0.3.1' }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
+    instructions: `${cloudMemoryCapabilityInstructions}\n${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     try { return await session.listResources(); }

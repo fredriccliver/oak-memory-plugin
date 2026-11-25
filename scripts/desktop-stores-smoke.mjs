@@ -29,7 +29,8 @@ const http = createServer(async (req, res) => {
   server.registerTool('currentMemoryStore', { inputSchema: {} }, async () => result({ storeId: mismatch && store === stores[3] ? 'wrong' : store.storeId, name: store.name, role, authorUserId: `user-${store.name}` }));
   server.registerTool('getMemoryPolicy', { inputSchema: {} }, async () => result({ storeId: store.storeId, policy: { rules: `Cloud policy for ${store.name}`, recall: 'proactive' } }));
   for (const name of ['recallMemory', 'listMemories']) server.registerTool(name, { inputSchema: {}, _meta: { ui: { resourceUri: uiUri } } }, async () => ({ ...result({ memories: [{ content: store.name }], storeId: store.storeId }), _meta: { 'oak/view': { version: 1, kind: 'list', storeId: store.storeId, memories: [{ id: 'same-id', content: store.name, storeId: store.storeId }], edges: [] } } }));
-  for (const name of ['createMemory', 'futureWriteTool']) server.registerTool(name, { inputSchema: {} }, async () => { writes.push(store.storeId); return result({ storeId: store.storeId }); });
+  server.registerTool('traverseMemory', { inputSchema: {} }, async () => result({ storeId: store.storeId, paths: [] }));
+  for (const name of ['createMemory', 'futureWriteTool', 'recordMemoryUse']) server.registerTool(name, { inputSchema: {} }, async () => { writes.push(store.storeId); return result({ storeId: store.storeId }); });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   res.on('close', () => { void transport.close(); void server.close(); });
   await server.connect(transport); await transport.handleRequest(req, res);
@@ -79,6 +80,11 @@ try {
       assert.deepEqual(resource._meta.ui.csp.connectDomains, []);
       await assert.rejects(() => client.readResource({ uri: 'file:///private/secret' }), /Only OAK cloud UI resources/);
       assert.equal(tools.some(tool => tool.name === 'createMemory'), allow);
+      assert.equal(tools.some(tool => tool.name === 'recordMemoryUse'), allow);
+      assert.ok(tools.find(tool => tool.name === 'traverseMemory').inputSchema.required.includes('storeId'));
+      const traversed = await client.callTool({ name: 'traverseMemory', arguments: { storeId: stores[1].storeId } });
+      assert.equal(traversed.isError, undefined);
+      assert.equal(parsed(traversed).storeId, stores[1].storeId);
       if (allow) assert(tools.find(tool => tool.name === 'createMemory').inputSchema.required.includes('storeId'));
       assert(!tools.find(tool => tool.name === 'recallMemory').inputSchema.required.includes('storeId'));
       assert.equal(parsed(await client.callTool({ name: 'listMemoryStores', arguments: {} })).stores.filter(store => store.verified).length, 4);
@@ -107,7 +113,7 @@ try {
         assert.equal((await client.callTool({ name, arguments: { storeId: 'unknown' } })).isError, true);
         assert.equal(requests.length, 0);
       }
-      for (const name of ['createMemory', 'futureWriteTool']) {
+      for (const name of ['createMemory', 'futureWriteTool', 'recordMemoryUse']) {
         const previous = writes.length;
         const response = await client.callTool({ name, arguments: { storeId: stores[0].storeId } });
         assert.equal(!!response.isError, !allow); assert.equal(writes.length, previous + (allow ? 1 : 0));

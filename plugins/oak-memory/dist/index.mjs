@@ -7998,9 +7998,9 @@ var require_postgres_date = __commonJS({
       if (type === "Z") {
         return 0;
       }
-      var sign = type === "-" ? -1 : 1;
+      var sign2 = type === "-" ? -1 : 1;
       var offset = parseInt(zone[2], 10) * 3600 + parseInt(zone[3] || 0, 10) * 60 + parseInt(zone[4] || 0, 10);
-      return offset * sign * 1e3;
+      return offset * sign2 * 1e3;
     }
     function bcYearToNegativeYear(year) {
       return -(year - 1);
@@ -8365,11 +8365,11 @@ var require_pg_int8 = __commonJS({
     function readInt8(buffer) {
       var high = buffer.readInt32BE(0);
       var low = buffer.readUInt32BE(4);
-      var sign = "";
+      var sign2 = "";
       if (high < 0) {
         high = ~high + (low === 0);
         low = ~low + 1 >>> 0;
-        sign = "-";
+        sign2 = "-";
       }
       var result = "";
       var carry;
@@ -8385,7 +8385,7 @@ var require_pg_int8 = __commonJS({
         low = t / BASE >>> 0;
         digits = "" + (t - BASE * low);
         if (low === 0 && high === 0) {
-          return sign + digits + result;
+          return sign2 + digits + result;
         }
         pad = "";
         l = 6 - digits.length;
@@ -8401,7 +8401,7 @@ var require_pg_int8 = __commonJS({
         low = t / BASE >>> 0;
         digits = "" + (t - BASE * low);
         if (low === 0 && high === 0) {
-          return sign + digits + result;
+          return sign2 + digits + result;
         }
         pad = "";
         l = 6 - digits.length;
@@ -8417,7 +8417,7 @@ var require_pg_int8 = __commonJS({
         low = t / BASE >>> 0;
         digits = "" + (t - BASE * low);
         if (low === 0 && high === 0) {
-          return sign + digits + result;
+          return sign2 + digits + result;
         }
         pad = "";
         l = 6 - digits.length;
@@ -8430,7 +8430,7 @@ var require_pg_int8 = __commonJS({
         carry = high % BASE;
         t = 4294967296 * carry + low;
         digits = "" + t % BASE;
-        return sign + digits + result;
+        return sign2 + digits + result;
       }
     }
     module.exports = readInt8;
@@ -8479,7 +8479,7 @@ var require_binaryParsers = __commonJS({
     };
     var parseFloatFromBits = function(data, precisionBits, exponentBits) {
       var bias = Math.pow(2, exponentBits - 1) - 1;
-      var sign = parseBits(data, 1);
+      var sign2 = parseBits(data, 1);
       var exponent = parseBits(data, exponentBits, 1);
       if (exponent === 0) {
         return 0;
@@ -8500,11 +8500,11 @@ var require_binaryParsers = __commonJS({
       var mantissa = parseBits(data, precisionBits, exponentBits + 1, false, parsePrecisionBits);
       if (exponent == Math.pow(2, exponentBits + 1) - 1) {
         if (mantissa === 0) {
-          return sign === 0 ? Infinity : -Infinity;
+          return sign2 === 0 ? Infinity : -Infinity;
         }
         return NaN;
       }
-      return (sign === 0 ? 1 : -1) * Math.pow(2, exponent - bias) * mantissa;
+      return (sign2 === 0 ? 1 : -1) * Math.pow(2, exponent - bias) * mantissa;
     };
     var parseInt16 = function(value) {
       if (parseBits(value, 1) == 1) {
@@ -8525,8 +8525,8 @@ var require_binaryParsers = __commonJS({
       return parseFloatFromBits(value, 52, 11);
     };
     var parseNumeric = function(value) {
-      var sign = parseBits(value, 16, 32);
-      if (sign == 49152) {
+      var sign2 = parseBits(value, 16, 32);
+      if (sign2 == 49152) {
         return NaN;
       }
       var weight = Math.pow(1e4, parseBits(value, 16, 16));
@@ -8538,12 +8538,12 @@ var require_binaryParsers = __commonJS({
         weight /= 1e4;
       }
       var scale = Math.pow(10, parseBits(value, 16, 48));
-      return (sign === 0 ? 1 : -1) * Math.round(result * scale) / scale;
+      return (sign2 === 0 ? 1 : -1) * Math.round(result * scale) / scale;
     };
     var parseDate = function(isUTC, value) {
-      var sign = parseBits(value, 1);
+      var sign2 = parseBits(value, 1);
       var rawValue = parseBits(value, 63, 1);
-      var result = new Date((sign === 0 ? 1 : -1) * rawValue / 1e3 + 9466848e5);
+      var result = new Date((sign2 === 0 ? 1 : -1) * rawValue / 1e3 + 9466848e5);
       if (!isUTC) {
         result.setTime(result.getTime() + result.getTimezoneOffset() * 6e4);
       }
@@ -30505,11 +30505,13 @@ ${autosaveRule(policy)}
 An explicit store restriction controls its scope; do not silently broaden it. Change this store policy only when the user requests it.
 ${recoveryInstructions}`;
 }
+var cloudMemoryCapabilityInstructions = "Follow the capabilities advertised for the selected server and store. When a tool or its response fields are absent, continue with the available read and write tools.";
+var memorySystemInstructions = "Recall and traversal do not strengthen links. After discovering the tools of the selected profile, call recordMemoryUse only if it is exposed and the recall or traversal result supplied a use receipt. Record once per task and store, with receipts for memories actually used in a decision, action, or artifact and a brief description of that output. Include any linkChanges in the initial report. Older servers may omit the tool or receipts. Continue normal memory work in that case. Before updating links, inspect existing paths. Add a shortcut only when useful context is not lost, weaken noisy associations, and unlink obsolete connections as the current store policy permits.";
 
 // src/bridge.ts
 var text = (value) => ({ content: [{ type: "text", text: JSON.stringify(value) }] });
 var errorResult = () => ({ ...text({ error: "Selected memory store request failed. Check authentication, graph membership, and connectivity. No fallback was used. If this was a mutation, its outcome is unverified: inspect this same store before any retry." }), isError: true });
-var cloudReadTools = /* @__PURE__ */ new Set(["currentMemoryStore", "listMemoryStores", "listMemories", "recallMemory", "suggestMemoryLinks"]);
+var cloudReadTools = /* @__PURE__ */ new Set(["currentMemoryStore", "listMemoryStores", "listMemories", "recallMemory", "traverseMemory", "suggestMemoryLinks"]);
 function verifiedCloudStore(context, profile) {
   if (context.isError || !Array.isArray(context.content)) throw new Error("Context unavailable");
   const store = JSON.parse(context.content.filter((item) => item?.type === "text" && typeof item.text === "string").map((item) => item.text).join(""));
@@ -30631,7 +30633,7 @@ var ProfileSession = class {
       if (args.storeId !== void 0 && args.storeId !== snapshot.profile.graphId) return { ...text({ error: "Tool target differs from the selected profile store." }), isError: true };
       args = { ...args, ...name === "listMemoryStores" ? {} : { storeId: snapshot.profile.graphId } };
     }
-    if (["createMemory", "updateMemory", "mergeMemories", "deleteMemory", "updateMemoryLink", "adjustMemoryLinkStrength", "updateMemoryPolicy"].includes(name)) await this.initializePolicy(snapshot);
+    if (["createMemory", "updateMemory", "mergeMemories", "deleteMemory", "updateMemoryLink", "adjustMemoryLinkStrength", "updateMemoryPolicy", "recordMemoryUse"].includes(name)) await this.initializePolicy(snapshot);
     const result = await this.withClient(snapshot, (client) => client.callTool({ name, arguments: args }));
     if ((name === "getMemoryPolicy" && args.initialize === true || name === "updateMemoryPolicy") && !result.isError) this.policies.set(snapshot.name, result);
     if (name === "getMemoryPolicy" && result.isError) this.policies.delete(snapshot.name);
@@ -30648,7 +30650,8 @@ async function startProfileBridge(config2, name, options = {}) {
   }
   const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: options.desktopVersion ?? "0.3.1" }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${storeInstructions}
+    instructions: `${cloudMemoryCapabilityInstructions}
+${storeInstructions}
 ${attributionInstructions}
 Selected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}
 ${recoveryInstructions}${options.readOnly ? "\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings." : ""}`
@@ -31053,7 +31056,7 @@ async function ensureTablesExist(pool, schema = "memory") {
     await client.query("SELECT pg_advisory_lock($1)", [MEMORY_DDL_LOCK_KEY]);
     try {
       const current = await readSchemaVersion(client, schema);
-      if (current === MEMORY_SCHEMA_VERSION) {
+      if (current !== null && current >= MEMORY_SCHEMA_VERSION) {
         return;
       }
       await ensureTablesExistInner(client, schema);
@@ -31511,20 +31514,21 @@ var PostgresAdapter = class {
     const result = await this.client.query(query, [entityId]);
     return result.rows.map((row) => this.mapRowToMemory(row));
   }
-  async searchByVector(embedding, entityId, limit = 10, threshold = 0.7) {
+  async searchByVector(embedding, entityId, limit = 10, threshold = 0.7, statuses) {
     const schema = this.config.schema || "memory";
     const query = `
       SELECT *, 1 - (embedding <=> $1::vector) as similarity
       FROM ${schema}.memories
       WHERE entity_id = $2
         AND embedding IS NOT NULL
+        AND ($5::text[] IS NULL OR coalesce(status, 'active') = any($5::text[]))
         AND 1 - (embedding <=> $1::vector) >= $3
       ORDER BY embedding <=> $1::vector
       LIMIT $4
     `;
     const pgvector = await Promise.resolve().then(() => __toESM(require_pg()));
     const embeddingValue = pgvector.toSql(embedding);
-    const result = await this.client.query(query, [embeddingValue, entityId, threshold, limit]);
+    const result = await this.client.query(query, [embeddingValue, entityId, threshold, limit, statuses ?? null]);
     return result.rows.map((row) => this.mapRowToMemory(row));
   }
   async getConnectedMemories(memoryId, depth = 1) {
@@ -31703,9 +31707,34 @@ var PostgresAdapter = class {
   /**
    * Get all edges touching any of the given memories (either direction)
    */
-  async getEdgesTouching(memoryIds) {
+  async getEdgesTouching(memoryIds, scan) {
     if (memoryIds.length === 0) return [];
     const schema = this.config.schema || "memory";
+    if (scan) {
+      const result2 = await this.client.query(
+        `
+        with frontier as (
+          select * from jsonb_to_recordset($1::jsonb) as path(node_id uuid, strength double precision, visited uuid[])
+        )
+        select e.*, max(
+          ln(nullif(path.strength, 0)) + ln(nullif(e.strength, 0)) -
+          $4::double precision * greatest(0, extract(epoch from (now() - e.strength_updated_at)) / 86400)
+        ) as path_score
+        from frontier path
+        join ${schema}.edges e on e.from_id = path.node_id or e.to_id = path.node_id
+        join ${schema}.memories target
+          on target.id = case when e.from_id = path.node_id then e.to_id else e.from_id end
+        where e.entity_id = $2 and target.entity_id = $2
+          and coalesce(target.status, 'active') = any($3::text[])
+          and not target.id = any(path.visited)
+        group by e.id
+        order by path_score desc nulls last, e.id
+        limit $5
+        `,
+        [JSON.stringify(scan.frontier), scan.entityId, scan.statuses, scan.decayLambda, scan.limit]
+      );
+      return result2.rows.map((row) => this.mapRowToEdge(row));
+    }
     const result = await this.client.query(
       `
       SELECT id, entity_id, from_id, to_id, type, origin, strength, created_at, strength_updated_at
@@ -31716,9 +31745,6 @@ var PostgresAdapter = class {
     );
     return result.rows.map((row) => this.mapRowToEdge(row));
   }
-  /**
-   * Record that memories were retrieved (usage signal for ranking/forgetting)
-   */
   async recordNodeRetrievals(memoryIds) {
     if (memoryIds.length === 0) return;
     const schema = this.config.schema || "memory";
@@ -32073,14 +32099,14 @@ var MemoryStorage = class {
    *
    * @public
    */
-  async findMostSimilarMemories(content, entityId, k) {
+  async findMostSimilarMemories(content, entityId, k, statuses) {
     if (!this.embeddingService) {
       throw new Error(
         "EmbeddingService is required for findMostSimilarMemories. Provide embeddingService when initializing MemoryStorage."
       );
     }
     const embedding = await this.embeddingService.generateEmbedding(content);
-    const matches = await this.adapter.searchByVector(embedding, entityId, k, 0);
+    const matches = await this.adapter.searchByVector(embedding, entityId, k, 0, statuses);
     return { embedding, matches };
   }
   /**
@@ -32170,8 +32196,8 @@ var MemoryStorage = class {
    *
    * @public
    */
-  async getEdgesTouching(memoryIds) {
-    return this.adapter.getEdgesTouching(memoryIds);
+  async getEdgesTouching(memoryIds, scan) {
+    return this.adapter.getEdgesTouching(memoryIds, scan);
   }
   /**
    * Record that memories were retrieved (usage signal for ranking/forgetting)
@@ -32315,13 +32341,18 @@ var EmbeddingService = class {
   }
 };
 
-// node_modules/@openaikits/memory/src/memory/ranked-retrieval.ts
-var RECENCY_SCALE_DAYS = 30;
+// node_modules/@openaikits/memory/src/memory/memory-paths.ts
+var MAX_MEMORY_HOPS = 4;
+var MAX_EXPANDED_MEMORIES = 200;
+var MAX_EDGES_PER_HOP = 2e3;
+var rankedMemoryStatuses = ["active"];
+function canReadMemory(memory2, entityId) {
+  return memory2.entityId === entityId && rankedMemoryStatuses.includes(memory2.status ?? "active");
+}
 function daysSince(date4) {
   if (!date4) return Number.POSITIVE_INFINITY;
-  const t = typeof date4 === "string" ? new Date(date4).getTime() : date4.getTime();
-  if (!Number.isFinite(t)) return Number.POSITIVE_INFINITY;
-  return Math.max(0, (Date.now() - t) / 864e5);
+  const time3 = typeof date4 === "string" ? Date.parse(date4) : date4.getTime();
+  return Number.isFinite(time3) ? Math.max(0, (Date.now() - time3) / 864e5) : Number.POSITIVE_INFINITY;
 }
 function effectiveStrength(strength, updatedAt, lambda) {
   const base = strength ?? 0.5;
@@ -32329,6 +32360,109 @@ function effectiveStrength(strength, updatedAt, lambda) {
   const age = daysSince(updatedAt);
   if (!Number.isFinite(age)) return base;
   return base * Math.exp(-lambda * age);
+}
+function byStrength(a, b) {
+  return b.strength - a.strength || a.edgeIds.length - b.edgeIds.length || a.nodeIds[0].localeCompare(b.nodeIds[0]) || a.memoryId.localeCompare(b.memoryId);
+}
+async function expandMemoryPaths(storage, entityId, seeds, { hops, decayLambda }) {
+  const depth = Math.max(0, Math.min(MAX_MEMORY_HOPS, Math.floor(hops) || 0));
+  let frontier = Array.from(seeds, ([memoryId, strength]) => ({ memoryId, nodeIds: [memoryId], edgeIds: [], strength }));
+  const paths = new Map(frontier.map((path4) => [path4.memoryId, path4]));
+  const expandedStrength = new Map(seeds);
+  const activations = /* @__PURE__ */ new Map();
+  const encountered = /* @__PURE__ */ new Map();
+  const memoriesById = /* @__PURE__ */ new Map();
+  let truncated = false;
+  for (let hop = 0; hop < depth && frontier.length; hop++) {
+    const byId = new Map(frontier.map((path4) => [path4.memoryId, path4]));
+    const edges = await storage.getEdgesTouching([...byId.keys()], {
+      frontier: frontier.map((path4) => ({ node_id: path4.memoryId, strength: path4.strength, visited: path4.nodeIds })),
+      entityId,
+      statuses: rankedMemoryStatuses,
+      decayLambda,
+      limit: MAX_EDGES_PER_HOP + 1
+    });
+    truncated ||= edges.length > MAX_EDGES_PER_HOP;
+    const next = /* @__PURE__ */ new Map();
+    for (const edge of edges.slice(0, MAX_EDGES_PER_HOP)) {
+      if (edge.entityId !== entityId) continue;
+      encountered.set(edge.id, edge);
+      for (const [from, to] of [[edge.fromId, edge.toId], [edge.toId, edge.fromId]]) {
+        const parent = byId.get(from);
+        if (!parent || parent.nodeIds.includes(to)) continue;
+        const path4 = {
+          memoryId: to,
+          nodeIds: [...parent.nodeIds, to],
+          edgeIds: [...parent.edgeIds, edge.id],
+          strength: parent.strength * effectiveStrength(edge.strength, edge.strengthUpdatedAt, decayLambda)
+        };
+        const previous = next.get(to);
+        if (!previous || byStrength(path4, previous) < 0) next.set(to, path4);
+      }
+    }
+    const ranked = [...next.values()].sort(byStrength);
+    const candidates = [];
+    const capacity = MAX_EXPANDED_MEMORIES + seeds.size;
+    const scanLimit = Math.min(ranked.length, capacity * 4);
+    for (let offset = 0; offset < scanLimit && candidates.length <= capacity; offset += capacity) {
+      const batch = ranked.slice(offset, offset + capacity);
+      const unknownIds = batch.map((path4) => path4.memoryId).filter((id) => !memoriesById.has(id));
+      if (unknownIds.length) {
+        for (const memory2 of await storage.getMemoriesByIds(unknownIds))
+          if (canReadMemory(memory2, entityId)) memoriesById.set(memory2.id, memory2);
+      }
+      candidates.push(...batch.filter((path4) => memoriesById.has(path4.memoryId)));
+    }
+    truncated ||= candidates.length > capacity || scanLimit < ranked.length;
+    frontier = [];
+    for (const path4 of candidates.slice(0, capacity)) {
+      const previous = paths.get(path4.memoryId);
+      if (!previous && paths.size >= MAX_EXPANDED_MEMORIES + seeds.size) {
+        truncated = true;
+        continue;
+      }
+      const activation = activations.get(path4.memoryId);
+      if (!activation || byStrength(path4, activation) < 0) activations.set(path4.memoryId, path4);
+      if (!seeds.has(path4.memoryId) && (!previous || byStrength(path4, previous) < 0))
+        paths.set(path4.memoryId, path4);
+      if (path4.strength > (expandedStrength.get(path4.memoryId) ?? -Infinity)) {
+        expandedStrength.set(path4.memoryId, path4.strength);
+        frontier.push(path4);
+      }
+    }
+  }
+  if (depth > 1 && memoriesById.size) {
+    const retained = new Set([...paths.values()].flatMap((path4) => path4.nodeIds));
+    for (const path4 of activations.values()) for (const id of path4.nodeIds) retained.add(id);
+    const fresh = (await storage.getMemoriesByIds([...retained])).filter((memory2) => canReadMemory(memory2, entityId));
+    const readable = new Set(fresh.map((memory2) => memory2.id));
+    for (const memory2 of fresh) memoriesById.set(memory2.id, memory2);
+    for (const [id, path4] of paths) if (path4.nodeIds.some((node) => !readable.has(node))) paths.delete(id);
+    for (const [id, path4] of activations) if (path4.nodeIds.some((node) => !readable.has(node))) activations.delete(id);
+  }
+  return { paths: [...paths.values()], activations, encountered, memoriesById, truncated };
+}
+async function traverseMemory(storage, entityId, memoryId, { hops = 1, limit = 20, decayLambda = 0 } = {}) {
+  const [anchor] = await storage.getMemoriesByIds([memoryId]);
+  if (!anchor || !canReadMemory(anchor, entityId)) return { memories: [], paths: [], edges: [], truncated: false };
+  const expanded = await expandMemoryPaths(storage, entityId, /* @__PURE__ */ new Map([[memoryId, 1]]), { hops, decayLambda });
+  const paths = expanded.paths.filter((path4) => path4.edgeIds.length).sort(byStrength);
+  const returned = paths.slice(0, Math.max(1, Math.min(50, Math.floor(limit) || 1)));
+  return {
+    memories: returned.map((path4) => expanded.memoriesById.get(path4.memoryId)),
+    paths: returned,
+    edges: [...new Set(returned.flatMap((path4) => path4.edgeIds))].map((id) => expanded.encountered.get(id)),
+    truncated: expanded.truncated || paths.length > returned.length
+  };
+}
+
+// node_modules/@openaikits/memory/src/memory/ranked-retrieval.ts
+var RECENCY_SCALE_DAYS = 30;
+function daysSince2(date4) {
+  if (!date4) return Number.POSITIVE_INFINITY;
+  const t = typeof date4 === "string" ? new Date(date4).getTime() : date4.getTime();
+  if (!Number.isFinite(t)) return Number.POSITIVE_INFINITY;
+  return Math.max(0, (Date.now() - t) / 864e5);
 }
 function cosine(a, b) {
   let dot = 0;
@@ -32344,48 +32478,32 @@ function cosine(a, b) {
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 var clamp01 = (v) => Math.min(1, Math.max(0, v));
-async function runRankedRetrieval(storage, entityId, query, tuning, limit) {
+async function runRankedRetrieval(storage, entityId, query, tuning, limit, options = {}) {
   const { embedding: queryEmbedding, matches } = await storage.findMostSimilarMemories(
     query,
     entityId,
-    limit
+    options.topK === void 0 ? limit : Math.max(1, Math.min(50, Math.floor(options.topK) || 1)),
+    rankedMemoryStatuses
   );
-  const isActive = (m) => (m.status ?? "active") === "active";
-  const seeds = matches.filter(isActive);
+  const seeds = matches.filter((memory2) => canReadMemory(memory2, entityId));
   if (seeds.length === 0) {
     return { memories: [], contributingEdgeIds: [] };
   }
   const seedSim = new Map(seeds.map((s) => [s.id, clamp01(s.similarity ?? 0)]));
-  const edges = await storage.getEdgesTouching(seeds.map((s) => s.id));
-  const neighborIds = /* @__PURE__ */ new Set();
-  for (const edge of edges) {
-    if (edge.entityId !== entityId) continue;
-    for (const nodeId of [edge.fromId, edge.toId]) {
-      if (!seedSim.has(nodeId)) neighborIds.add(nodeId);
-    }
-  }
-  const neighbors = neighborIds.size > 0 ? (await storage.getMemoriesByIds([...neighborIds])).filter(isActive) : [];
-  const bestEdgeForNode = /* @__PURE__ */ new Map();
-  const considerEdge = (edge, seedId, nodeId) => {
-    const sim = seedSim.get(seedId);
-    if (sim === void 0) return;
-    const term = effectiveStrength(edge.strength, edge.strengthUpdatedAt, tuning.decayLambda) * sim;
-    const current = bestEdgeForNode.get(nodeId);
-    if (!current || term > current.term) {
-      bestEdgeForNode.set(nodeId, { edgeId: edge.id, term });
-    }
-  };
-  for (const edge of edges) {
-    if (edge.entityId !== entityId) continue;
-    considerEdge(edge, edge.fromId, edge.toId);
-    considerEdge(edge, edge.toId, edge.fromId);
-  }
-  const candidates = [...seeds, ...neighbors];
+  const expansion = await expandMemoryPaths(storage, entityId, seedSim, {
+    hops: options.hops ?? 1,
+    decayLambda: tuning.decayLambda
+  });
+  const { paths, truncated } = expansion;
+  const neighbors = paths.filter((path4) => path4.edgeIds.length).map((path4) => expansion.memoriesById.get(path4.memoryId));
+  const pathByMemory = new Map(paths.map((path4) => [path4.memoryId, path4]));
+  const bestEdgeForNode = expansion.activations;
+  const candidates = [...seeds.filter((memory2) => pathByMemory.has(memory2.id)), ...neighbors];
   const scored = candidates.map((memory2) => {
     const similarity = seedSim.get(memory2.id) ?? (memory2.embedding && memory2.embedding.length > 0 ? clamp01(cosine(queryEmbedding, memory2.embedding)) : 0);
-    const edgeTerm = bestEdgeForNode.get(memory2.id)?.term ?? 0;
+    const edgeTerm = bestEdgeForNode.get(memory2.id)?.strength ?? 0;
     const recencyAnchor = memory2.lastRetrievedAt ?? memory2.createdAt;
-    const recency = Number.isFinite(daysSince(recencyAnchor)) ? Math.exp(-daysSince(recencyAnchor) / RECENCY_SCALE_DAYS) : 0;
+    const recency = Number.isFinite(daysSince2(recencyAnchor)) ? Math.exp(-daysSince2(recencyAnchor) / RECENCY_SCALE_DAYS) : 0;
     const nodeStrength = effectiveStrength(
       memory2.strength,
       memory2.strengthUpdatedAt,
@@ -32397,11 +32515,16 @@ async function runRankedRetrieval(storage, entityId, query, tuning, limit) {
   scored.sort((a, b) => b.score - a.score);
   const top = scored.slice(0, limit);
   const returnedIds = new Set(top.map((s) => s.memory.id));
-  const contributingEdgeIds = [];
+  const contributingEdgeIds = /* @__PURE__ */ new Set();
   for (const [nodeId, best] of bestEdgeForNode) {
-    if (returnedIds.has(nodeId)) contributingEdgeIds.push(best.edgeId);
+    if (returnedIds.has(nodeId)) for (const edgeId of best.edgeIds) contributingEdgeIds.add(edgeId);
   }
-  return { memories: top.map((s) => s.memory), contributingEdgeIds };
+  return {
+    memories: top.map((s) => s.memory),
+    contributingEdgeIds: [...contributingEdgeIds],
+    paths: top.map(({ memory: memory2 }) => pathByMemory.get(memory2.id)).filter(Boolean),
+    truncated: truncated || scored.length > limit
+  };
 }
 
 // node_modules/@openaikits/memory/src/memory/connector.ts
@@ -34429,6 +34552,155 @@ var OpenAIAdapter = class {
   }
 };
 
+// node_modules/@openaikits/memory/src/memory/memory-use.ts
+import { createHmac, timingSafeEqual } from "node:crypto";
+var edgeBump = 0.05;
+function schemaIdentifier(schema) {
+  if (!/^[a-z_][a-z0-9_]*$/i.test(schema)) throw new Error("Invalid memory schema");
+  return schema.toLowerCase();
+}
+function memoryWorkUsageSchemaFor(schema) {
+  const table = schemaIdentifier(schema) + ".work_usage";
+  return `
+create table if not exists ${table} (
+  entity_id text not null,
+  actor_id text not null,
+  work_id text not null,
+  uses jsonb not null check (jsonb_typeof(uses) = 'array'),
+  recorded_at timestamptz not null default now(),
+  primary key (entity_id, actor_id, work_id)
+);
+alter table ${table} enable row level security;
+revoke all on ${table} from public;
+`;
+}
+var memoryWorkUsageSchema = memoryWorkUsageSchemaFor("memory");
+function sign(scope, payload) {
+  return createHmac("sha256", scope.secret).update(JSON.stringify(["oak-memory-use-v1", scope.entityId, scope.actorId, schemaIdentifier(scope.schema ?? "memory"), payload])).digest();
+}
+function issueMemoryUseReceipt(scope, path4) {
+  const { memoryId, nodeIds, edgeIds } = path4;
+  const payload = Buffer.from(JSON.stringify({
+    memoryId,
+    nodeIds,
+    edgeIds,
+    expiresAt: Date.now() + 12 * 60 * 60 * 1e3
+  })).toString("base64url");
+  return payload + "." + sign(scope, payload).toString("base64url");
+}
+function readReceipt(scope, receipt) {
+  if (receipt.length > 1600) throw new Error("Invalid memory use receipt");
+  const [payload, checksum, extra] = receipt.split(".");
+  const given = Buffer.from(checksum ?? "", "base64url");
+  const expected = sign(scope, payload);
+  if (extra !== void 0 || given.length !== expected.length || !timingSafeEqual(given, expected))
+    throw new Error("Invalid memory use receipt");
+  const path4 = JSON.parse(Buffer.from(payload, "base64url").toString());
+  if (path4.expiresAt < Date.now() || path4.edgeIds.length > MAX_MEMORY_HOPS || path4.nodeIds.length !== path4.edgeIds.length + 1 || path4.nodeIds[path4.nodeIds.length - 1] !== path4.memoryId)
+    throw new Error("Expired or invalid memory use receipt");
+  return path4;
+}
+async function recordMemoryUse(db, scope, workId, uses, linkChanges = []) {
+  if (!workId || workId.length > 160 || !uses.length || uses.length > 20 || linkChanges.length > 8)
+    throw new Error("Invalid memory use report");
+  const schema = schemaIdentifier(scope.schema ?? "memory");
+  const decayLambda = scope.decayLambda ?? 0;
+  if (!Number.isFinite(decayLambda) || decayLambda < 0) throw new Error("Invalid memory decay");
+  const selected = /* @__PURE__ */ new Map();
+  for (const { receipt, output } of uses) {
+    if (typeof receipt !== "string" || typeof output !== "string") throw new Error("Invalid memory use report");
+    const path4 = readReceipt(scope, receipt);
+    if (!output.trim() || output.length > 300) throw new Error("Identify the work output that used this memory");
+    const previous = selected.get(path4.memoryId);
+    if (!previous || path4.edgeIds.length < previous.edgeIds.length)
+      selected.set(path4.memoryId, { ...path4, output: output.trim(), receipt });
+  }
+  const records = [...selected.values()].map(({ memoryId, nodeIds, edgeIds: edgeIds2, output }) => ({ memoryId, nodeIds, edgeIds: edgeIds2, output }));
+  const memoryIds = [...selected.keys()];
+  const edgeIds = [...new Set(records.flatMap((record2) => record2.edgeIds))];
+  const protectedEdges = new Set(edgeIds);
+  const plan = linkChanges.map((change) => {
+    if (change?.action !== "shortcut" && change?.action !== "weaken" && change?.action !== "unlink")
+      throw new Error("Invalid memory link action");
+    const path4 = readReceipt(scope, change.receipt);
+    if (change.action === "shortcut") {
+      if (path4.edgeIds.length < 2 || selected.get(path4.memoryId)?.receipt !== change.receipt)
+        throw new Error("A shortcut requires a contributing multi-hop path from this work");
+    } else if (!path4.edgeIds.includes(change.edgeId) || protectedEdges.has(change.edgeId) || change.action === "weaken" && (!Number.isFinite(change.strength) || change.strength < 0 || change.strength > 1)) {
+      throw new Error("Link adjustment requires an inspected, unused edge of this store");
+    }
+    return { path: path4, change };
+  });
+  const inserted = await db.query(
+    `insert into ${schema}.work_usage(entity_id,actor_id,work_id,uses) values($1,$2,$3,$4::jsonb) on conflict do nothing returning work_id`,
+    [scope.entityId, scope.actorId, workId, JSON.stringify(records)]
+  );
+  if (!inserted.rowCount) return { alreadyRecorded: true, memories: 0, reinforced: 0, shortcuts: 0, weakened: 0, unlinked: 0 };
+  const memories = await db.query(
+    `update ${schema}.memories set retrieval_count=retrieval_count+1,last_retrieved_at=now() where entity_id=$1 and id=any($2::uuid[])`,
+    [scope.entityId, memoryIds]
+  );
+  if (memories.rowCount !== memoryIds.length) throw new Error("A used memory is no longer in the store");
+  const edges = await db.query(
+    `update ${schema}.edges set strength=least(1,strength+$3*(1-strength)),strength_updated_at=now() where entity_id=$1 and id=any($2::uuid[])`,
+    [scope.entityId, edgeIds, edgeBump]
+  );
+  if (edges.rowCount !== edgeIds.length) throw new Error("A used path has changed. Inspect the graph again.");
+  if (!plan.length) return { alreadyRecorded: false, memories: memoryIds.length, reinforced: edgeIds.length };
+  const changes = { shortcuts: 0, weakened: 0, unlinked: 0 };
+  for (const { path: path4, change } of plan) {
+    if (change.action === "shortcut") {
+      const [from] = path4.nodeIds;
+      const to = path4.memoryId;
+      const result = await db.query(
+        `with added as (
+          insert into ${schema}.edges(entity_id,from_id,to_id,type,origin,strength)
+          select $1,$2::uuid,$3::uuid,'related','conversation',0.6
+          where not exists (
+            select 1 from ${schema}.edges where entity_id=$1 and
+              ((from_id=$2 and to_id=$3) or (from_id=$3 and to_id=$2))
+          )
+          on conflict(from_id,to_id,type) do nothing returning id
+        )
+        update ${schema}.memories set outgoing_edges=case when $3::uuid=any(outgoing_edges) then outgoing_edges else array_append(outgoing_edges,$3::uuid) end
+        where entity_id=$1 and id=$2 and exists(select 1 from added)
+        returning id`,
+        [scope.entityId, from, to]
+      );
+      changes.shortcuts += result.rowCount ?? 0;
+    } else if (change.action === "weaken") {
+      const result = await db.query(
+        `update ${schema}.edges set strength=$3,strength_updated_at=now()
+         where entity_id=$1 and id=$2 and type='related'
+           and case
+             when $3::double precision = 0 then strength > 0
+             when strength > $3 then ln(strength) - ln($3::double precision) >
+               $4::double precision * greatest(0, extract(epoch from (now() - strength_updated_at)) / 86400)
+             else false
+           end returning id`,
+        [scope.entityId, change.edgeId, change.strength, decayLambda]
+      );
+      changes.weakened += result.rowCount ?? 0;
+    } else if (change.action === "unlink") {
+      const removed = await db.query(
+        `delete from ${schema}.edges where entity_id=$1 and id=$2 and type='related' returning from_id,to_id`,
+        [scope.entityId, change.edgeId]
+      );
+      if (!removed.rowCount) continue;
+      const { from_id, to_id } = removed.rows[0];
+      await db.query(
+        `update ${schema}.memories set outgoing_edges=array_remove(outgoing_edges,$3::uuid)
+         where entity_id=$1 and id=$2 and not exists(
+           select 1 from ${schema}.edges where entity_id=$1 and from_id=$2 and to_id=$3 and type='related'
+         )`,
+        [scope.entityId, from_id, to_id]
+      );
+      changes.unlinked++;
+    }
+  }
+  return { alreadyRecorded: false, memories: memoryIds.length, reinforced: edgeIds.length, ...changes };
+}
+
 // src/memoryClient.ts
 init_esm();
 
@@ -34597,11 +34869,11 @@ function getMemoryClient(env) {
 }
 var DEFAULT_RECALL_LIMIT = 10;
 var MAX_RECALL_LIMIT = 50;
-async function recall(env, query, limit = DEFAULT_RECALL_LIMIT) {
+async function recall(env, query, limit = DEFAULT_RECALL_LIMIT, options = {}) {
   const { storage } = await getMemoryClient(env);
   const tuning = normalizeMemoryTuning();
   const boundedLimit = Math.min(Math.max(1, limit), MAX_RECALL_LIMIT);
-  return runRankedRetrieval(storage, env.memoryEntityId, query, tuning, boundedLimit);
+  return runRankedRetrieval(storage, env.memoryEntityId, query, tuning, boundedLimit, options);
 }
 async function listAll(env) {
   const { storage } = await getMemoryClient(env);
@@ -34612,6 +34884,9 @@ async function listAll(env) {
   return { memories, edges };
 }
 async function closeMemoryClient() {
+  await workUsagePool?.end();
+  workUsagePool = void 0;
+  workUsageReady = void 0;
   await listingPool?.end();
   listingPool = void 0;
   listingReady = void 0;
@@ -34650,6 +34925,50 @@ async function listMemoryPage(env, limit, cursor) {
   await listingReady;
   return readSqlPage(listingPool, env.memoryEntityId, limit, cursor);
 }
+var workUsagePool;
+var workUsageReady;
+function memoryUseScope(env) {
+  return { entityId: env.memoryEntityId, actorId: env.memoryEntityId, secret: env.memoryDatabaseUrl, decayLambda: normalizeMemoryTuning().decayLambda };
+}
+async function recordWorkMemoryUse(env, workId, uses, linkChanges) {
+  await getMemoryClient(env);
+  if (!workUsagePool) {
+    workUsagePool = new Pool({ connectionString: env.memoryDatabaseUrl, max: 1, idleTimeoutMillis: 1e3 });
+    workUsagePool.on("error", () => console.error("[oak-memory] work usage connection failed"));
+  }
+  const pool = workUsagePool;
+  workUsageReady ??= (async () => {
+    const db2 = await pool.connect();
+    try {
+      await db2.query("begin");
+      await db2.query("select pg_advisory_xact_lock(7916502)");
+      if (!(await db2.query("select to_regclass('memory.work_usage') as present")).rows[0].present)
+        await db2.query(memoryWorkUsageSchema);
+      await db2.query("commit");
+    } catch (error2) {
+      await db2.query("rollback");
+      throw error2;
+    } finally {
+      db2.release();
+    }
+  })().catch((error2) => {
+    workUsageReady = void 0;
+    throw error2;
+  });
+  await workUsageReady;
+  const db = await pool.connect();
+  try {
+    await db.query("begin");
+    const result = await recordMemoryUse(db, memoryUseScope(env), workId, uses, linkChanges);
+    await db.query("commit");
+    return result;
+  } catch (error2) {
+    await db.query("rollback");
+    throw error2;
+  } finally {
+    db.release();
+  }
+}
 
 // src/tools/format.ts
 function formatMemory(memory2) {
@@ -34667,6 +34986,64 @@ function ageLabel(date4) {
   if (days === 0) return "today";
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
+}
+
+// src/tools/memoryPaths.ts
+function pathDetails(env, paths) {
+  return paths.map((path4) => ({ ...path4, receipt: issueMemoryUseReceipt(memoryUseScope(env), path4) }));
+}
+function registerMemoryPathTools(server, env) {
+  server.registerTool("traverseMemory", {
+    title: "Explore memory connections",
+    description: "Follow links from an existing memory in this store without changing strength. Returns bounded paths.",
+    inputSchema: {
+      memoryId: external_exports.string().uuid(),
+      hops: external_exports.number().int().min(1).max(MAX_MEMORY_HOPS).optional(),
+      limit: external_exports.number().int().min(1).max(50).optional()
+    }
+  }, async ({ memoryId, hops, limit }) => {
+    const { storage } = await getMemoryClient(env);
+    const result = await traverseMemory(storage, env.memoryEntityId, memoryId, { hops, limit, decayLambda: normalizeMemoryTuning().decayLambda });
+    const paths = pathDetails(env, result.paths);
+    const details = {
+      paths,
+      truncated: result.truncated,
+      memories: result.memories.map(({ id, content }) => ({ id, content })),
+      edges: result.edges.map(({ id, fromId, toId, type, strength, origin }) => ({ id, fromId, toId, type, strength, origin }))
+    };
+    const text2 = result.memories.map(formatMemory).join("\n") || "No connected memories found.";
+    return {
+      ...textResult(text2 + "\n" + JSON.stringify({ paths, edges: details.edges, truncated: details.truncated })),
+      structuredContent: details
+    };
+  });
+  server.registerTool("recordMemoryUse", {
+    title: "Record memories used in work",
+    description: "Submit once per task and store with receipts for memories actually used in an output. Exploring a path does not count. Include any linkChanges in the initial report. Reusing a work ID never applies further changes and reports linkChangesIgnored when adjustments were supplied on replay. Shortcuts require a used multi-hop path. Only inspected, unused related edges can be weakened or unlinked.",
+    inputSchema: {
+      workId: external_exports.string().trim().min(1).max(160),
+      uses: external_exports.array(external_exports.object({ receipt: external_exports.string().min(1).max(1600), output: external_exports.string().trim().min(1).max(300) })).min(1).max(20),
+      linkChanges: external_exports.array(external_exports.discriminatedUnion("action", [
+        external_exports.object({ action: external_exports.literal("shortcut"), receipt: external_exports.string().min(1).max(1600) }),
+        external_exports.object({ action: external_exports.literal("weaken"), receipt: external_exports.string().min(1).max(1600), edgeId: external_exports.string().uuid(), strength: external_exports.number().min(0).max(1) }),
+        external_exports.object({ action: external_exports.literal("unlink"), receipt: external_exports.string().min(1).max(1600), edgeId: external_exports.string().uuid() })
+      ])).max(8).optional()
+    }
+  }, async ({ workId, uses, linkChanges }) => {
+    try {
+      const result = await recordWorkMemoryUse(env, workId, uses, linkChanges);
+      const linkChangesIgnored = result.alreadyRecorded && Boolean(linkChanges?.length);
+      return {
+        ...textResult(result.alreadyRecorded ? "This work was already recorded. This call applied no new link changes." : "Memory use recorded."),
+        structuredContent: { ...result, ...linkChangesIgnored ? { linkChangesIgnored } : {} }
+      };
+    } catch (error2) {
+      const message = error2 instanceof Error ? error2.message : "";
+      if (/receipt|memory use report|Invalid memory link action|contributing multi-hop path|inspected, unused edge|A used path has changed/.test(message) && !(error2 instanceof Error && "code" in error2))
+        return { ...textResult("The work report or its path receipt is stale or invalid. Inspect the same store before retrying.", true), structuredContent: { error: "invalid_memory_use" } };
+      return { ...textResult("The work report could not be confirmed. Check the same store before retrying.", true), structuredContent: { error: "memory_use_unconfirmed" } };
+    }
+  });
 }
 
 // src/tools/createMemory.ts
@@ -35246,6 +35623,8 @@ function registerDeleteMemory(server, env) {
 // src/tools/recallMemory.ts
 var recallMemoryInputSchema = {
   query: external_exports.string().describe("Natural-language description of what to recall about the user."),
+  topK: external_exports.number().int().min(1).max(50).optional().describe("Number of vector starting points before graph expansion."),
+  hops: external_exports.number().int().min(0).max(MAX_MEMORY_HOPS).optional().describe("Graph expansion depth. Zero searches vector starting points only."),
   limit: external_exports.number().int().min(1).max(50).optional().describe("Maximum number of memories to return (default 10, max 50).")
 };
 function recallMemoryDescription(policy) {
@@ -35260,7 +35639,10 @@ to search.
 
 **Output**: ranked list of memories with their UUID, content, similarity/strength scores, and linked memory
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory \u2014 never invent a UUID or
-use a display index.`;
+use a display index.
+
+Set topK for starting points, hops for connection depth (zero is vector-only), and limit for the number returned. Recall does not reinforce links. The result identifies how each memory was reached. If this store
+exposes recordMemoryUse, use the returned receipt only for a memory actually applied to a concrete work output.`;
 }
 function registerRecallMemory(server, env) {
   server.registerTool(
@@ -35270,14 +35652,17 @@ function registerRecallMemory(server, env) {
       description: recallMemoryDescription(env.policy),
       inputSchema: recallMemoryInputSchema
     },
-    async ({ query, limit }) => {
-      const { memories } = await recall(env, query, limit);
+    async ({ query, limit, topK, hops }) => {
+      const ranked = await recall(env, query, limit, { topK, hops });
+      const { memories } = ranked;
       if (memories.length === 0) {
-        return textResult("No memories found for this query.");
+        return { ...textResult("No memories found for this query."), structuredContent: { memories: [], paths: [], truncated: false } };
       }
       const lines = memories.map(formatMemory).join("\n");
-      return textResult(`Found ${memories.length} memor${memories.length === 1 ? "y" : "ies"}:
+      const result = textResult(`Found ${memories.length} memor${memories.length === 1 ? "y" : "ies"}:
 ${lines}`);
+      const details = { paths: pathDetails(env, ranked.paths ?? []), truncated: ranked.truncated ?? false };
+      return { ...result, content: [...result.content, { type: "text", text: JSON.stringify(details) }], structuredContent: { ...details, memories: memories.map(({ id, content, outgoingEdges, similarity, strength }) => ({ id, content, outgoingEdges, similarity, strength })) } };
     }
   );
 }
@@ -36114,7 +36499,7 @@ function registerGetMemoryPolicy(server, env) {
 // src/tools/register.ts
 function registerAllTools(server, env) {
   const target = server;
-  const writes = /* @__PURE__ */ new Set(["createMemory", "updateMemory", "mergeMemories", "updateMemoryLink", "adjustMemoryLinkStrength", "deleteMemory"]);
+  const writes = /* @__PURE__ */ new Set(["createMemory", "updateMemory", "mergeMemories", "updateMemoryLink", "adjustMemoryLinkStrength", "deleteMemory", "recordMemoryUse"]);
   server = { registerTool: (name, definition, handler) => target.registerTool(name, definition, async (input) => {
     if (writes.has(name)) {
       if (env.policy.scope === null) return { isError: true, content: [{ type: "text", text: "This local store policy is unavailable. Nothing was changed; no mutation was attempted. Repair it before retrying." }] };
@@ -36130,6 +36515,7 @@ function registerAllTools(server, env) {
     return handler(input);
   }) };
   registerRecallMemory(server, env);
+  registerMemoryPathTools(server, env);
   registerListMemories(server, env);
   registerSuggestMemoryLinks(server, env);
   registerOpenMemoryGraph(server, env);
@@ -36152,7 +36538,7 @@ async function main() {
   const env = loadEnv();
   const server = new McpServer(
     { name: "oak-memory-plugin", version: "0.3.1" },
-    { instructions: buildServerInstructions(env.policy) }
+    { instructions: [buildServerInstructions(env.policy), memorySystemInstructions].join("\n\n") }
   );
   registerAllTools(server, env);
   const transport = new StdioServerTransport();

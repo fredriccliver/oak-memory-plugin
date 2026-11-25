@@ -1,3 +1,5 @@
+import { MAX_MEMORY_HOPS } from '@openaikits/memory';
+import { pathDetails } from './memoryPaths.js';
 import { z } from 'zod';
 import type { Env } from '../env.js';
 import { recall } from '../memoryClient.js';
@@ -8,6 +10,8 @@ export const recallMemoryInputSchema = {
   query: z
     .string()
     .describe('Natural-language description of what to recall about the user.'),
+  topK: z.number().int().min(1).max(50).optional().describe('Number of vector starting points before graph expansion.'),
+  hops: z.number().int().min(0).max(MAX_MEMORY_HOPS).optional().describe('Graph expansion depth. Zero searches vector starting points only.'),
   limit: z
     .number()
     .int()
@@ -30,7 +34,10 @@ to search.
 
 **Output**: ranked list of memories with their UUID, content, similarity/strength scores, and linked memory
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory — never invent a UUID or
-use a display index.`;
+use a display index.
+
+Set topK for starting points, hops for connection depth (zero is vector-only), and limit for the number returned. Recall does not reinforce links. The result identifies how each memory was reached. If this store
+exposes recordMemoryUse, use the returned receipt only for a memory actually applied to a concrete work output.`;
 }
 
 export function registerRecallMemory(server: any, env: Env) {
@@ -41,13 +48,16 @@ export function registerRecallMemory(server: any, env: Env) {
       description: recallMemoryDescription(env.policy),
       inputSchema: recallMemoryInputSchema,
     },
-    async ({ query, limit }: { query: string; limit?: number }) => {
-      const { memories } = await recall(env, query, limit);
+    async ({ query, limit, topK, hops }: { query: string; limit?: number; topK?:number; hops?:number }) => {
+      const ranked = await recall(env, query, limit, {topK,hops});
+      const { memories }=ranked;
       if (memories.length === 0) {
-        return textResult('No memories found for this query.');
+        return { ...textResult('No memories found for this query.'), structuredContent: { memories: [], paths: [], truncated: false } };
       }
       const lines = memories.map(formatMemory).join('\n');
-      return textResult(`Found ${memories.length} memor${memories.length === 1 ? 'y' : 'ies'}:\n${lines}`);
+      const result = textResult(`Found ${memories.length} memor${memories.length === 1 ? 'y' : 'ies'}:\n${lines}`);
+      const details={paths:pathDetails(env,ranked.paths??[]),truncated:ranked.truncated ?? false};
+      return {...result,content:[...result.content,{type:'text',text:JSON.stringify(details)}],structuredContent:{...details,memories:memories.map(({id,content,outgoingEdges,similarity,strength})=>({id,content,outgoingEdges,similarity,strength}))}};
     },
   );
 }

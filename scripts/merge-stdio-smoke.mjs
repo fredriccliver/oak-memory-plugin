@@ -107,6 +107,33 @@ try {
   assert.equal((await db.query('select content from memory.memories where id=$1',[foreign])).rows[0].content,'Untouched');
   const after=await snapshot();assert.equal((await call('mergeMemories',input)).isError,true);assert.deepEqual(await snapshot(),after);
   console.log('PASS real stdio merge: schema, input limits, stale/foreign rejection, provider/transaction rollback, typed links, snapshots and replay');
+  const anchor=await create('Graph anchor'), middle=await create('Graph intermediary'), target=await create('Graph used result');
+  const noise=await create('Graph noisy result'), obsolete=await create('Graph obsolete result');
+  for (const [fromMemoryId,toMemoryId] of [[anchor,middle],[middle,target],[anchor,noise],[anchor,obsolete]])
+    await ok('updateMemoryLink',{fromMemoryId,toMemoryId,action:'add'});
+  const strengths=async()=> (await db.query('select id,strength from memory.edges order by id')).rows;
+  const beforeRead=await strengths();
+  const direct=(await ok('recallMemory',{query:'Graph',topK:1,hops:0,limit:5})).structuredContent;
+  assert.equal(direct.paths.length,1);
+  assert.equal(direct.paths[0].edgeIds.length,0);
+  const paths=(await ok('traverseMemory',{memoryId:anchor,hops:2,limit:10})).structuredContent.paths;
+  const used=paths.find(path=>path.memoryId===target), weak=paths.find(path=>path.memoryId===noise);
+  const removed=paths.find(path=>path.memoryId===obsolete);
+  assert.equal(used.edgeIds.length,2);
+  assert.deepEqual(await strengths(),beforeRead);
+  const report={workId:'stdio-graph-fixture',uses:[{receipt:used.receipt,output:'Applied the related procedure'}],
+    linkChanges:[{action:'shortcut',receipt:used.receipt},{action:'weaken',receipt:weak.receipt,edgeId:weak.edgeIds[0],strength:.3},
+      {action:'unlink',receipt:removed.receipt,edgeId:removed.edgeIds[0]}]};
+  const invalid=await call('recordMemoryUse',{...report,uses:[{receipt:'fake',output:'Applied the related procedure'}]});
+  assert.equal(invalid.isError,true);
+  assert.equal(invalid.structuredContent.error,'invalid_memory_use');
+  assert.deepEqual(await strengths(),beforeRead);
+  assert.deepEqual((await ok('recordMemoryUse',report)).structuredContent,
+    {alreadyRecorded:false,memories:1,reinforced:2,shortcuts:1,weakened:1,unlinked:1});
+  assert.deepEqual((await ok('recordMemoryUse',report)).structuredContent,
+    {alreadyRecorded:true,memories:0,reinforced:0,shortcuts:0,weakened:0,unlinked:0,linkChangesIgnored:true});
+  console.log('PASS real stdio recall, traversal, errors and work-scoped link changes');
+
 } finally {
   await client?.close();await db.end();gateway.close();if(gateway.listening)await once(gateway,'close');rmSync(home,{recursive:true,force:true});
 }

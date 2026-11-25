@@ -3,11 +3,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode, type Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ProfileSession } from './bridge.js';
 import { attributionInstructions, type Profiles } from './profiles.js';
-import { storeInstructions, recoveryInstructions } from './policy.js';
+import { storeInstructions, recoveryInstructions, cloudMemoryCapabilityInstructions } from './policy.js';
 
 const text = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
 const failure = () => ({ ...text({ error: 'Store request failed. Check configuration, key, membership and connectivity. No fallback was used.' }), isError: true });
-const reads = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'suggestMemoryLinks', 'getMemoryPolicy']);
+const reads = new Set(['currentMemoryStore', 'listMemoryStores', 'listMemories', 'recallMemory', 'traverseMemory', 'suggestMemoryLinks', 'getMemoryPolicy']);
 const searches = new Set(['recallMemory', 'listMemories']);
 const localNames = new Set(['listMemoryStores', 'currentMemoryStore', 'getMemoryPolicy', 'listMemoryProfiles', 'selectMemoryProfile', 'memoryConnectionStatus']);
 
@@ -45,7 +45,7 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
   }));
   const server = new Server({ name: 'oak-desktop-cloud', version }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${storeInstructions}\n${recoveryInstructions}\nStore-scoped cloud policies: ${JSON.stringify(policies)}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
+    instructions: `${cloudMemoryCapabilityInstructions}\n${storeInstructions}\n${recoveryInstructions}\nStore-scoped cloud policies: ${JSON.stringify(policies)}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     const entry = active;

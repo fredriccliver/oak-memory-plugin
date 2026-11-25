@@ -12,7 +12,7 @@ import { startProfileBridge } from './bridge.js';
 import { loadEnv } from './env.js';
 import { registerAllTools } from './tools/register.js';
 import { closeMemoryClient } from './memoryClient.js';
-import { buildServerInstructions } from './policy.js';
+import { buildServerInstructions, memorySystemInstructions } from './policy.js';
 
 async function main() {
   const selection = resolveBackend();
@@ -28,7 +28,7 @@ async function main() {
   // notice into a policy it follows.
   const server = new McpServer(
     { name: 'oak-memory-plugin', version: '0.3.1' },
-    { instructions: buildServerInstructions(env.policy) },
+    { instructions: [buildServerInstructions(env.policy), memorySystemInstructions].join('\n\n') },
   );
 
   registerAllTools(server, env);

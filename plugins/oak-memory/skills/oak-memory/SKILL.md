@@ -43,3 +43,5 @@ Use the `oak-memory` MCP tools as the persistent memory layer for the selected p
 - Use `openMemoryGraph` when the user asks for a visual graph.
 
 Report mutations briefly and precisely: what was created, updated, linked, or deleted. A tool failure may have an uncertain outcome. Automatically inspect the same store before retrying, retry only after non-application is established, and report the actual verified result.
+
+Adjust recall with topK for vector starting points, hops for graph depth, and limit for returned memories when the selected store exposes those inputs. Use traverseMemory to inspect paths from a known memory. Recall and traversal do not reinforce links. When recordMemoryUse is exposed and receipts are returned, submit the receipts of memories actually used in an output once per task and store.

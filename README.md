@@ -130,7 +130,9 @@ maps those requests to the same MCP tools.
 
 | Tool | Purpose |
 |---|---|
-| `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. |
+| `recallMemory` | Search memory for facts relevant to a query (ranked by similarity, graph links, recency, strength). The main read-path tool — call it before answering anything that might depend on prior context, and before `createMemory` to avoid duplicates. Accepts independent `topK`, `hops`, and `limit`. |
+| `traverseMemory` | Follow the selected memory's links in the same store and return the connections and paths. |
+| `recordMemoryUse` | Record one batch per task and store with receipts for memories applied to the work. Include any link adjustments in that first batch. A replay with adjustments returns `linkChangesIgnored`. Weaken and unlink are limited to inspected, unused `related` edges. |
 | `listMemories` | Browse bounded pages of memories and every link — the whole graph, no query, no ranking. For seeing/auditing what's stored rather than finding what's relevant. Backs `/memory-graph`. |
 | `openMemoryGraph` | Render the same graph as an interactive, force-directed HTML page and open it in the default browser. Backs `/memory-graph-web`. |
 | `suggestMemoryLinks` | Read-only structural analysis: all-pairs embedding similarity surfacing orphans, link candidates (near-duplicates flagged), each edge's stored strength vs. actual similarity, and oversized split candidates. Evidence for a curation pass; writes nothing. Backs `/memory-organise`. |
@@ -171,6 +173,8 @@ New local stores default to `everything`, autosave on and `aggressive` (proactiv
 Use actual discovered tools and schemas; version numbers do not prove a tool exists. Prefer atomic `mergeMemories` when exposed. A timeout may follow a committed write: inspect the same store automatically, retry only after non-application is established, and never report an unknown outcome as unchanged.
 
 `listMemories` returns pages: 20 memories by default, 100 maximum, separately bounded links and bytes. Follow `nextCursor` in the same snapshot until `hasMore` is false, including edge-only pages. A changed graph invalidates its cursor. `recallMemory` searches for relevant context (default 10, maximum 50); it does not prove an exhaustive audit. Connection verification uses identity/status tools without reading memory bodies.
+
+Adjust recall with topK for vector starting points, hops for graph depth, and limit for returned memories when the selected store exposes those inputs. Use traverseMemory to inspect paths from a known memory. Recall and traversal do not reinforce links. When recordMemoryUse is exposed and receipts are returned, submit the receipts of memories actually used in an output once per task and store.
 
 Local settings remain configurable with `MEMORY_POLICY_SCOPE` (`preferences`, `important`, `everything`, `custom`), `MEMORY_POLICY_AUTOSAVE` and `MEMORY_POLICY_RECALL` (`minimal`, `balanced`, `aggressive`). A custom local rule lives in `oak-memory-policy.md` or `MEMORY_POLICY_FILE`. Store-specific profile settings are edited on that profile, not in another store environment. Claude Code reminders follow the active backend; automatic management does not depend on a hook being available in other hosts.
 
