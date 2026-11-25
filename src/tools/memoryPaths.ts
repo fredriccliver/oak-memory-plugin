@@ -45,7 +45,15 @@ export function registerMemoryPathTools(server: any, env: Env) {
       ])).max(8).optional(),
     },
   }, async ({workId,uses,linkChanges}: {workId:string;uses:{receipt:string;output:string}[];linkChanges?:MemoryLinkChange[]}) => {
-    const result=await recordWorkMemoryUse(env,workId,uses,linkChanges);
-    return {...textResult(result.alreadyRecorded ? 'This work was already recorded.' : 'Memory use recorded.'),structuredContent:result};
+    try {
+      const result=await recordWorkMemoryUse(env,workId,uses,linkChanges);
+      return {...textResult(result.alreadyRecorded ? 'This work was already recorded.' : 'Memory use recorded.'),structuredContent:result};
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (/receipt|memory use report|contributing multi-hop path|inspected, unused edge|A used path has changed/.test(message) &&
+          !(error instanceof Error && 'code' in error))
+        return {...textResult('The work report or its path receipt is stale or invalid. Inspect the same store before retrying.', true),structuredContent:{error:'invalid_memory_use'}};
+      return {...textResult('The work report could not be confirmed. Check the same store before retrying.', true),structuredContent:{error:'memory_use_unconfirmed'}};
+    }
   });
 }

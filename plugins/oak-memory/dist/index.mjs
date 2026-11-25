@@ -30505,7 +30505,7 @@ ${autosaveRule(policy)}
 An explicit store restriction controls its scope; do not silently broaden it. Change this store policy only when the user requests it.
 ${recoveryInstructions}`;
 }
-var memorySystemInstructions = "Recall and traversal do not strengthen links. Call recordMemoryUse once per task and store with the receipts of memories actually used in a decision, action, or artifact and a brief description of that output. Before updating links, inspect existing paths. Add a shortcut only when useful context is not lost, weaken noisy associations, and unlink obsolete connections as the current store policy permits.";
+var memorySystemInstructions = "Recall and traversal do not strengthen links. After discovering the tools of the selected profile, call recordMemoryUse only if it is exposed and the recall or traversal result supplied a use receipt. Record once per task and store, with receipts for memories actually used in a decision, action, or artifact and a brief description of that output. Older servers may omit the tool or receipts. Continue normal memory work in that case. Before updating links, inspect existing paths. Add a shortcut only when useful context is not lost, weaken noisy associations, and unlink obsolete connections as the current store policy permits.";
 
 // src/bridge.ts
 var text = (value) => ({ content: [{ type: "text", text: JSON.stringify(value) }] });
@@ -32320,6 +32320,9 @@ var EmbeddingService = class {
 // node_modules/@openaikits/memory/src/memory/memory-paths.ts
 var MAX_MEMORY_HOPS = 4;
 var MAX_EXPANDED_MEMORIES = 200;
+function canReadMemory(memory2, entityId) {
+  return memory2.entityId === entityId && (memory2.status ?? "active") === "active";
+}
 function daysSince(date4) {
   if (!date4) return Number.POSITIVE_INFINITY;
   const time3 = typeof date4 === "string" ? Date.parse(date4) : date4.getTime();
@@ -32362,9 +32365,13 @@ async function expandMemoryPaths(storage, entityId, seeds, { hops, decayLambda }
         if (!previous || byStrength(path4, previous) < 0) next.set(to, path4);
       }
     }
-    const candidates = [...next.values()].sort(byStrength);
+    const ranked = [...next.values()].sort(byStrength);
+    const candidates = ranked.slice(0, MAX_EXPANDED_MEMORIES + seeds.size);
+    truncated ||= candidates.length < ranked.length;
+    const valid = new Set((await storage.getMemoriesByIds(candidates.map((path4) => path4.memoryId))).filter((memory2) => canReadMemory(memory2, entityId)).map((memory2) => memory2.id));
     frontier = [];
     for (const path4 of candidates) {
+      if (!valid.has(path4.memoryId)) continue;
       const previous = paths.get(path4.memoryId);
       if (!previous && paths.size >= MAX_EXPANDED_MEMORIES + seeds.size) {
         truncated = true;
@@ -32381,11 +32388,11 @@ async function expandMemoryPaths(storage, entityId, seeds, { hops, decayLambda }
 }
 async function traverseMemory(storage, entityId, memoryId, { hops = 1, limit = 20, decayLambda = 0 } = {}) {
   const [anchor] = await storage.getMemoriesByIds([memoryId]);
-  if (!anchor || anchor.entityId !== entityId) return { memories: [], paths: [], edges: [], truncated: false };
+  if (!anchor || !canReadMemory(anchor, entityId)) return { memories: [], paths: [], edges: [], truncated: false };
   const expanded = await expandMemoryPaths(storage, entityId, /* @__PURE__ */ new Map([[memoryId, 1]]), { hops, decayLambda });
   const paths = expanded.paths.filter((path4) => path4.edgeIds.length).sort(byStrength);
   const results = await storage.getMemoriesByIds(paths.map((path4) => path4.memoryId));
-  const byId = new Map(results.filter((memory2) => memory2.entityId === entityId).map((memory2) => [memory2.id, memory2]));
+  const byId = new Map(results.filter((memory2) => canReadMemory(memory2, entityId)).map((memory2) => [memory2.id, memory2]));
   const valid = paths.filter((path4) => byId.has(path4.memoryId));
   const returned = valid.slice(0, Math.max(1, Math.min(50, Math.floor(limit) || 1)));
   return {
@@ -32398,7 +32405,6 @@ async function traverseMemory(storage, entityId, memoryId, { hops = 1, limit = 2
 
 // node_modules/@openaikits/memory/src/memory/ranked-retrieval.ts
 var RECENCY_SCALE_DAYS = 30;
-var DEMOTED_SCORE_FACTOR = 0.5;
 function daysSince2(date4) {
   if (!date4) return Number.POSITIVE_INFINITY;
   const t = typeof date4 === "string" ? new Date(date4).getTime() : date4.getTime();
@@ -32425,7 +32431,7 @@ async function runRankedRetrieval(storage, entityId, query, tuning, limit, optio
     entityId,
     options.topK === void 0 ? limit : Math.max(1, Math.min(50, Math.floor(options.topK) || 1))
   );
-  const seeds = matches;
+  const seeds = matches.filter((memory2) => canReadMemory(memory2, entityId));
   if (seeds.length === 0) {
     return { memories: [], contributingEdgeIds: [] };
   }
@@ -32435,7 +32441,7 @@ async function runRankedRetrieval(storage, entityId, query, tuning, limit, optio
     decayLambda: tuning.decayLambda
   });
   const { paths, truncated } = expansion;
-  const neighbors = (await storage.getMemoriesByIds(paths.filter((path4) => path4.edgeIds.length && !seedSim.has(path4.memoryId)).map((path4) => path4.memoryId))).filter((memory2) => memory2.entityId === entityId);
+  const neighbors = (await storage.getMemoriesByIds(paths.filter((path4) => path4.edgeIds.length && !seedSim.has(path4.memoryId)).map((path4) => path4.memoryId))).filter((memory2) => canReadMemory(memory2, entityId));
   const pathByMemory = new Map(paths.map((path4) => [path4.memoryId, path4]));
   const bestEdgeForNode = expansion.activations;
   const candidates = [...seeds, ...neighbors];
@@ -32449,8 +32455,7 @@ async function runRankedRetrieval(storage, entityId, query, tuning, limit, optio
       memory2.strengthUpdatedAt,
       tuning.decayLambda
     );
-    const demotion = (memory2.status ?? "active") === "demoted" ? DEMOTED_SCORE_FACTOR : 1;
-    const score = demotion * (tuning.rankWeightSimilarity * similarity + tuning.rankWeightEdge * edgeTerm + tuning.rankWeightRecency * recency + tuning.rankWeightStrength * nodeStrength);
+    const score = tuning.rankWeightSimilarity * similarity + tuning.rankWeightEdge * edgeTerm + tuning.rankWeightRecency * recency + tuning.rankWeightStrength * nodeStrength;
     return { memory: { ...memory2, similarity }, score };
   });
   scored.sort((a, b) => b.score - a.score);
@@ -34953,8 +34958,15 @@ function registerMemoryPathTools(server, env) {
       ])).max(8).optional()
     }
   }, async ({ workId, uses, linkChanges }) => {
-    const result = await recordWorkMemoryUse(env, workId, uses, linkChanges);
-    return { ...textResult(result.alreadyRecorded ? "This work was already recorded." : "Memory use recorded."), structuredContent: result };
+    try {
+      const result = await recordWorkMemoryUse(env, workId, uses, linkChanges);
+      return { ...textResult(result.alreadyRecorded ? "This work was already recorded." : "Memory use recorded."), structuredContent: result };
+    } catch (error2) {
+      const message = error2 instanceof Error ? error2.message : "";
+      if (/receipt|memory use report|contributing multi-hop path|inspected, unused edge|A used path has changed/.test(message) && !(error2 instanceof Error && "code" in error2))
+        return { ...textResult("The work report or its path receipt is stale or invalid. Inspect the same store before retrying.", true), structuredContent: { error: "invalid_memory_use" } };
+      return { ...textResult("The work report could not be confirmed. Check the same store before retrying.", true), structuredContent: { error: "memory_use_unconfirmed" } };
+    }
   });
 }
 
@@ -35535,8 +35547,8 @@ function registerDeleteMemory(server, env) {
 // src/tools/recallMemory.ts
 var recallMemoryInputSchema = {
   query: external_exports.string().describe("Natural-language description of what to recall about the user."),
-  topK: external_exports.number().int().min(1).max(50).optional(),
-  hops: external_exports.number().int().min(0).max(MAX_MEMORY_HOPS).optional(),
+  topK: external_exports.number().int().min(1).max(50).optional().describe("Number of vector starting points before graph expansion."),
+  hops: external_exports.number().int().min(0).max(MAX_MEMORY_HOPS).optional().describe("Graph expansion depth. Zero searches vector starting points only."),
   limit: external_exports.number().int().min(1).max(50).optional().describe("Maximum number of memories to return (default 10, max 50).")
 };
 function recallMemoryDescription(policy) {
@@ -35551,7 +35563,10 @@ to search.
 
 **Output**: ranked list of memories with their UUID, content, similarity/strength scores, and linked memory
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory \u2014 never invent a UUID or
-use a display index.`;
+use a display index.
+
+Recall does not reinforce links. The result identifies how each memory was reached. If this store
+exposes recordMemoryUse, use the returned receipt only for a memory actually applied to a concrete work output.`;
 }
 function registerRecallMemory(server, env) {
   server.registerTool(

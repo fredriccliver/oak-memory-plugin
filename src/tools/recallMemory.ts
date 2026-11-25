@@ -10,8 +10,8 @@ export const recallMemoryInputSchema = {
   query: z
     .string()
     .describe('Natural-language description of what to recall about the user.'),
-  topK: z.number().int().min(1).max(50).optional(),
-  hops: z.number().int().min(0).max(MAX_MEMORY_HOPS).optional(),
+  topK: z.number().int().min(1).max(50).optional().describe('Number of vector starting points before graph expansion.'),
+  hops: z.number().int().min(0).max(MAX_MEMORY_HOPS).optional().describe('Graph expansion depth. Zero searches vector starting points only.'),
   limit: z
     .number()
     .int()
@@ -34,7 +34,10 @@ to search.
 
 **Output**: ranked list of memories with their UUID, content, similarity/strength scores, and linked memory
 UUIDs. Use these UUIDs directly with updateMemory / updateMemoryLink / deleteMemory — never invent a UUID or
-use a display index.`;
+use a display index.
+
+Recall does not reinforce links. The result identifies how each memory was reached. If this store
+exposes recordMemoryUse, use the returned receipt only for a memory actually applied to a concrete work output.`;
 }
 
 export function registerRecallMemory(server: any, env: Env) {

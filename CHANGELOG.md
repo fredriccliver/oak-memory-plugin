@@ -1,3 +1,7 @@
+## Unreleased
+
+- Control recall breadth and explore a memory’s connections. Record memories used in a work output to reinforce their contributing paths or apply a supported link change.
+
 ## Desktop Cloud 0.2.3 (2026-11-07)
 
 - Send the Desktop package version with hosted widget resource requests so the widget can link to a newer published bundle when available.
