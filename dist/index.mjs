@@ -31706,25 +31706,44 @@ var PostgresAdapter = class {
   /**
    * Get all edges touching any of the given memories (either direction)
    */
-  async getEdgesTouching(memoryIds, limit, entityId) {
+  async getEdgesTouching(memoryIds, scan) {
     if (memoryIds.length === 0) return [];
     const schema = this.config.schema || "memory";
+    if (scan) {
+      const result2 = await this.client.query(
+        `
+        with frontier as (
+          select * from jsonb_to_recordset($1::jsonb) as path(node_id uuid, strength double precision, visited uuid[])
+        )
+        select e.*, max(
+          ln(nullif(path.strength, 0)) + ln(nullif(e.strength, 0)) -
+          $4::double precision * greatest(0, extract(epoch from (now() - e.strength_updated_at)) / 86400)
+        ) as path_score
+        from frontier path
+        join ${schema}.edges e on e.from_id = path.node_id or e.to_id = path.node_id
+        join ${schema}.memories target
+          on target.id = case when e.from_id = path.node_id then e.to_id else e.from_id end
+        where e.entity_id = $2 and target.entity_id = $2
+          and coalesce(target.status, 'active') = any($3::text[])
+          and not target.id = any(path.visited)
+        group by e.id
+        order by path_score desc nulls last, e.id
+        limit $5
+        `,
+        [JSON.stringify(scan.frontier), scan.entityId, scan.statuses, scan.decayLambda, scan.limit]
+      );
+      return result2.rows.map((row) => this.mapRowToEdge(row));
+    }
     const result = await this.client.query(
       `
       SELECT id, entity_id, from_id, to_id, type, origin, strength, created_at, strength_updated_at
       FROM ${schema}.edges
-      WHERE (from_id = ANY($1) OR to_id = ANY($1))
-        AND ($3::text IS NULL OR entity_id = $3)
-      ${limit === void 0 ? "" : "ORDER BY strength DESC, id"}
-      LIMIT $2
+      WHERE from_id = ANY($1) OR to_id = ANY($1)
       `,
-      [memoryIds, limit ?? null, entityId ?? null]
+      [memoryIds]
     );
     return result.rows.map((row) => this.mapRowToEdge(row));
   }
-  /**
-   * Record that memories were retrieved (usage signal for ranking/forgetting)
-   */
   async recordNodeRetrievals(memoryIds) {
     if (memoryIds.length === 0) return;
     const schema = this.config.schema || "memory";
@@ -32176,8 +32195,8 @@ var MemoryStorage = class {
    *
    * @public
    */
-  async getEdgesTouching(memoryIds, limit, entityId) {
-    return this.adapter.getEdgesTouching(memoryIds, limit, entityId);
+  async getEdgesTouching(memoryIds, scan) {
+    return this.adapter.getEdgesTouching(memoryIds, scan);
   }
   /**
    * Record that memories were retrieved (usage signal for ranking/forgetting)
@@ -32355,7 +32374,13 @@ async function expandMemoryPaths(storage, entityId, seeds, { hops, decayLambda }
   let truncated = false;
   for (let hop = 0; hop < depth && frontier.length; hop++) {
     const byId = new Map(frontier.map((path4) => [path4.memoryId, path4]));
-    const edges = await storage.getEdgesTouching([...byId.keys()], MAX_EDGES_PER_HOP + 1, entityId);
+    const edges = await storage.getEdgesTouching([...byId.keys()], {
+      frontier: frontier.map((path4) => ({ node_id: path4.memoryId, strength: path4.strength, visited: path4.nodeIds })),
+      entityId,
+      statuses: rankedMemoryStatuses,
+      decayLambda,
+      limit: MAX_EDGES_PER_HOP + 1
+    });
     truncated ||= edges.length > MAX_EDGES_PER_HOP;
     const next = /* @__PURE__ */ new Map();
     for (const edge of edges.slice(0, MAX_EDGES_PER_HOP)) {
@@ -32404,6 +32429,15 @@ async function expandMemoryPaths(storage, entityId, seeds, { hops, decayLambda }
         frontier.push(path4);
       }
     }
+  }
+  if (depth > 1 && memoriesById.size) {
+    const retained = new Set([...paths.values()].flatMap((path4) => path4.nodeIds));
+    for (const path4 of activations.values()) for (const id of path4.nodeIds) retained.add(id);
+    const fresh = (await storage.getMemoriesByIds([...retained])).filter((memory2) => canReadMemory(memory2, entityId));
+    const readable = new Set(fresh.map((memory2) => memory2.id));
+    for (const memory2 of fresh) memoriesById.set(memory2.id, memory2);
+    for (const [id, path4] of paths) if (path4.nodeIds.some((node) => !readable.has(node))) paths.delete(id);
+    for (const [id, path4] of activations) if (path4.nodeIds.some((node) => !readable.has(node))) activations.delete(id);
   }
   return { paths: [...paths.values()], activations, encountered, memoriesById, truncated };
 }
@@ -32463,7 +32497,7 @@ async function runRankedRetrieval(storage, entityId, query, tuning, limit, optio
   const neighbors = paths.filter((path4) => path4.edgeIds.length).map((path4) => expansion.memoriesById.get(path4.memoryId));
   const pathByMemory = new Map(paths.map((path4) => [path4.memoryId, path4]));
   const bestEdgeForNode = expansion.activations;
-  const candidates = [...seeds, ...neighbors];
+  const candidates = [...seeds.filter((memory2) => pathByMemory.has(memory2.id)), ...neighbors];
   const scored = candidates.map((memory2) => {
     const similarity = seedSim.get(memory2.id) ?? (memory2.embedding && memory2.embedding.length > 0 ? clamp01(cosine(queryEmbedding, memory2.embedding)) : 0);
     const edgeTerm = bestEdgeForNode.get(memory2.id)?.strength ?? 0;
@@ -34521,8 +34555,8 @@ var OpenAIAdapter = class {
 import { createHmac, timingSafeEqual } from "node:crypto";
 var edgeBump = 0.05;
 function schemaIdentifier(schema) {
-  if (!/^[a-z_][a-z0-9_]*$/.test(schema)) throw new Error("Invalid memory schema");
-  return schema;
+  if (!/^[a-z_][a-z0-9_]*$/i.test(schema)) throw new Error("Invalid memory schema");
+  return schema.toLowerCase();
 }
 function memoryWorkUsageSchemaFor(schema) {
   const table = schemaIdentifier(schema) + ".work_usage";
@@ -34541,7 +34575,7 @@ revoke all on ${table} from public;
 }
 var memoryWorkUsageSchema = memoryWorkUsageSchemaFor("memory");
 function sign(scope, payload) {
-  return createHmac("sha256", scope.secret).update(JSON.stringify(["oak-memory-use-v1", scope.entityId, scope.actorId, scope.schema ?? "memory", payload])).digest();
+  return createHmac("sha256", scope.secret).update(JSON.stringify(["oak-memory-use-v1", scope.entityId, scope.actorId, schemaIdentifier(scope.schema ?? "memory"), payload])).digest();
 }
 function issueMemoryUseReceipt(scope, path4) {
   const { memoryId, nodeIds, edgeIds } = path4;
