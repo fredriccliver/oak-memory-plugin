@@ -1,3 +1,4 @@
+import { registerMemoryPathTools } from './memoryPaths.js';
 import { getMemoryClient } from '../memoryClient.js';
 import type { Env } from '../env.js';
 import { registerCreateMemory } from './createMemory.js';
@@ -14,7 +15,7 @@ import { registerGetMemoryPolicy } from './getMemoryPolicy.js';
 
 export function registerAllTools(server: any, env: Env): void {
   const target=server;
-  const writes=new Set(['createMemory','updateMemory','mergeMemories','updateMemoryLink','adjustMemoryLinkStrength','deleteMemory']);
+  const writes=new Set(['createMemory','updateMemory','mergeMemories','updateMemoryLink','adjustMemoryLinkStrength','deleteMemory','recordMemoryUse']);
   server={registerTool:(name:string,definition:any,handler:(input:any)=>Promise<any>)=>target.registerTool(name,definition,async(input:any)=>{
     if(writes.has(name)) {
       if(env.policy.scope===null)return {isError:true,content:[{type:'text',text:'This local store policy is unavailable. Nothing was changed; no mutation was attempted. Repair it before retrying.'}]};
@@ -24,6 +25,7 @@ export function registerAllTools(server: any, env: Env): void {
     return handler(input);
   })};
   registerRecallMemory(server, env);
+  registerMemoryPathTools(server, env);
   registerListMemories(server, env);
   registerSuggestMemoryLinks(server, env);
   registerOpenMemoryGraph(server, env);

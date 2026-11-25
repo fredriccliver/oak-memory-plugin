@@ -1,3 +1,5 @@
+import { MAX_MEMORY_HOPS } from '@openaikits/memory';
+import { pathDetails } from './memoryPaths.js';
 import { z } from 'zod';
 import type { Env } from '../env.js';
 import { recall } from '../memoryClient.js';
@@ -8,6 +10,8 @@ export const recallMemoryInputSchema = {
   query: z
     .string()
     .describe('Natural-language description of what to recall about the user.'),
+  topK: z.number().int().min(1).max(50).optional(),
+  hops: z.number().int().min(0).max(MAX_MEMORY_HOPS).optional(),
   limit: z
     .number()
     .int()
@@ -41,13 +45,16 @@ export function registerRecallMemory(server: any, env: Env) {
       description: recallMemoryDescription(env.policy),
       inputSchema: recallMemoryInputSchema,
     },
-    async ({ query, limit }: { query: string; limit?: number }) => {
-      const { memories } = await recall(env, query, limit);
+    async ({ query, limit, topK, hops }: { query: string; limit?: number; topK?:number; hops?:number }) => {
+      const ranked = await recall(env, query, limit, {topK,hops});
+      const { memories }=ranked;
       if (memories.length === 0) {
         return textResult('No memories found for this query.');
       }
       const lines = memories.map(formatMemory).join('\n');
-      return textResult(`Found ${memories.length} memor${memories.length === 1 ? 'y' : 'ies'}:\n${lines}`);
+      const result = textResult(`Found ${memories.length} memor${memories.length === 1 ? 'y' : 'ies'}:\n${lines}`);
+      const details={paths:pathDetails(env,ranked.paths??[]),truncated:ranked.truncated ?? false};
+      return {...result,content:[...result.content,{type:'text',text:JSON.stringify(details)}],structuredContent:{...details,memories:memories.map(({id,content,outgoingEdges,similarity,strength})=>({id,content,outgoingEdges,similarity,strength}))}};
     },
   );
 }

@@ -12,7 +12,10 @@ import {
   MemoryToolHandler,
   runRankedRetrieval,
   normalizeMemoryTuning,
+  memoryWorkUsageSchema,
+  recordMemoryUse,
   type MemoryStorage,
+  type MemoryLinkChange,
 } from '@openaikits/memory';
 // Aliased on import: the package root exports a *class* also named `Memory`
 // (imported above), which would shadow this interface in the type namespace.
@@ -62,11 +65,12 @@ export async function recall(
   env: Env,
   query: string,
   limit: number = DEFAULT_RECALL_LIMIT,
+  options: {topK?:number; hops?:number} = {},
 ) {
   const { storage } = await getMemoryClient(env);
   const tuning = normalizeMemoryTuning();
   const boundedLimit = Math.min(Math.max(1, limit), MAX_RECALL_LIMIT);
-  return runRankedRetrieval(storage, env.memoryEntityId, query, tuning, boundedLimit);
+  return runRankedRetrieval(storage, env.memoryEntityId, query, tuning, boundedLimit, options);
 }
 
 /**
@@ -88,6 +92,7 @@ export async function listAll(env: Env): Promise<{ memories: MemoryNode[]; edges
 }
 
 export async function closeMemoryClient(): Promise<void> {
+  await workUsagePool?.end(); workUsagePool=undefined; workUsageReady=undefined;
   await listingPool?.end();listingPool=undefined;listingReady=undefined;
   if (memoryInstance) {
     await memoryInstance.close();
@@ -112,4 +117,44 @@ export async function listMemoryPage(env:Env,limit?:number,cursor?:string) {
  })().catch(error=>{listingReady=undefined;throw error;});
  await listingReady;
  return readSqlPage(listingPool,env.memoryEntityId,limit,cursor);
+}
+
+let workUsagePool: Pool | undefined;
+let workUsageReady: Promise<void> | undefined;
+
+export function memoryUseScope(env: Env) {
+  return { entityId: env.memoryEntityId, actorId: env.memoryEntityId, secret: env.memoryDatabaseUrl };
+}
+
+export async function recordWorkMemoryUse(env: Env, workId: string, uses: {receipt:string;output:string}[], linkChanges?:MemoryLinkChange[]) {
+  await getMemoryClient(env);
+  if (!workUsagePool) {
+    workUsagePool=new Pool({connectionString:env.memoryDatabaseUrl,max:1,idleTimeoutMillis:1000});
+    workUsagePool.on('error',()=>console.error('[oak-memory] work usage connection failed'));
+  }
+  const pool=workUsagePool;
+  workUsageReady ??= (async () => {
+    const db = await pool.connect();
+    try {
+      await db.query('begin');
+      await db.query('select pg_advisory_xact_lock(7916502)');
+      if (!(await db.query("select to_regclass('memory.work_usage') as present")).rows[0].present)
+        await db.query(memoryWorkUsageSchema);
+      await db.query('commit');
+    } catch (error) {
+      await db.query('rollback');
+      throw error;
+    } finally { db.release(); }
+  })().catch(error => { workUsageReady=undefined; throw error; });
+  await workUsageReady;
+  const db=await pool.connect();
+  try {
+    await db.query('begin');
+    const result=await recordMemoryUse(db,memoryUseScope(env),workId,uses,linkChanges);
+    await db.query('commit');
+    return result;
+  } catch (error) {
+    await db.query('rollback');
+    throw error;
+  } finally {db.release();}
 }
