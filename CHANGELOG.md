@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Local and Cloud MCP profiles use the same OAK Memory guidance while respecting the policy selected for each store.
+
 - Control recall breadth and explore a memory’s connections. Record memories used in a work output to reinforce their contributing paths or apply a supported link change.
 
 - Existing clients can keep recalling memories. Link reinforcement requires a client that can report actual use with a receipt.
