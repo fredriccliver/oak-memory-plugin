@@ -29,7 +29,7 @@ async function main() {
   // notice into a policy it follows.
   const server = new McpServer(
     { name: 'oak-memory-plugin', version: '0.3.1' },
-    { instructions: [memorySystemGuidance, buildServerInstructions(env.policy), memorySystemInstructions].join('\n\n') },
+    { instructions: [buildServerInstructions(env.policy), memorySystemGuidance, memorySystemInstructions].join('\n\n') },
   );
 
   registerAllTools(server, env);
