@@ -1,3 +1,4 @@
+import { memorySystemGuidance } from "./memory-guidance.generated.js";
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema, McpError, ErrorCode, type Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -45,7 +46,7 @@ export async function startDesktopStoresBridge(config: Profiles, allowChanges: b
   }));
   const server = new Server({ name: 'oak-desktop-cloud', version }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${cloudMemoryCapabilityInstructions}\n${storeInstructions}\n${recoveryInstructions}\nStore-scoped cloud policies: ${JSON.stringify(policies)}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
+    instructions: `${memorySystemGuidance}\n\n${cloudMemoryCapabilityInstructions}\n${storeInstructions}\n${recoveryInstructions}\nStore-scoped cloud policies: ${JSON.stringify(policies)}\n\n${attributionInstructions}\nMultiple cloud stores are configured. listMemoryStores shows configured stores and verified identities. recallMemory and listMemories search all configured stores unless storeId is supplied. Results retain their store attribution; do not mix people or projects across stores. All mutations require an explicit storeId and use only that store’s key. Selecting a profile affects status and single-store reads, not the default all-store search.${allowChanges ? '' : ' Memory changes are disabled in extension settings.'}`,
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     const entry = active;
