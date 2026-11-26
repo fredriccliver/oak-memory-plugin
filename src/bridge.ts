@@ -139,7 +139,7 @@ export async function startProfileBridge(config: Profiles, name: string, options
   try{initialPolicy=await session.initializePolicy();}catch{initialPolicy={error:'Selected store policy unavailable. Authorized reads may continue; suspend all mutations until its policy loads successfully. Never substitute a default or local policy.'};}
   const server = new Server({ name: options.serverName ?? 'oak-memory-plugin', version: options.desktopVersion ?? '0.3.1' }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${memorySystemGuidance}\n\n${cloudMemoryCapabilityInstructions}\n${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
+    instructions: `${cloudMemoryCapabilityInstructions}\n${storeInstructions}\n${attributionInstructions}\nSelected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}\n\n${memorySystemGuidance}\n\n${recoveryInstructions}${options.readOnly ? '\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings.' : ''}`,
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     try { return await session.listResources(); }

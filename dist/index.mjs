@@ -30664,12 +30664,13 @@ async function startProfileBridge(config2, name, options = {}) {
   }
   const server = new Server({ name: options.serverName ?? "oak-memory-plugin", version: options.desktopVersion ?? "0.3.1" }, {
     capabilities: { tools: { listChanged: true }, resources: { listChanged: true } },
-    instructions: `${memorySystemGuidance}
-
-${cloudMemoryCapabilityInstructions}
+    instructions: `${cloudMemoryCapabilityInstructions}
 ${storeInstructions}
 ${attributionInstructions}
 Selected store policy (apply only to its profile): ${JSON.stringify(initialPolicy)}
+
+${memorySystemGuidance}
+
 ${recoveryInstructions}${options.readOnly ? "\nThis connection permits reads only. Memory changes are disabled in the desktop extension settings." : ""}`
   });
   server.setRequestHandler(ListResourcesRequestSchema, async () => {

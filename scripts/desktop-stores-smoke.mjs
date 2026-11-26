@@ -66,6 +66,7 @@ try {
     try {
       await client.connect(transport);
       assert.match(client.getInstructions(),/When proactive recall is enabled/);
+      assert(client.getInstructions().indexOf('Cloud policy for Store 1') < client.getInstructions().indexOf('OAK Memory system guidance'));
       assert(client.getInstructions().includes('Cloud policy for Store 1'));
       assert(!client.getInstructions().includes('Autosave stays off'));
       const ownPolicy = parsed(await client.callTool({ name: 'getMemoryPolicy', arguments: { storeId: stores[2].storeId } }));

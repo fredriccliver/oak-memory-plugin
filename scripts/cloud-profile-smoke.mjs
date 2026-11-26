@@ -149,6 +149,7 @@ try {
   try {
     await client.connect(transport);
     assert.match(client.getInstructions(),/When proactive recall is enabled/);
+    assert(client.getInstructions().indexOf('Personal cloud rules') < client.getInstructions().indexOf('OAK Memory system guidance'));
     assert.match(client.getInstructions(),/Personal cloud rules/);
     assert.doesNotMatch(client.getInstructions(),/recordMemoryUse/);
     assert.ok(!(await client.listTools()).tools.some(tool => tool.name === 'recordMemoryUse'));
