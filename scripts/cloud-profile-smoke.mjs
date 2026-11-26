@@ -148,6 +148,7 @@ try {
   let stderr = ''; transport.stderr?.on('data', chunk => { stderr += chunk; });
   try {
     await client.connect(transport);
+    assert.match(client.getInstructions(),/When proactive recall is enabled/);
     assert.match(client.getInstructions(),/Personal cloud rules/);
     assert.doesNotMatch(client.getInstructions(),/recordMemoryUse/);
     assert.ok(!(await client.listTools()).tools.some(tool => tool.name === 'recordMemoryUse'));

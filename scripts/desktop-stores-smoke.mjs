@@ -65,6 +65,7 @@ try {
     let stderr = ''; transport.stderr?.on('data', chunk => stderr += chunk);
     try {
       await client.connect(transport);
+      assert.match(client.getInstructions(),/When proactive recall is enabled/);
       assert(client.getInstructions().includes('Cloud policy for Store 1'));
       assert(!client.getInstructions().includes('Autosave stays off'));
       const ownPolicy = parsed(await client.callTool({ name: 'getMemoryPolicy', arguments: { storeId: stores[2].storeId } }));
